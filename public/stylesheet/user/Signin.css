@@ -1,0 +1,175 @@
+:root {
+    --primary-color: #003049;
+    --secondary-color: #FCA311;
+    --text-color: #333;
+    --light-gray: #f5f5f5;
+    --border-color: #ddd;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+/* Sign In Page */
+.signin-page {
+    padding: 20px 5%;
+}
+
+.signin-container {
+    display: flex;
+    gap: 50px;
+    margin-bottom: 50px;
+}
+
+.signin-image {
+    flex: 1;
+    position: relative;
+}
+
+.signin-image img {
+    max-width: 100%;
+    height: auto;
+    /* object-fit: cover;
+    border-radius: 10px; */
+}
+
+.image-text {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    color: white;
+    font-size: 24px;
+    max-width: 80%;
+}
+
+.signin-form {
+    flex: 1;
+    padding: 20px;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.signin-form h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group input {
+
+    width: 100%;
+    padding: 10px 0;
+    font-size: 16px;
+    border: none;
+    border-bottom: 1px solid  var(--light-gray);
+    background: transparent;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #f5a623;
+}
+
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.forgot-link {
+    display: block;
+    text-align: right;
+    color: var(--secondary-color);
+    text-decoration: none;
+    margin-bottom: 30px;
+}
+
+.google-signin {
+    margin-bottom: 20px;
+}
+.google-signin a{
+    font-size: 15px;
+}
+
+.btn-google {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.btn-google img {
+    width: 20px;
+    height: 20px;
+}
+
+.register-prompt {
+    text-align: center;
+}
+
+.register-prompt a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+/* Responsive Design (Sign-in Content) */
+@media (max-width: 1024px) {
+    .signin-container {
+        flex-direction: column;
+    }
+
+    .signin-image {
+        height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .signin-form {
+        padding: 10px;
+    }
+
+    .image-text {
+        font-size: 18px;
+        bottom: 15px;
+        left: 15px;
+    }
+
+    .btn-google {
+        font-size: 14px;
+    }
+}
+

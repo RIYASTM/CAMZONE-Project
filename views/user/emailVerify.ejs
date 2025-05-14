@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMZONE Verify Email</title>
+    <link rel="stylesheet" href="/stylesheet/user/emailVerify.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <header>
+
+        <%- include('../partials/users/header',{search}) %>
+    
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="/create-account">Create Account</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Verify Email</span>
+        </div>
+
+        <div class="verification-container">
+            <div class="image-section">
+                <img src="/images/Group 150.png" alt="Camera close-up" class="camera-image">
+            </div>
+
+            <div class="form-section">
+                <h1>Verify Email</h1>
+                <p>Enter OTP received in your email</p>
+                
+                <form  id="verifyOtpForm" >
+                    <div class="form-group">
+                        <input type="text" id="otp" name="otp" placeholder="OTP" class="otp-input"  >
+                        <label for="otp">OTP</label>
+                    </div>
+                    
+                    <button type="submit" form="verifyOtpForm" id="verify-btn" class="verify-btn" >Verify</button>
+                </form>
+                
+                <div class="resend-container">
+                    <a href="#" id="resend-link" >Resend OTP</a>
+                    <span id="timer">9 s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/users/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="/javascript/users/verifyEmail.js"></script> 
+
+</body>
+</html>

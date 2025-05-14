@@ -1,0 +1,89 @@
+/* Sidebar Styles */
+.sidebar {
+    width: 185px;
+    background-color: var(--secondary-color);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    border-right: 1px solid var(--border-color);
+}
+
+.logo {
+    text-align: center;
+    padding: 15px 0;
+    /* margin-bottom: 20px; */
+}
+
+.logo img {
+    height: 40px;
+}
+
+.sidebar-nav {
+    flex-grow: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #a0a0a0;
+}
+
+.nav-item i {
+    margin-right: 12px;
+    width: 18px;
+    text-align: center;
+}
+
+.nav-item.active {
+    background-color: #333;
+    color: var(--border-color);
+    border-left: 3px solid var(--border-color);
+}
+
+.nav-item:hover:not(.active) {
+    background-color: #333;
+    color: #fff;
+}
+
+.logout-section {
+    padding: 20px;
+    text-align: center;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 15px;
+}
+
+.logout-btn:hover {
+    background-color: var(--border-color);
+    color: #282828;
+}
+
+.copyright {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Responsive adjustments for sidebar */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .nav-item {
+        padding: 8px 15px;
+    }
+}

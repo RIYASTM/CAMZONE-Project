@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/admin/category.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+
+            <!-- Categories Top Bar -->
+            <div class="categories-top-bar">
+                <div class="top-left">
+                    <span>Category |</span>
+                    <select class="sort-by">
+                        <option value="default">Sort by</option>
+                        <option value="name">Name</option>
+                        <option value="description">Description</option>
+                    </select>
+                </div>
+                <div class="top-center" style="position: relative; display: inline-block;">
+                    <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search %>">
+                    <% if(search){ %>
+                        <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+                    <% } %>
+                </div>
+                <div class="top-right">
+                    <select class="filter">
+                        <option value="all">Filter</option>
+                        <option value="Listed">Listed</option>
+                        <option value="Not Listed">Not Listed</option>
+                    </select>
+                    <button class="add-category" id="addCategoryButton">Add New Category</button>
+                </div>
+            </div>
+
+            <!-- Categories Table -->
+            <div class="categories-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Description</th>
+                            <th>Created On</th>
+                            <th>Offer</th>
+                            <th>Offer Price / %</th>
+                            <th>List/Unlist</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% category.reverse().forEach((category, index) => { %>
+                            <tr>
+                                <td><%= category.name %></td>
+                                <td><%= category.description %></td>
+                                <td><%= category.createdAt.toString().split(" ").slice(1, 4).join(" ") %></td>
+                                <td>
+                                    <% if (!category.categoryOffer) { %>
+                                        <button class="filter" onclick="addOffer('<%= category._id %>')">Add Offer</button>
+                                    <% } else { %>
+                                        <button class="filter" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
+                                    <% } %>
+                                </td>
+                                <td><%= category.categoryOffer ? category.categoryOffer+' %' : '-' %></td>
+                                <td><%= category.isListed === true ? 'Listed' : "Unlisted" %></td>
+                                <td>
+                                    <a href="#" class="action-icon" onclick="showEditCategoryModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.categoryOffer %>', '<%= category.isListed %>')"><i class="fas fa-edit"></i></a>
+                                    <a href="#" class="action-icon" id="delete-category" onclick="deleteCategory('<%= category._id %>')"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Category -->
+            <div class="category-modal" id="addCategoryModal">
+                <h2>Add New Category</h2>
+                <form action="/admin/add-category" method="POST" id="categoryForm">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name <span class="required">*</span></label>
+                        <input type="text" id="addCategoryName" name="categoryName" placeholder="Category Name">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription">Category Description <span class="required">*</span></label>
+                        <textarea id="addCategoryDescription" name="categoryDescription" placeholder="Category Description"></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="offerPrice">Offer Price</label>
+                        <input type="number" id="addOfferPrice" name="offerPrice" step="0.01" min="0">
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label> List Category : 
+                            <input type="checkbox" id="addCheckbox" name="listCategory">
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn add-btn" form="categoryForm">Add Category</button>
+                        <button type="button" class="btn cancel-btn" id="cancelButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Edit Category -->
+            <div class="category-modal" id="editCategoryModal">
+                <h2>Edit Category</h2>
+                <form class="category-form" id="EditCategoryForm">
+                    <input type="hidden" id="categoryId" name="id">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name <span class="required">*</span></label>
+                        <input type="text" id="editCategoryName" name="categoryName">
+                    </div>
+                    <div class="form-group">
+                        <label for="offerPrice">Offer Price</label>
+                        <input type="number" id="editOfferPrice" name="offerPrice" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription">Category Description <span class="required">*</span></label>
+                        <textarea id="categoryDescription" name="editCategoryDescription"></textarea>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label> List Category : 
+                            <input type="checkbox" id="checkbox" name="listCategory">
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn save-btn">Save Changes</button>
+                        <button type="button" class="btn cancel-btn" id="cancelEditButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Pagination -->
+            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/admins/category.js"></script>
+    <script src="/javascript/partials/addCategory.js"></script>
+    <script src="/javascript/partials/editCategory.js"></script>
+
+</body>
+</html>

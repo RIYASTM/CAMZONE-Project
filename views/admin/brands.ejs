@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brands | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/admin/brands.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+
+            <!-- Brands Top Bar -->
+            <div class="brands-top-bar">
+                <div class="top-left">
+                    <span>Brands </span>
+                    <!-- <select class="sort-by">
+                        <option value="default">Sort by</option>
+                        <option value="name">Name</option>
+                        <option value="description">Description</option>
+                    </select> -->
+                </div>
+                <div class="top-center" style="position: relative; display: inline-block;">
+                    <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search %>">
+                    <% if(search){ %>
+                        <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+                    <% } %>
+                </div>
+                <div class="top-right">
+                    <select class="filter">
+                        <option value="all">Filter</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    <button class="add-brand" id="addBrandButton">Add New Brand</button>
+                </div>
+            </div>
+
+            <!-- Brands Table -->
+            <div class="brands-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Brand Name</th>
+                            <th>Description</th>
+                            <th>Created On</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% brands.forEach((brand) => { %>
+                            <tr>
+                                <td>
+                                    <% if (brand.brandImage) { %>
+                                        <img src="/uploads/brands/<%= brand.brandImage %>" alt="<%= brand.name %>" style="width: 50px; height: 50px; object-fit: fill;">
+                                    <% } else { %>
+                                        <span>No Image</span>
+                                    <% } %>
+                                </td>
+                                <td><%= brand.brandName %></td>
+                                <td><%= brand.description %></td>
+                                <td><%= brand.createdAt.toString().split(" ").slice(1, 4).join(" ") %></td>
+                                <td><%= brand.isBlocked ? 'Blocked' : 'Active'%></td>
+                                <td>
+                                    <a href="#" class="action-icon editBrandButton"
+                                        data-id="<%= brand._id %>"
+                                        data-name="<%= brand.brandName %>"
+                                        data-description='<%= brand.description %>'
+                                        data-image='<%= brand.brandImage %>'
+                                        data-isblocked='<%= brand.isBlocked %>'>
+                                        <i class="fas fa-edit"></i>
+                                        </a>
+                                    <a href="#" class="action-icon" id="deleteBrandButton" onclick="deleteBrand('<%= brand._id%>')" ><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Brand Modal -->
+            <div class="brand-modal" id="addBrandModal">
+                <h2>Add New Brand</h2>
+                <form action="/admin/addBrand" method="POST" id="addBrandForm" >
+                    <div class="form-group">
+                        <label for="brandName">Brand Name <span class="required">*</span></label>
+                        <input type="text" id="addBrandName" name="brandName" placeholder="Brand Name" class="brandName" >
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Brand Description <span class="required">*</span></label>
+                        <textarea  name="description" placeholder="Brand Description" class="description" ></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="brandImage">Brand Image</label>
+                        <input type="file" id="addBrandImage" name="brandImage" accept="image/*" class="brandImage">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn add-btn" form="addBrandForm">Add Brand</button>
+                        <button type="button" class="btn cancel-btn" id="cancelAddButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Edit Brand Modal -->
+            <div class="brand-modal" id="editBrandModal">
+                <h2>Edit Brand</h2>
+                <form action="/admin/editBrand" method="POST" id="editBrandForm" enctype="multipart/form-data">
+                    <input type="hidden" id="brandId" name="id">
+                    <div class="form-group">
+                        <label for="editBrandName">Brand Name <span class="required">*</span></label>
+                        <input type="text" id="editBrandName" name="brandName" class="brandName" >
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBrandDescription">Brand Description <span class="required">*</span></label>
+                        <textarea id="editBrandDescription" name="description" class="description"   ></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBrandImage">Brand Image</label>
+                        <input type="file" id="editBrandImage" name="brandImage" accept="image/*">
+                        <div id="currentImage" style="margin-top: 10px;"></div>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label>Block Brand : 
+                            <input type="checkbox" id="editCheckbox" name="isBlocked">
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn save-btn">Save Changes</button>
+                        <button type="button" class="btn cancel-btn" id="cancelEditButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Pagination -->
+            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/admins/brands.js"></script>
+
+</body>
+</html>

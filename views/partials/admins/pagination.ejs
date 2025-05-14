@@ -1,0 +1,12 @@
+<link rel="stylesheet" href="/stylesheet/partials/pagination.css">
+
+<div class="pagination" data-total-pages="<%= totalPages %>">
+    <span><%= currentPages %> of <%= totalPages %></span>
+    <div class="pagination-controls">
+        <button <%= currentPages === 1 ? 'disabled' : '' %> onclick="window.location.href='?page=1<%= search ? `&search=${encodeURIComponent(search)}` : '' %>'" title="Go to first page"><i class="fas fa-angle-double-left"></i></button>
+        <button <%= currentPages === 1 ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPages - 1 %><%= search ? `&search=${encodeURIComponent(search)}` : '' %>'" title="Previous page"><i class="fas fa-angle-left"></i></button>
+        <span> - </span>
+        <button <%= currentPages === totalPages ? 'disabled' : '' %> onclick="window.location.href='?page=<%= parseInt(currentPages) + 1 %><%= search ? `&search=${encodeURIComponent(search)}` : '' %>'" title="Next page"><i class="fas fa-angle-right"></i></button>
+        <button <%= currentPages === totalPages ? 'disabled' : '' %> onclick="window.location.href='?page=<%= totalPages %><%= search ? `&search=${encodeURIComponent(search)}` : '' %>'" title="Go to last page"><i class="fas fa-angle-double-right"></i></button>
+    </div>
+</div>

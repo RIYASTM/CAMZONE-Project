@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMZONE Sign In </title>
+    <link rel="stylesheet" href="/stylesheet/user/Signin.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/header.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    
+    <header>
+
+        <%- include('../partials/users/header',{search}) %>
+    
+    </header>
+
+    <section>
+        
+        <div class="breadcrumb">
+            <a href="/">Home</a> > <span>Sign In</span>
+        </div>
+
+        <main class="signin-page">
+            <div class="signin-container">
+                <div class="signin-image">
+                    <img src="/images/Group 150.png" alt="Camera">
+                </div>
+                <div class="signin-form">
+                    <h1>Sign in</h1>
+                    <p class="subtitle">Enter your details below</p>
+                
+                    <form action="/signin" method="POST" id="signinForm">
+                        <div class="form-group">
+                            <input type="email" name="email" id="email" placeholder="Email" >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" name="password" id="password" placeholder="Password" >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <button type="submit" class="btn-primary" form="signinForm">Sign in</button>
+                        <a href="/forgottPassword" class="forgot-link">Forgot Password?</a>
+                    
+                        <div class="google-signin">
+                            <a href="/auth/google" class="btn-google">
+                                <img src="/images/icons/google.png" alt="Google">
+                                Login with Google
+                            </a>
+                        </div>
+                    
+                        <div class="register-prompt">
+                            Not yet registered? <a href="/signup">Create Account</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </section>
+
+        
+        <%- include('../partials/users/footer') %>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script src="/javascript/users/signin.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/user/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<header>
+
+    <%- include('../partials/users/header',{search}) %>
+
+</header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Canon camera</h1>
+            <div class="cta-buttons">
+                <button class="shop-now">Shop now</button>
+                <button class="view-more">View more</button>
+            </div>
+            <div class="dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="<%= locals.heroImage || '/images/Products/Canon/Camera/Canon Mark II.png' %>" alt="Canon Camera">
+            <div class="price-tag">Only ₹5,05,995</div>
+        </div>
+    </section>
+
+    <section class="categories">
+        <!-- <% const categories = [
+            { name: 'Lenses', count: 8, image: '/images/Products/Canon/Lenses/RF70-200mm f2.8L IS USM Z.svg' },
+            { name: 'Flashes', count: 4, image: '/images/Products/Canon/Flashes/Speedlite 430EX.svg' },
+            { name: 'DSLR camera', count: 6, image: '/images/Products/Canon/Camera/Canon Mark II.svg' }
+        ] %> -->
+
+        <% category.forEach(category => { %>
+            <div class="category-card">
+                <div class="category-info">
+                    <h3><%= category.name %></h3>
+                    <p>(<%= category.length ?  category.length  : 0 %> items)</p>
+                </div>
+            </div>
+        <% }) %>
+    </section>
+
+    <section class="popular-products">
+        <h2>Popular products</h2>
+        <div class="product-filters">
+            <% category.forEach((category, index) => { %>
+                <button class="<%= index === 0 ? 'active' : '' %>"><%= category.name %></button>
+            <% }) %>
+        </div>
+        <div class="product-grid"> 
+            
+
+            <% newProducts.forEach(product=>{ %>
+                <div class="product-card">
+                    <a href="/product?id=<%=product._id%>"> 
+                    <div class="product-card-img">
+                        <div class="wishlist-btn">❤</div>
+                        <% if (product.productImage && product.productImage.length > 0) { %>
+                            <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                        <% } else { %>
+                            <span>No Image</span>
+                        <% } %>
+                    </div>
+                    <h3><%= product.productName.slice(0,23) %></h3>
+                    <div class="price">
+                        <span class="current">₹ <%= product.salePrice %></span>
+                        <span class="original">₹ <%= product.regularPrice %></span>
+                        <span class="offer"><%=totalOffer ? totalOffer : 0 %> %</span>
+                    </div>
+                    <div class="rating">
+                        <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
+                    </div>
+                </a>
+                <!-- <button class="add-to-cart">Add to Cart</button> -->
+                </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <section class="special-offer">
+        <div class="offer-content">
+            <div class="offer-text">
+                <h2>Special Offer</h2>
+                <p>Get up to 40% off on selected items</p>
+                <button class="shop-offer">Shop Now</button>
+            </div>
+            <div class="countdown">
+                <div class="time-unit">
+                    <span class="number">02</span>
+                    <span class="label">Days</span>
+                </div>
+                <div class="time-unit">
+                    <span class="number">12</span>
+                    <span class="label">Hours</span>
+                </div>
+                <div class="time-unit">
+                    <span class="number">45</span>
+                    <span class="label">Minutes</span>
+                </div>
+                <div class="time-unit">
+                    <span class="number">30</span>
+                    <span class="label">Seconds</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured-products">
+        <div class="section-header">
+            <h2>Featured Products</h2>
+            <div class="view-controls">
+                <button class="view-all">View All</button>
+                <div class="arrows">
+                    <button class="arrow-left">←</button>
+                    <button class="arrow-right">→</button>
+                </div>
+            </div>
+        </div>
+        <div class="featured-grid">
+            
+
+            <% products.slice(0, 3).forEach(product => { %>
+                <div class="product-card featured">
+                    <a href="/product?id=<%= product._id %>">
+                        <div class="product-card-featured-img-container">
+                            <div class="product-badge"><%= product.badge ? product.badge : 'New' %></div>
+                            <div class="wishlist-btn">❤</div>
+                            <% if (product.productImage && product.productImage.length > 0) { %>
+                                <img src="/Uploads/products/<%= product.productImage[0] %>" alt="<%= product.name %>">
+                            <% } else { %>
+                                <span>No Image</span>
+                            <% } %>
+                        </div>
+                        <h3><%= product.productName.slice(0,23) %></h3>
+                        <div class="price">
+                            <span class="current">₹ <%= product.salePrice %></span>
+                            <span class="original">₹ <%= product.regularPrice %></span>
+                            <span class="offer"><%= totalOffer ? totalOffer : 0 %> %</span>
+                        </div>
+                        <div class="rating">
+                            <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
+                        </div>
+                    </a>
+                    <button class="add-to-cart">Add to Cart</button>
+                </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <section class="benefits">
+        <div class="benefit-item">
+            <div class="benefit-icon">🚚</div>
+            <h3>Free Shipping</h3>
+            <p>On all orders above ₹20,000</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">💰</div>
+            <h3>Money Back</h3>
+            <p>30 Days return policy</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">🔒</div>
+            <h3>Secure Payment</h3>
+            <p>100% secure checkout</p>
+        </div>
+        <div class="benefit-item">
+            <div class="benefit-icon">🎁</div>
+            <h3>Special Discounts</h3>
+            <p>On bulk orders</p>
+        </div>
+    </section>
+    <section class="new-arrivals">
+        <h2>New Arrivals</h2>
+        <div class="arrivals-grid">
+
+            <% if (products.length > 8) { %>
+                <% for (let i = 8; i < Math.min(16, products.length); i++) { %>
+                <div class="product-card">
+                    <a href="/product?id=<%=products[i]._id%>">
+                    <div class="product-card-img-container">
+                        <div class="product-badge ">New</div>
+                        <div class="wishlist-btn ">❤</div>
+                        <% if (products[i].productImage && products[i].productImage.length > 0) { %>
+                            <img src="/uploads/products/<%= products[i].productImage[0] %>" alt="<%= products[i].name %>">
+                        <% } else { %>
+                            <span>No Image</span>
+                        <% } %>
+                    </div>
+                    <h3><%= products[i].productName.slice(0,23) %></h3>
+                    <div class="price">
+                        <span class="current">₹ <%= products[i].salePrice %></span>
+                        <span class="original">₹ <%= products[i].regularPrice %></span>
+                        <span class="offer"><%=totalOffer ? totalOffer : 0 %> %</span>
+                    </div>
+                    <div class="rating">
+                        <%= '★'.repeat(products[i].rating ? products[i].rating : 1 ) %>
+                    </div>
+                    </a>
+                    <button class="add-to-cart">Add to Cart</button>
+                </div>
+            <% } %>
+        <% } else { %>
+            <p>No new arrivals available right now.</p>
+        <% } %>
+        </div>
+    </section>
+
+    <section class="brand-showcase">
+        <h2>Top Brands</h2>
+        <div class="brand-logos">
+            <% const brands = ['Canon', 'Nikon', 'Sony', 'Panasonic'] %>
+            <% brands.forEach(brand => { %>
+                <div class="brand-logo">
+                    <img src="/images/icons/brands/<%= brand.toLowerCase() %>.png" alt="<%= brand %>" class="icon">
+                </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <section class="blog-posts">
+        <div class="section-header">
+            <h2>Photography Tips & Tutorials</h2>
+            <a href="#" class="view-all-link">View All Posts</a>
+        </div>
+        <div class="blog-grid">
+            <% const blogPosts = [
+                {
+                    title: 'How to Choose Your First DSLR Camera',
+                    excerpt: 'A comprehensive guide for beginners looking to invest in their first DSLR camera.',
+                    image: '/images/blog/first-dslr.jpg',
+                    date: 'May 15, 2023'
+                },
+                {
+                    title: 'Mastering Night Photography',
+                    excerpt: 'Expert tips on capturing stunning night scenes with your camera.',
+                    image: '/images/blog/night-photography.jpg',
+                    date: 'April 28, 2023'
+                },
+                {
+                    title: 'Understanding Camera Lenses',
+                    excerpt: 'Learn about different types of camera lenses and when to use them.',
+                    image: '/images/blog/camera-lenses.jpg',
+                    date: 'March 10, 2023'
+                }
+            ] %>
+
+            <% blogPosts.forEach(post => { %>
+                <div class="blog-card">
+                    <div class="blog-image">
+                        <img src="<%= post.image %>" alt="<%= post.title %>">
+                    </div>
+                    <div class="blog-content">
+                        <span class="blog-date"><%= post.date %></span>
+                        <h3><%= post.title %></h3>
+                        <p><%= post.excerpt %></p>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </section>
+    <footer>
+        
+        <%- include('../partials/users/footer') %>
+    
+    </footer>
+
+    <!-- <script src="/javascript/users/home.js"></script> -->
+
+</html>

@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+
+nav {
+    margin-bottom: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.checkout-container {
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.billing-details, .order-summary {
+    flex: 1;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.billing-details h2, .order-summary h3 {
+    font-size: 18px;
+    color: #333;
+    margin: 0 0 15px;
+}
+
+.billing-details h3 {
+    font-size: 16px;
+    margin: 15px 0 10px;
+}
+
+.billing-details label, .payment-methods label {
+    display: block;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.billing-details input[type="radio"], .payment-methods input[type="radio"] {
+    margin-right: 10px;
+}
+
+.new-address input, .card-details input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.address-row, .card-row {
+    display: flex;
+    gap: 10px;
+}
+
+.address-row input, .card-row input {
+    flex: 1;
+}
+
+.card-details img {
+    width: 40px;
+    margin: 5px 5px 0 0;
+}
+
+.summary-details p, .summary-details h3 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.summary-details h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.payment-methods {
+    margin: 20px 0;
+}
+
+.place-order {
+    width: 100%;
+    background-color: #f5a623;
+    border: none;
+    padding: 15px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.place-order:hover {
+    background-color: #e69520;
+}

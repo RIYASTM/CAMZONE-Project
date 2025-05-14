@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMZONE Forgott Password </title>
+    <link rel="stylesheet" href="/stylesheet/user/Signin.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/header.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    
+    <header>
+
+        <%- include('../partials/users/header' , {search}) %>
+    
+    </header>
+
+    <section>
+        
+        <div class="breadcrumb">
+            <a href="/">Home</a> > <span>Sign In</span> > <span>Forgot Password</span>
+        </div>
+
+        <main class="signin-page">
+            <div class="signin-container">
+                <div class="signin-image">
+                    <img src="/images/Group 150.png" alt="Camera">
+                </div>
+                <div class="signin-form">
+                    <h1>Forgott Password</h1>
+                    <p class="subtitle">Enter your mail</p>
+                    <form action="/forgottPassword" method="POST" id="emailForm">
+                        <div class="form-group">
+                            <input type="email" name="email" id="email" placeholder="Email" >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <button type="submit" class="btn-primary" form="emailForm">Continue</button>
+                        <a href="/forgottPass" class="forgot-link">Sigin with Password</a>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </section>
+
+        
+        <%- include('../partials/users/footer') %>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <!-- <script src="/javascript/users/signin.js"></script> -->
+<script>
+    document.addEventListener('DOMContentLoaded',  ()=> {
+        const emailForm = document.getElementById('emailForm')
+
+        emailForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+
+            const email = document.getElementById('email').value.trim()
+            console.log(email)
+
+            let error = validateForm(email)
+
+            if(error){
+                console.log('Validation error from fron : ',error)
+                displayFormErrors(emailForm,error)
+                return
+            }
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we create your account.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch('/forgottPassword',{
+                    method : "POST",
+                    body : JSON.stringify({email : email}),
+                    headers : {'Content-Type' : 'application/json'}
+                });
+
+                const data = await response.json()
+
+                if (!data.success) {
+                displayFormErrors(signupForm, data.errors);
+                Swal.fire(' ', data.message || 'Validation error!', 'error');
+                } else {
+                    Swal.fire('Success',data.message || 'Signup successful', 'success')
+                    .then(() => {
+                        window.location.replace(data.redirectUrl);
+                    });
+                }
+            } catch (error) {
+                console.error('Password reset error:', error);
+                Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
+            }
+    });
+
+    function displayFormErrors(form, errors) {
+        clearErrors(form);
+        if (errors && typeof errors === 'object') {
+            Object.entries(errors).forEach(([field, message]) => {
+                const input = form.querySelector(`input[name="${field}"]`);
+                if (input) {
+                    input.classList.add('is-invalid');
+                    const feedback = input.nextElementSibling;
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                        feedback.textContent = message; 
+                    }
+                }
+            });
+        }
+    }
+
+    function clearErrors(form) {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    }
+});
+
+function validateForm(email){
+
+    const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
+
+    let error = {}
+
+    if(!email){
+        error.email = "Email is required !!";
+    }else if(!emailpattern.test(email)){
+        error.email = "Invalid Format !!"
+    }
+
+
+    return Object.keys(error).length > 0 ? error : null;
+        
+}
+</script>
+
+</body>
+</html>

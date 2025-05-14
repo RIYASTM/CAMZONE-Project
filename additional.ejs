@@ -1,0 +1,3321 @@
+<a>
+const loadCustomers = async (req, res) => {
+    try {
+        let search = '';
+
+        if (req.query.search) {
+            search = req.query.search;
+            // Add search logic if intended, e.g.:
+            // const query = { isAdmin: false, $or: [{ name: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] };
+        }
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        const totalUsers = await User.find({ 
+            isAdmin : false,
+            $or : [
+                {name:{$regex: '.*'+search+'.*'}},
+                {email:{$regex: '.*'+search+'.*'}}
+            ]
+        })
+        .limit(limit * 1)
+        .skip((page-1) * limit)
+        .exec()
+
+        const totalPages = Math.ceil(totalUsers >= 2 ? totalUsers : 1 / limit);
+
+        const updatedDate = new Date().toLocaleDateString();
+
+        const customers = await User.find({ 
+            isAdmin: false,
+            $or : [
+                {name:{$regex: '.*'+search+'.*'}},
+                {email:{$regex: '.*'+search+'.*'}}
+            ]
+        }).countDocuments()
+        // .limit(limit * 1)
+        // .skip((page-1) * limit)
+        // .select('name email phone createdOn isBlocked status')
+        // .sort({ createdAt: -1 });
+
+        return res.render('customers', { 
+            search,
+            pageTitle: 'Customers',
+            currentPage: 'customers',
+            customers,
+            currentPages: page,
+            totalPages: totalPages,
+            iconClass: 'fa-users',
+            updatedDate,
+            user: req.session.user
+        });
+    } catch (error) {
+        console.log('======================================');
+        console.log('failed to load customers', error);
+        console.log('======================================');
+        res.status(500).send('Server Error');
+    }
+}
+</a>
+
+
+
+
+
+
+<table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Created on</th>
+                            <th>Blocked</th>
+                            <th>Active/Deleted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% customers.forEach(customer => { %>
+                            <tr>
+                                <td><%= customer.name %></td>
+                                <td><%= customer.email %></td>
+                                <td><%= customer.createdOn %></td>
+                                <td class="blocked-cell" id="blocked-<%= customer._id %>"><% customer.isBlocked ? 'Blocked' : "NO" %></td>
+                                <td><%= customer.status %></td>
+                                <td>
+                                    <select class="action-filter" name="blockStatus" data-customer-id="<%= customer._id %>">
+                                        <option value="unblock" <%= !customer.isBlocked ? 'selected' : '' %>>Unblock</option>
+                                        <option value="block" <%= customer.isBlocked ? 'selected' : '' %>>Block</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+
+
+
+
+
+        <% customers.forEach(customer => { %>
+            <tr>
+                <td><%= customer.name %></td>
+                <td><%= customer.email %></td>
+                <td><%= customer.phone %></td>
+                <td><%= customer.createdOn.toString().split(' ').slice(1,4).join(' ') %></td>
+                <td><%= customer.isBlocked %></td>
+                <td>
+                    <button class="filter">Block</button>
+                </td>
+            </tr>
+        <% }) %>
+
+<product>
+    const Product = require('../models/product'); // Assuming you have a Product model
+const Category = require('../models/category');
+const User = require('../models/user'); //assuming you have user model.
+
+// Get all products
+const getAllProducts = async (req, res) => {
+    try {
+        const products = await Product.find();
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Get a single product by ID
+const getProductById = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json(product);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Create a new product
+const createProduct = async (req, res) => {
+    const product = new Product({
+        name: req.body.name,
+        price: req.body.price,
+        stock: req.body.stock,
+        category: req.body.category, // You'll need to handle category association
+        description: req.body.description
+    });
+
+    try {
+        const newProduct = await product.save();
+        res.status(201).json(newProduct);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+// Update a product by ID
+const updateProductById = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        if (req.body.name != null) {
+            product.name = req.body.name;
+        }
+        if (req.body.price != null) {
+            product.price = req.body.price;
+        }
+        if (req.body.stock != null) {
+            product.stock = req.body.stock;
+        }
+         if (req.body.category != null) {
+            product.category = req.body.category;
+        }
+        if (req.body.description != null) {
+            product.description = req.body.description;
+        }
+
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+// Delete a product by ID
+const deleteProductById = async (req, res) => {
+    try {
+        const product = await Product.findByIdAndDelete(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json({ message: 'Product deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+
+
+// Get all categories
+const getAllCategories = async (req, res) => {
+  try {
+    const categories = await Category.find();
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get a single category by ID
+const getCategoryById = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+    res.json(category);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Create a new category
+const createCategory = async (req, res) => {
+  const category = new Category({
+    name: req.body.name,
+    description: req.body.description,
+  });
+  try {
+    const newCategory = await category.save();
+    res.status(201).json(newCategory);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Update a category by ID
+const updateCategoryById = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: "Category not found" });
+
+    if (req.body.name != null) {
+      category.name = req.body.name;
+    }
+    if (req.body.description != null) {
+      category.description = req.body.description;
+    }
+    const updatedCategory = await category.save();
+    res.json(updatedCategory);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete a category by ID
+const deleteCategoryById = async (req, res) => {
+  try {
+    const category = await Category.findByIdAndDelete(req.params.id);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+    res.json({ message: 'Category deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// User controllers
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const createUser = async (req, res) => {
+  const user = new User({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    // Add other user fields as necessary
+  });
+
+  try {
+    const newUser = await user.save();
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const updateUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (req.body.name != null) {
+      user.name = req.body.name;
+    }
+    if (req.body.email != null) {
+      user.email = req.body.email;
+    }
+    if (req.body.password != null) {
+      user.password = req.body.password;
+    }
+
+    const updatedUser = await user.save();
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const deleteUserById = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'User deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+module.exports = {
+    getAllProducts,
+    getProductById,
+    createProduct,
+    updateProductById,
+    deleteProductById,
+    getAllCategories,
+    getCategoryById,
+    createCategory,
+    updateCategoryById,
+    deleteCategoryById,
+    getAllUsers,
+    getUserById,
+    createUser,
+    updateUserById,
+    deleteUserById
+};
+
+</product>
+
+                            <!-- <th>Offer</th>
+                            <th>Offer Price / %</th> -->
+
+
+
+     <!-- <td>
+                                    <% if (!category.categoryOffer) { %>
+                                        <button class="filter" onclick="addOffer('<%= category._id %>')">Add Offer</button>
+                                    <% } else { %>
+                                        <button class="filter" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
+                                    <% } %>
+                                </td>
+                                <td><%= category.categoryOffer ? category.categoryOffer+' %' : '-' %></td> -->
+
+
+<hello>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/admin/category.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+
+            <!-- Categories Top Bar -->
+            <div class="categories-top-bar">
+                <div class="top-left">
+                    <span>Category |</span>
+                    <select class="sort-by">
+                        <option value="default">Sort by</option>
+                        <option value="name">Name</option>
+                        <option value="description">Description</option>
+                    </select>
+                </div>
+                <div class="top-center" style="position: relative; display: inline-block;">
+                    <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search %>">
+                    <% if(search){ %>
+                        <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+                    <% } %>
+                </div>
+                <div class="top-right">
+                    <select class="filter">
+                        <option value="all">Filter</option>
+                        <option value="active">Active</option>
+                        <option value="deleted">Blocked</option>
+                    </select>
+                    <button class="add-category" id="addCategoryButton">Add New Category</button>
+                </div>
+            </div>
+
+            <!-- Categories Table -->
+            <div class="categories-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Description</th>
+                            <th>Created On</th>
+                            <th>Offer</th>
+                            <th>List/Unlist</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% category.reverse().forEach((category, index) => { %>
+                            <tr>
+                                <td><%= category.name %></td>
+                                <td><%= category.description %></td>
+                                <td><%= category.createdAt.toString().split(" ").slice(1, 4).join(" ") %></td>
+                                <td><%= category.categoryOffer%></td>
+                                <td><%= category.isListed === true ? 'Listed' : "Unlisted" %></td>
+                                <td>
+                                    <a href="#" class="action-icon" onclick="showEditCategoryModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.categoryOffer %>', '<%= category.isListed %>')"><i class="fas fa-edit"></i></a>
+                                    <a href="#" class="action-icon" id="delete-category" onclick="deleteCategory('<%= category._id %>')"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Category -->
+            <div class="category-modal" id="addCategoryModal">
+                <h2>Add New Category</h2>
+                <form action="/admin/add-category" method="POST" id="categoryForm">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name <span class="required">*</span></label>
+                        <input type="text" id="addCategoryName" name="categoryName" placeholder="Category Name">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription">Category Description <span class="required">*</span></label>
+                        <textarea id="addCategoryDescription" name="categoryDescription" placeholder="Category Description"></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group checkbox-group" style="display: flex;">
+                        <h4>List Category : </h4>
+                        <input type="checkbox" name="listCategory" id="listCategory">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn add-btn" form="categoryForm">Add Category</button>
+                        <button type="button" class="btn cancel-btn" id="cancelButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Edit Category -->
+            <div class="category-modal" id="editCategoryModal">
+                <h2>Edit Category</h2>
+                <form class="category-form" id="EditCategoryForm">
+                    <input type="hidden" id="categoryId" name="id">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name <span class="required">*</span></label>
+                        <input type="text" id="editCategoryName" name="categoryName">
+                    </div>
+                    <div class="form-group">
+                        <label for="offerPrice">Offer Price</label>
+                        <input type="number" id="editOfferPrice" name="offerPrice" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription">Category Description <span class="required">*</span></label>
+                        <textarea id="categoryDescription" name="editCategoryDescription"></textarea>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="checkbox" name="listCategory"> List Category
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn save-btn">Save Changes</button>
+                        <button type="button" class="btn cancel-btn" id="cancelEditButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Pagination -->
+            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/admins/category.js"></script>
+    <script src="/javascript/partials/addCategory.js"></script>
+
+    <script>
+            document.addEventListener('DOMContentLoaded', () => {
+            const editCategoryModal = document.getElementById('editCategoryModal');
+            const editCategoryForm = document.getElementById('EditCategoryForm');
+            const cancelEditButton = document.getElementById('cancelEditButton');
+
+            // Handle form submission for Edit Category
+            editCategoryForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                await SaveChanges(event);
+            });
+
+            // Close modal on Cancel button click
+            cancelEditButton.addEventListener('click', () => {
+                hideEditCategoryModal();
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (event) => {
+                if (event.target === editCategoryModal) {
+                    hideEditCategoryModal();
+                }
+            });
+        });
+
+        function showEditCategoryModal(id, name, description, offer, isListed) {
+            const editCategoryModal = document.getElementById('editCategoryModal');
+            const categoryId = document.getElementById('categoryId');
+            const categoryName = document.getElementById('editCategoryName');
+            const categoryDescription = document.getElementById('categoryDescription');
+            const categoryOffer = document.getElementById('editOfferPrice');
+            const categoryList = document.getElementById('checkbox');
+
+            // Populate form fields
+            categoryId.value = id;
+            categoryName.value = name;
+            categoryDescription.value = description;
+            categoryOffer.value = offer || '';
+            categoryList.checked = isListed === 'true';
+
+            // Show the modal
+            editCategoryModal.style.display = 'block';
+        }
+
+        function hideEditCategoryModal() {
+            const editCategoryModal = document.getElementById('editCategoryModal');
+            editCategoryModal.style.display = 'none';
+        }
+
+        async function SaveChanges(event) {
+            event.preventDefault(); // Prevent form from submitting the default way
+
+            const categoryId = document.getElementById('categoryId');
+            const categoryName = document.getElementById('editCategoryName');
+            const categoryDescription = document.getElementById('categoryDescription');
+            const categoryOffer = document.getElementById('editOfferPrice');
+            const categoryList = document.getElementById('checkbox');
+
+            try {
+                const response = await fetch('/admin/editCategory', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: categoryId.value,
+                        name: categoryName.value,
+                        description: categoryDescription.value,
+                        categoryOffer: categoryOffer.value,
+                        isListed: categoryList.checked
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success === true) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Category updated successfully.'
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: data.message || 'Something went wrong!'
+                    });
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An unexpected error occurred.'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+</hello>
+
+
+
+<!-- Brands -->
+
+<% if(search){ %>
+  <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+<% } %>
+
+<a href="#" class="action-icon" onclick="showEditBrandModal('<%= brand._id %>', '<%= brand.name %>', '<%= brand.description %>', '<%= brand.image %>')"><i class="fas fa-edit"></i></a>
+<a href="#" class="action-icon" onclick="deleteBrand('<%= brand._id %>')"><i class="fas fa-trash"></i></a>
+
+
+
+<!-- for adding -->
+
+<div class="brand-modal" id="addBrandModal">
+    <h2>Add New Brand</h2>
+    <form action="/admin/addBrand" method="POST" id="addBrandForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="brandName">Brand Name <span class="required">*</span></label>
+            <input type="text" id="addBrandName" name="brandName" placeholder="Brand Name" class="brandName" >
+            <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-group">
+            <label for="description">Brand Description <span class="required">*</span></label>
+            <textarea  name="description" placeholder="Brand Description" class="description" ></textarea>
+            <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-group">
+            <label for="brandImage">Brand Image</label>
+            <input type="file" id="addBrandImage" name="brandImage" accept="image/*" class="brandImage">
+            <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn add-btn" form="addBrandForm">Add Brand</button>
+            <button type="button" class="btn cancel-btn" id="cancelAddButton">Cancel</button>
+        </div>
+    </form>
+</div>
+
+
+
+<!-- Product -->
+
+<!-- Add Product Modal -->
+<!-- <div class="modal product-modal" id="addProductModal">
+    <div class="modal-content">
+        <button type="button" class="close-btn" id="cancelAddProductButton" onclick="hideAddProductModal()">&times</button>
+        <div class="modal-header">
+            <h2>Add New Product</h2>
+        </div>
+        <form action="/admin/addProduct" method="POST" id="addProductForm" enctype="multipart/form-data"
+        onsubmit="return validateForm()">
+        
+            <div id="general-error" class="general-error"></div>
+            <div class="form-group">
+                <label for="productName">Name <span class="required">*</span></label>
+                <input type="text" id="productName" name="name" class="name" placeholder="Product name">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="productDescription">Description <span class="required">*</span></label>
+                <textarea id="productDescription" name="description" class="description" placeholder="Product description"></textarea>
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="productCategory">Category</label>
+                    <select name="category" id="productCategory" class="catagory">
+                        <option disabled selected>Select Category</option>
+                        <% for( let i = 0 ; i < category.length ; i ++) { %>
+                            <option value="<%=category[i].name%>"><%=category[i].name%></option>
+                        <% } %>
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productBrand">Brand</label>
+                    <select name="brand" id="productBrand" class="brand">
+                        <option disabled selected>Select Product Brand</option>
+                        <% for( let i = 0 ; i < brands.length ; i ++) { %>
+                            <option value="<%=brands[i].brandName%>"><%=brands[i].brandName%></option>
+                        <% } %>
+                        <div class="invalid-feedback"></div>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="regularPrice">Regular Price <span class="required">*</span></label>
+                    <input type="text" id="regularPrice" name="regularPrice" class="regularPrice" step="0.01" placeholder="Regular Price">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="salePrice">Sale Price</label>
+                    <input type="text" id="salePrice" name="salePrice" class="salePrice" step="0.01" placeholder="Sale Price">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productStock">PCS <span class="required">*</span></label>
+                    <input type="number" id="productStock" name="stock" class="stock" placeholder="PCS">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productOffer">Product Offer</label>
+                    <input type="text" id="productOffer" name="offer" class="offer" placeholder="Product Offer">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div id="currentImage" class="input-with-plus">
+                    <button type="button" class="plus-btn"><img src="" alt="" id="viewImage1">+</button>
+                    <button type="button" class="plus-btn"><img src="" alt="" id="viewImage2">+</button>
+                    <button type="button" class="plus-btn"><img src="" alt="" id="viewImage3">+</button>
+                    <button type="button" class="plus-btn"><img src="" alt="" id="viewImage4">+</button>
+                </div>
+                <div class="form-group image-group">
+                    <label for="productImage">Image 1</label>
+                    <input type="file" id="productImage" name="image" accept="image/*" class="image" onchange="viewImage1(event),viewImage(event, 1)">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="image-cropper-container" style="display: none;">
+                    <img id="croppedImage" src="" alt="Cropped Image">
+                    <div class="cropper-buttons">
+                        <button type="button" id="saveButton1" class="btn-sm btn-primary">Crop & Use</button>
+                        <button type="button" id="crop-cancel" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+                <div class="form-group image-group">
+                    <label for="productImage">Image 2</label>
+                        <input type="file" id="productImage" name="image" accept="image/*" class="image" onchange="viewImage2(event),viewImage(event, 2)">
+                        <div class="invalid-feedback"></div>
+                </div>
+                <div class="image-cropper-container" style="display: none;">
+                    <img id="croppedImage" src="" alt="Cropped Image">
+                    <div class="cropper-buttons">
+                        <button type="button" id="saveButton1" class="btn-sm btn-primary">Crop & Use</button>
+                        <button type="button" id="crop-cancel" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+                <div class="form-group image-group">
+                    <label for="productImage">Image 3</label>
+                    <input type="file" id="productImage" name="image" accept="image/*" class="image" onchange="viewImage3(event),viewImage(event, 3)">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="image-cropper-container" style="display: none;">
+                    <img id="croppedImage" src="" alt="Cropped Image">
+                    <div class="cropper-buttons">
+                        <button type="button" id="saveButton1" class="btn-sm btn-primary">Crop & Use</button>
+                        <button type="button" id="crop-cancel" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+                <div class="form-group image-group">
+                    <label for="productImage">Image 4</label>
+                    <input type="file" id="productImage" name="image" accept="image/*" class="image" onchange="viewImage4(event),viewImage(event, 4)">
+                    <div class="invalid-feedback"></div>
+            </div>
+                <div class="image-cropper-container" style="display: none;">
+                    <img id="croppedImage" src="" alt="Cropped Image">
+                    <div class="cropper-buttons">
+                        <button type="button" id="saveButton1" class="btn-sm btn-primary">Crop & Use</button>
+                        <button type="button" id="crop-cancel" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn save-btn" form="addProductForm" onclick="ValidateAndSubmit()">Add Product</button>
+                <div class="checkbox-group">
+                    <label>Block Product: 
+                        <input type="checkbox" id="blockProduct" name="isBlocked">
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div> -->
+
+<!-- Edit Product Modal -->
+<!-- <div class="modal product-modal" id="editProductModal">
+    <div class="modal-content">
+        <button type="button" class="close-btn" id="cancelEditProductButton" onclick="hideeditProductModal()">&times;</button>
+        <div class="modal-header">
+            <h2>Edit Product</h2>
+        </div>
+        <form action="/admin/editProduct" method="POST" id="editProductForm" enctype="multipart/form-data">
+            <div id="general-error" class="general-error"></div>
+            <input type="hidden" id="productId" name="id">
+            <div class="form-group">
+                <label for="editProductName">Name <span class="required">*</span></label>
+                <input type="text" id="editProductName" name="name" class="name" placeholder="Product name">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="editProductDescription">Description <span class="required">*</span></label>
+                <textarea id="editProductDescription" name="description" class="description" placeholder="Product description"></textarea>
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="editProductCategory">Category</label>
+                    <select name="category" id="productCategory" class="category">
+                        <option disabled selected>Select Category</option>
+                        <% for( let i = 0 ; i < category.length ; i ++) { %>
+                            <option value="<%=category[i].name%>"><%=category[i].name%></option>
+                        <% } %>
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductBrand">Brand</label>
+                    <select name="brand" id="productBrand" class="brand">
+                        <option disabled selected>Select Product Brand</option>
+                        <% for( let i = 0 ; i < brands.length ; i ++) { %>
+                            <option value="<%=brands[i].brandName%>"><%=brands[i].brandName%></option>
+                        <% } %>
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editRegularPrice">Regular Price <span class="required">*</span></label>
+                    <input type="number" id="editRegularPrice" name="regularPrice" class="regularPrice" step="0.01" placeholder="Regular Price">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editSalePrice">Sale Price</label>
+                    <input type="number" id="editSalePrice" name="salePrice" class="salePrice" step="0.01" placeholder="Sale Price">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductStock">PCS <span class="required">*</span></label>
+                    <input type="number" id="editProductStock" name="stock" class="stock" placeholder="PCS">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductOffer">Product Offer</label>
+                    <input type="text" id="editProductOffer" name="offer" class="offer" placeholder="Product Offer">
+                    <div class="invalid-feedback"></div>
+                    </div>
+                <div id="currentImage" class="input-with-plus">
+                    <button type="button" class="plus-btn">+</button>
+                    <button type="button" class="plus-btn">+</button>
+                    <button type="button" class="plus-btn">+</button>
+                    <button type="button" class="plus-btn">+</button>
+                </div>
+                <div class="form-group image-group">
+                    <label for="editProductImage">Image</label>
+                    <div class="input-with-plus">
+                        <input type="file" id="editProductImage" name="image" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn save-btn" form="editProductForm">Save Changes</button>
+                <div class="checkbox-group">
+                    <label>Block Product: 
+                        <input type="checkbox" id="editBlockProduct" name="isBlocked">
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div> -->
+
+<!-- Add Product Model-->
+<div class="modal product-modal" id="addProductModal">
+    <div class="modal-content">
+      <button type="button" class="close-btn" onclick="hideAddProductModal()">×</button>
+      <div class="modal-header">
+        <h2>Add Product</h2>
+      </div>
+      <form action="/admin/addProduct" method="POST" id="addProductForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="addProductName">Name <span class="required">*</span></label>
+          <input type="text" id="addProductName" name="name" class="name" placeholder="Product Name">
+          <div class="invalid-feedback"></div>
+        </div>
+        <!-- Other fields with class="description", class="category", etc. -->
+        <% for(let i = 1; i <= 4; i++) { %>
+          <div class="form-group image-group">
+            <label for="addProductImage<%= i %>">Image <%= i %></label>
+            <input type="file" id="addProductImage<%= i %>" name="productImages" accept="image/*" onchange="viewImage1(event)">
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="image-cropper-container" id="addCropperContainer<%= i %>" style="display: none;">
+            <img id="addCroppedImage<%= i %>" src="" alt="Cropped Image">
+            <div class="cropper-buttons">
+              <button type="button" id="saveButton1">Crop & Use</button>
+              <button type="button" id="crop-cancel">Cancel</button>
+            </div>
+          </div>
+        <% } %>
+        <div class="form-actions">
+          <button type="submit" class="btn save-btn" onclick="ValidateAndSubmit(event)">Add Product</button>
+        </div>
+      </form>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal product-modal" id="editProductModal">
+    <div class="modal-content">
+      <button type="button" class="close-btn" onclick="hideEditProductModal()">×</button>
+      <div class="modal-header">
+        <h2>Edit Product</h2>
+      </div>
+      <form action="/admin/editProduct" method="POST" id="editProductForm" enctype="multipart/form-data">
+        <input type="hidden" id="editProductId" name="id">
+        <div class="form-group">
+          <label for="editProductName">Name <span class="required">*</span></label>
+          <input type="text" id="editProductName" name="name" class="name">
+          <div class="invalid-feedback"></div>
+        </div>
+        <!-- Other fields with class="description", class="category", etc. -->
+        <% for(let i = 1; i <= 4; i++) { %>
+          <div class="form-group image-group">
+            <label for="editProductImage<%= i %>">Image <%= i %></label>
+            <input type="file" id="editProductImage<%= i %>" name="productImages" accept="image/*" onchange="editViewImage1(event)">
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="image-cropper-container" id="editCropperContainer<%= i %>" style="display: none;">
+            <img id="editCroppedImage<%= i %>" src="" alt="Cropped Image">
+            <div class="cropper-buttons">
+              <button type="button" id="saveButton1">Crop & Use</button>
+              <button type="button" id="crop-cancel">Cancel</button>
+            </div>
+          </div>
+        <% } %>
+        <div class="form-actions">
+          <button type="submit" class="btn save-btn" onclick="ValidateAndSubmitEdit(event)">Save Changes</button>
+          <div class="checkbox-group">
+            <label>Block Product: 
+              <input type="checkbox" id="editBlockProduct" name="isBlocked" class="isBlocked">
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+</div>
+
+
+<controllers>
+   <!-- const Products = require('../../model/productModel')
+    const Brands = require('../../model/brandModel')
+    const Category = require('../../model/categoryModel')
+    const User = require('../../model/userModel')
+    const fs = require('fs')
+    const Path = require('path')
+    const sharp = require('sharp')
+
+
+    const loadProducts = async (req,res) => {
+        try {
+
+            const category = await Category.find({isListed:true})
+            const brand = await Brands.find({isBlocked : false})
+
+            console.log(category)
+
+            const products = [
+                { name: 'HVL-F28RMA', regularPrice: 2600, quantity: 60 },
+                { name: 'SEL70200GM2', regularPrice: 6750, quantity: 80, isBlocked: true },
+                { name: 'NIKON COOLPIX P1100', regularPrice: 65075, quantity: 25 },
+                { name: 'EOS R6 Mark II', regularPrice: 135486, quantity: 25 }
+            ];
+             // const products = await Products.find()
+
+            return res.render('products',{
+                category,
+                brands : brand,
+                pageTitle: 'All Products',
+                currentPage: 'products',
+                products: products, 
+                currentPages : 1,
+                totalPages : 10,
+                iconClass : 'fa-box'
+            })
+        } catch (error) {
+
+            console.log('======================================');
+            console.log('failed to load products',error);
+            console.log('======================================');
+            res.status(500).send("Server Error")
+        }
+    }
+
+    const addProducts = async (req,res) => {
+        try {
+
+            const products = req.body
+            const existProduct = await Products.findOne({
+                productName : products.productName
+            })
+
+            if(!existProduct){
+                const images = []
+                if(req.files && req.files.length >0){
+                    for (let i = 0 ; i < req.files.length ; i ++){
+                        const originalImagePath = req.files[i].Path
+
+                        const resizedImagesPath = path.join('public','uploads','products',req.files[i].fileName)
+
+                        await sharp(originalImagePath).resize({width : 440 , height : 440}).toFile(resizedImagesPath)
+                        images.push(req.files[i].fileName)
+                    }
+                }
+                const category = await Category.findOne({name:products.category})
+                if(!category){
+                    return res.status(401).json({succes : false , message : 'Category not found!!'})
+                }
+
+                const brand = await Brands.findOne({brandName : products.brand})
+                if(!brand){
+                    return res.status(401).json({success : false , message : 'Brand is not found!!'})
+                }
+
+                const newProduct = new Products({
+                    productName : products.productName,
+                    description : products.description,
+                    brand : products.brand._id,
+                    catagory : products.catagory._id,
+                    regularPrice : products.regularPrice,
+                    salePrice : products.salePrice,
+                    productOffer : products.productOffer,
+                    quantity : products.quantity,
+                    isBlocked : products.isBlocked,
+                    status : products.status,
+                    createdAt : products.createdAt,
+                    productImage : products.images
+                })
+
+                await newProduct.save()
+
+                return res.redirect('/admin/product')
+            }
+            return res.status(401).json({success : false , message : 'Product already exist with this name!!'})
+
+        } catch (error) {
+
+            console.log("Something error while adding products : ", error)
+            return res.redirect('/page404')
+        }
+    }
+
+    module.exports = {
+        loadProducts,
+        addProducts
+    } -->
+</controllers>
+
+<controllers>
+    <!-- const Product = require('../../model/productModel');
+const Category = require('../../model/categoryModel');
+const Brand = require('../../model/brandModel');
+const { uploadProduct } = require('../../helpers/multer'); // Import uploadProduct middleware
+
+// Load Products (unchanged)
+const loadProducts = async (req, res) => {
+    try {
+        const search = req.query.search || '';
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        const searchQuery = {
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ]
+        };
+
+        const products = await Product.find(searchQuery)
+            .populate('category brand')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalProducts = await Product.countDocuments(searchQuery);
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        const categories = await Category.find({ isListed: true });
+        const brands = await Brand.find({ isListed: true });
+
+        res.render('products', {
+            pageTitle: 'Products',
+            products,
+            category: categories,
+            brands,
+            search,
+            currentPage: 'products',
+            iconClass: 'fa-box',
+            currentPages: page,
+            totalPages
+        });
+    } catch (error) {
+        console.error('Error loading products:', error);
+        res.status(500).redirect('/page404');
+    }
+};
+
+// Add Product
+const addProduct = async (req, res) => {
+    uploadProduct(req, res, async (err) => {
+        if (err) {
+            console.error('Multer error:', err);
+            return res.status(400).json({ success: false, message: err.message });
+        }
+
+        try {
+            const { name, description, category, brand, regularPrice, salePrice, stock, offer } = req.body;
+
+            let errors = {};
+            if (!name || name.trim().length === 0) errors.name = 'Name is required!!';
+            if (!description || description.trim().length === 0) errors.description = 'Description is required!!';
+            if (!category) errors.category = 'Please select Category!!';
+            if (!brand) errors.brand = 'Please select Brand!!';
+            if (!regularPrice || isNaN(regularPrice)) errors.regularPrice = 'Regular Price must be a number!!';
+            if (salePrice && isNaN(salePrice)) errors.salePrice = 'Sale Price must be a number!!';
+            if (!stock || isNaN(stock)) errors.stock = 'Stock must be a number!!';
+            if (offer && (isNaN(offer) || offer >= 100 || offer < 0)) errors.offer = 'Offer must be a number between 0 and 99!!';
+            if (!req.files || req.files.length === 0) errors.image = 'At least one image is required!!';
+
+            if (Object.keys(errors).length > 0) {
+                return res.status(400).json({ success: false, message: 'Validation failed', errors });
+            }
+
+            const categoryExists = await Category.findOne({ name: category, isListed: true });
+            const brandExists = await Brand.findOne({ brandName: brand, isListed: true });
+            if (!categoryExists) errors.category = 'Category not found or unlisted!!';
+            if (!brandExists) errors.brand = 'Brand not found or unlisted!!';
+            if (Object.keys(errors).length > 0) {
+                return res.status(400).json({ success: false, message: 'Validation failed', errors });
+            }
+
+            const existingProduct = await Product.findOne({ name: name.trim() });
+            if (existingProduct) {
+                return res.status(400).json({ success: false, message: 'Product name already exists!!', errors: { name: 'Product name already exists!!' } });
+            }
+
+            const imagePaths = req.files.map(file => `/uploads/products/${file.filename}`);
+
+            const product = new Product({
+                name: name.trim(),
+                description: description.trim(),
+                category: categoryExists._id,
+                brand: brandExists._id,
+                regularPrice: parseFloat(regularPrice),
+                salePrice: salePrice ? parseFloat(salePrice) : null,
+                stock: parseInt(stock),
+                offer: offer ? parseInt(offer) : 0,
+                images: imagePaths,
+                listed: true
+            });
+
+            await product.save();
+            res.status(201).json({ success: true, message: 'Product added successfully' });
+        } catch (error) {
+            console.error('Error adding product:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    });
+};
+
+// Edit Product
+const editProduct = async (req, res) => {
+    uploadProduct(req, res, async (err) => {
+        if (err) {
+            console.error('Multer error:', err);
+            return res.status(400).json({ success: false, message: err.message });
+        }
+
+        try {
+            const { id, name, description, category, brand, regularPrice, salePrice, stock, offer, isBlocked } = req.body;
+
+            let errors = {};
+            if (!id) return res.status(400).json({ success: false, message: 'Product ID is required' });
+            if (!name || name.trim().length === 0) errors.name = 'Name is required!!';
+            if (!description || description.trim().length === 0) errors.description = 'Description is required!!';
+            if (!category) errors.category = 'Please select Category!!';
+            if (!brand) errors.brand = 'Please select Brand!!';
+            if (!regularPrice || isNaN(regularPrice)) errors.regularPrice = 'Regular Price must be a number!!';
+            if (salePrice && isNaN(salePrice)) errors.salePrice = 'Sale Price must be a number!!';
+            if (!stock || isNaN(stock)) errors.stock = 'Stock must be a number!!';
+            if (offer && (isNaN(offer) || offer >= 100 || offer < 0)) errors.offer = 'Offer must be a number between 0 and 99!!';
+
+            if (Object.keys(errors).length > 0) {
+                return res.status(400).json({ success: false, message: 'Validation failed', errors });
+            }
+
+            const product = await Product.findById(id);
+            if (!product) {
+                return res.status(404).json({ success: false, message: 'Product not found' });
+            }
+
+            const categoryExists = await Category.findOne({ name: category, isListed: true });
+            const brandExists = await Brand.findOne({ brandName: brand, isListed: true });
+            if (!categoryExists) errors.category = 'Category not found or unlisted!!';
+            if (!brandExists) errors.brand = 'Brand not found or unlisted!!';
+            if (Object.keys(errors).length > 0) {
+                return res.status(400).json({ success: false, message: 'Validation failed', errors });
+            }
+
+            const existingProduct = await Product.findOne({ name: name.trim(), _id: { $ne: id } });
+            if (existingProduct) {
+                return res.status(400).json({ success: false, message: 'Product name already exists!!', errors: { name: 'Product name already exists!!' } });
+            }
+
+            let imagePaths = product.images;
+            if (req.files && req.files.length > 0) {
+                imagePaths = req.files.map(file => `/uploads/products/${file.filename}`);
+            }
+
+            product.name = name.trim();
+            product.description = description.trim();
+            product.category = categoryExists._id;
+            product.brand = brandExists._id;
+            product.regularPrice = parseFloat(regularPrice);
+            product.salePrice = salePrice ? parseFloat(salePrice) : null;
+            product.stock = parseInt(stock);
+            product.offer = offer ? parseInt(offer) : 0;
+            product.images = imagePaths;
+            product.listed = isBlocked !== 'on'; // Checkbox: if checked, unlist product
+
+            await product.save();
+            res.status(200).json({ success: true, message: 'Product updated successfully' });
+        } catch (error) {
+            console.error('Error editing product:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    });
+};
+
+// Delete Product (unchanged)
+const deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.status(400).json({ success: false, message: 'Product ID is required' });
+        }
+
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        await Product.findByIdAndDelete(id);
+        res.status(200).json({ success: true, message: 'Product deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+module.exports = {
+    loadProducts,
+    addProduct,
+    editProduct,
+    deleteProduct
+}; -->
+</controllers>
+
+    <!-- <script>
+
+        const addProductModal = document.getElementById('addProductModal')
+        const editProductModal = document.getElementById('editProductModal')
+        const deleteProductModal = document.getElementById('deleteProductModal')
+
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const addProductModal = document.getElementById('addProductModal')
+            const addProductForm = document.getElementById('addProductForm')
+
+            addProductForm.addEventListener('submit', async (e) => {
+                e.preventDefault()
+
+                const formdata = new FormData(addProductForm)
+                // console.log(Object.fromEntries(formdata.entries()));
+                const jsonData = Object.fromEntries(formdata)
+                
+                Object.keys(jsonData).forEach( key => {
+                    if( typeof jsonData[key] === 'string'){
+                        jsonData[key] = jsonData[key].trim()
+                    }
+                })
+                
+                const errors = validateForm(jsonData)
+                
+                if(errors){
+                    console.log('Validation error from front : ',errors)
+                    displayFormError(addProductForm,errors)
+                    return
+                }
+                
+            })
+        })
+
+
+
+
+        function viewImage1(event){
+            document.getElementById('viewImage1').src = URL.createObjectURL(event.target.files[0])
+        }
+
+        function viewImage2(event){
+            document.getElementById('viewImage2').src = URL.createObjectURL(event.target.files[0])
+        }
+        
+        function viewImage3(event){
+            document.getElementById('viewImage3').src = URL.createObjectURL(event.target.files[0])
+        }
+        
+        function viewImage4(event){
+            document.getElementById('viewImage4').src = URL.createObjectURL(event.target.files[0])
+        }
+
+        function viewImage(event , index){
+            let input = event.target
+            let reader = new FileReader()
+            reader.onload = function (){
+                let dataUrl = reader.result
+                let image = document.getElementById('viewImage'+index)
+                image.src = dataUrl
+
+                let cropper = new Cropper(image,{
+                    aspectRatio : 1,
+                    viewMode : 1,
+                    guides : true,
+                    background : false,
+                    autoCropArea : 1,
+                    zoomable :true
+                })
+
+                let cropperContainer = document.querySelector('#croppedImg' + index).parentNode
+                cropperContainer.style.display = 'block'
+
+                let saveButton = document.querySelector('saveButton' + index)
+                saveButton.addEventListener('click', async function () {
+
+                    let croppedCanavas = cropper.getCroppedCanavas()
+                    let croppedImage = document.getElementById('croppedImg' + index)
+                    croppedImage.src = croppedCanavas.toDataUrl('image/*',1.0)
+
+                    let timeStamp = new Date().getTime()
+                    let fileName = `cropped-img-${timeStamp}-${index}.png`
+
+                    await croppedCanavas.toBlob(blob => {
+                        let input = document.getElementById('input'+index)
+                        let imgFile = new File([blob],fileName,blob)
+                        const fileList = new DataTransfer()
+                        fileList.items.add(imgFile)
+                        input.files = fileList.files
+                    })
+
+                    cropperContainer.Style.display = 'none'
+                    cropper.destroy()
+                })
+            }
+            reader.readAsDataURL(input.files(0))
+        }
+
+        const selectedImages = []
+        document.getElementById('input1').addEventListener('change',handleFileSelect)
+
+        function handleFileSelect(e) {
+            const addImagesContainer = document.getElementById('currentImage')
+            currentImage.innerHTML = ''
+            const files = event.target.files
+            for(let i= 0 ; i < files.length ; i ++){
+                const file = file[i]
+                selectedImages.push(file)
+                const thumbnail = document.createElement('div')
+                thumbnail.classList.add('thumbnail')
+
+                const img = document.createElement('img')
+                img.src = URL.createObjectURL(file)
+                img.alt = 'thumbnail'
+                img.style.width = '50px'
+                img.style.height = 'auto'
+
+                const removeIcon = document.createElement('span')
+                removeIcon.classList.add('remove-icon')
+                removeIcon.innerHTML = '&times;'
+                removeIcon.addEventListener('click', function() {
+                    const index = selectedImages.indexOf(file)
+                    if(iindex !== -1){
+                        selectedImages.splice(index,1)
+                    }
+
+                    thumbnail.remove()
+                })
+                thumbnail.appendChild(img)
+                thumbnail.appendChild(removeIcon)
+                currentImage.appendChild(thumbnail)
+            }
+        }
+        
+        function showAddProductModal(){
+            document.body.style.overflow = 'hidden';
+            addProductModal.style.display = 'block'
+        }
+
+        function hideAddProductModal(){
+            document.body.style.overflow = '';
+            addProductModal.style.display = 'none'
+        }
+
+        function showeditProductModal(){
+            document.body.style.overflow = 'hidden'
+            editProductModal.style.display = 'block'
+        }
+
+        function hideeditProductModal(){
+            document.body.style.overflow = ''
+            editProductModal.style.display = 'none'
+        }
+
+        function showDeleteProductModal(){
+            deleteProductModal.style.display = 'block'
+        }
+
+        function hideDeleteProductModal(){
+            deleteProductModal.style.display = 'none'
+        }
+    
+        function clearErrors(brandForm){
+            brandForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
+            brandForm.querySelectorAll('.invalid-feedback').forEach(el => {
+                if (el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }    
+            });    
+        }    
+
+        function displayFormError(productForm, errors){
+            clearErrors(productForm)
+
+            if(errors && typeof errors === 'object'){
+                Object.entries(errors).forEach(([field,message]) => {
+
+                    const input = productForm.querySelector(`.${field}`)                                     
+                    if(input){
+                        input.classList.add('is-invalid')
+                        const feedback = input.nextElementSibling;
+                        console.log('feedback: ',feedback)
+                        if(feedback && feedback.classList.contains('invalid-feedback')){
+                            feedback.textContent = message
+                        } else {
+                            const feedbackDiv = document.createElement('div');
+                            feedbackDiv.className = 'invalid-feedback';
+                            feedbackDiv.textContent = message;
+                            input.parentNode.appendChild(feedbackDiv);
+                        }
+                    }
+                })
+            }
+        }
+
+        function validateForm(data){
+
+            const digit = /\d/
+
+            let error = {}
+
+            if(!data.name){
+                error.name = 'Name is required!!'
+            }
+
+            if(!data.description){
+                error.description = 'Description is required!!'
+            }
+
+            if(!data.catagory){
+                error.catagory = 'Please select Category!!'
+            }
+
+            if(!data.brand){
+                error.brand = 'Please select Brand!!'
+            }
+
+            if(!data.regularPrice){
+                error.regularPrice = 'Regular Price is required!!'
+            }else if(!digit.test(data.regularPrice)){
+                error.regularPrice = 'Regular Price should be in digits!!'
+            }
+
+            if(!data.salePrice){
+                error.salePrice = 'Regular Price is required!!'
+            }else if(!digit.test(data.salePrice)){
+                error.salePrice = 'Regular Price should be in digits!!'
+            }
+
+            if(!data.stock){
+                error.stock = 'Stock is required!!'
+            }else if(!digit.test(data.stock)){
+                error.stock = 'Stock should be in digits!!'
+            }
+
+            if(data.offer >= 100 ){
+                error.offer = 'Offer should be under 100!!'
+            }else if(data.offer < 0){
+                error.offer = 'Negative value not acceptable!!'
+            }else if(!digit.test(data.offer)){
+                error.offer = 'Offer should be in digits!!'
+            }
+
+            if(data.image.files.length === 0){
+                error.image = 'Select an image!!'
+            }
+
+            return Object.keys(error).length > 0 ? error : null
+
+        }
+
+    </script> -->
+
+    <!-- <script>
+           document.addEventListener('DOMContentLoaded', () => {
+        const addProductModal = document.getElementById('addProductModal');
+        const editProductModal = document.getElementById('editProductModal');
+        const deleteProductModal = document.getElementById('deleteProductModal');
+        const addProductForm = document.getElementById('addProductForm');
+        const editProductForm = document.getElementById('editProductForm');
+        const croppedImages = [];
+    
+        let cropper;
+    
+        // Show Add Product Modal
+        function showAddProductModal() {
+            console.log('hi');
+            document.body.style.overflow = 'hidden';
+            addProductModal.style.display = 'block';
+            addProductForm.reset();
+            document.querySelectorAll('.image-cropper-container').forEach(container => {
+                container.style.display = 'none';
+            });
+            if (cropper) cropper.destroy();
+            croppedImages.length = 0;
+        }
+    
+        // Hide Add Product Modal
+        function hideAddProductModal() {
+            document.body.style.overflow = '';
+            addProductModal.style.display = 'none';
+            document.querySelectorAll('.image-cropper-container').forEach(container => {
+                container.style.display = 'none';
+            });
+            if (cropper) cropper.destroy();
+        }
+    
+        // Show Edit Product Modal
+        function showEditProductModal(event) {
+            event.preventDefault(); // Prevent default link behavior
+            const product = event.target.closest('.edit-product').dataset;
+            document.body.style.overflow = 'hidden';
+            editProductModal.style.display = 'block';
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductDescription').value = product.description;
+            document.getElementById('editRegularPrice').value = product.price;
+            document.getElementById('editProductStock').value = product.stock;
+            document.getElementById('editBlockProduct').checked = product.listed === 'true';
+            // Image handling for edit needs separate logic if preloaded
+        }
+    
+        // Hide Edit Product Modal
+        function hideEditProductModal() {
+            document.body.style.overflow = '';
+            editProductModal.style.display = 'none';
+        }
+    
+        // Show Delete Product Modal
+        function showDeleteProductModal(event) {
+            event.preventDefault();
+            deleteProductModal.style.display = 'block';
+        }
+    
+        // Hide Delete Product Modal
+        function hideDeleteProductModal() {
+            deleteProductModal.style.display = 'none';
+        }
+    
+        // Clear Form Errors (unchanged)
+        function clearErrors(form) { ... }
+    
+        // Display Form Errors (unchanged)
+        function displayFormError(productForm, errors) { ... }
+    
+        // Validate Form (add checkbox validation)
+        function validateForm(data) {
+            const digit = /\d/;
+            let errors = {};
+            if (!data.name) errors.name = 'Name is required!!';
+            if (!data.description) errors.description = 'Description is required!!';
+            if (!data.category) errors.category = 'Please select Category!!';
+            if (!data.brand) errors.brand = 'Please select Brand!!';
+            if (!data.regularPrice) errors.regularPrice = 'Regular Price is required!!';
+            else if (!digit.test(data.regularPrice)) errors.regularPrice = 'Regular Price should be in digits!!';
+            if (data.salePrice && !digit.test(data.salePrice)) errors.salePrice = 'Sale Price should be in digits!!';
+            if (!data.stock) errors.stock = 'Stock is required!!';
+            else if (!digit.test(data.stock)) errors.stock = 'Stock should be in digits!!';
+            if (data.offer) {
+                if (data.offer >= 100) errors.offer = 'Offer should be under 100!!';
+                else if (data.offer < 0) errors.offer = 'Negative value not acceptable!!';
+                else if (!digit.test(data.offer)) errors.offer = 'Offer should be in digits!!';
+            }
+            const imageInputs = document.querySelectorAll('input[name="images"]');
+            if (imageInputs.length === 0 || Array.from(imageInputs).every(input => !input.files?.length && !input.dataset?.preloaded)) {
+                errors.image = 'At least one image is required!!';
+            }
+            return Object.keys(errors).length > 0 ? errors : null;
+        }
+    
+        // Image Handling Functions
+        function viewImage(event, imgNumber, prefix) {
+            const input = event.target;
+            const container = document.getElementById(`${prefix}CropperContainer${imgNumber}`);
+            const croppedImage = document.getElementById(`${prefix}CroppedImage${imgNumber}`);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    croppedImage.src = e.target.result;
+                    container.style.display = 'block';
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(croppedImage, { aspectRatio: 1 }); // Initialize Cropper.js
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    
+        // Crop and Save Image
+        function cropAndSave(imgNumber, prefix) {
+            const container = document.getElementById(`${prefix}CropperContainer${imgNumber}`);
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas();
+                if (canvas) {
+                    canvas.toBlob((blob) => {
+                        const croppedFile = new File([blob], `cropped_image_${imgNumber}.jpg`, { type: 'image/jpeg' });
+                        croppedImages[imgNumber - 1] = croppedFile;
+                        container.style.display = 'none';
+                        cropper.destroy();
+                    }, 'image/jpeg');
+                }
+            }
+        }
+    
+        function cancelCrop(imgNumber, prefix) {
+            const container = document.getElementById(`${prefix}CropperContainer${imgNumber}`);
+            const input = document.getElementById(`${prefix}ProductImage${imgNumber}`);
+            input.value = '';
+            container.style.display = 'none';
+            if (cropper) cropper.destroy();
+        }
+    
+        // Expose viewImage functions with prefix
+        window.viewImage1 = (event) => viewImage(event, 1, 'add');
+        window.viewImage2 = (event) => viewImage(event, 2, 'add');
+        window.viewImage3 = (event) => viewImage(event, 3, 'add');
+        window.viewImage4 = (event) => viewImage(event, 4, 'add');
+        // Add edit versions if needed
+        window.editViewImage1 = (event) => viewImage(event, 1, 'edit');
+        window.editViewImage2 = (event) => viewImage(event, 2, 'edit');
+        window.editViewImage3 = (event) => viewImage(event, 3, 'edit');
+        window.editViewImage4 = (event) => viewImage(event, 4, 'edit');
+    
+        // Validate and Submit Add Product
+        window.ValidateAndSubmit = async function() {
+            const formData = new FormData(addProductForm);
+            const jsonData = Object.fromEntries(formData);
+            Object.keys(jsonData).forEach(key => {
+                if (typeof jsonData[key] === 'string') jsonData[key] = jsonData[key].trim();
+            });
+            const errors = validateForm(jsonData);
+            if (errors) {
+                displayFormError(addProductForm, errors);
+                return;
+            }
+            croppedImages.forEach((image, index) => {
+                if (image) formData.set(`image${index + 1}`, image);
+            });
+            try {
+                const response = await fetch('/admin/addProduct', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire('Success', data.message || 'Product added successfully', 'success').then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to add product', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Something went wrong while adding product', 'error');
+                console.error(error);
+            }
+        };
+    
+        // Validate and Submit Edit Product
+        window.ValidateAndSubmitEdit = async function() {
+            const formData = new FormData(editProductForm);
+            const jsonData = Object.fromEntries(formData);
+            Object.keys(jsonData).forEach(key => {
+                if (typeof jsonData[key] === 'string') jsonData[key] = jsonData[key].trim();
+            });
+            const errors = validateForm(jsonData);
+            if (errors) {
+                displayFormError(editProductForm, errors);
+                return;
+            }
+            croppedImages.forEach((image, index) => {
+                if (image) formData.set(`image${index + 1}`, image);
+            });
+            try {
+                const response = await fetch('/admin/editProduct', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire('Success', data.message || 'Product updated successfully', 'success').then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to update product', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Something went wrong while updating product', 'error');
+                console.error(error);
+            }
+        };
+    
+        // Attach event listeners
+        document.getElementById('addProductButton').addEventListener('click', showAddProductModal);
+        document.querySelectorAll('.edit-product').forEach(btn => btn.addEventListener('click', showeditProductModal));
+        document.querySelectorAll('.delete-product').forEach(btn => btn.addEventListener('click', showDeleteProductModal));
+    
+        // Setup cropper buttons
+        setupCropperButtons();
+    });
+</script> -->
+
+<!-- <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addProductModal = document.getElementById('addProductModal');
+    const editProductModal = document.getElementById('editProductModal');
+    const deleteProductModal = document.getElementById('deleteProductModal');
+    const addProductForm = document.getElementById('addProductForm');
+    const editProductForm = document.getElementById('editProductForm');
+    const croppedImages = [];
+
+    let cropper;
+
+    // Show Add Product Modal
+    function showAddProductModal() {
+        console.log('hi');
+        document.body.style.overflow = 'hidden';
+        addProductModal.style.display = 'block';
+        addProductForm.reset();
+        document.querySelectorAll('.image-cropper-container').forEach(container => {
+            container.style.display = 'none';
+        });
+        if (cropper) cropper.destroy();
+        croppedImages.length = 0;
+    }
+
+    // Hide Add Product Modal
+    function hideAddProductModal() {
+        document.body.style.overflow = '';
+        addProductModal.style.display = 'none';
+        document.querySelectorAll('.image-cropper-container').forEach(container => {
+            container.style.display = 'none';
+        });
+        if (cropper) cropper.destroy();
+    }
+
+    // Show Edit Product Modal
+    function showEditProductModal(event) {
+        event.preventDefault(); // Prevent default link behavior
+        const product = event.target.closest('.edit-product').dataset;
+        document.body.style.overflow = 'hidden';
+        editProductModal.style.display = 'block';
+        document.getElementById('editProductId').value = product.id;
+        document.getElementById('editProductName').value = product.name;
+        document.getElementById('editProductDescription').value = product.description;
+        document.getElementById('editRegularPrice').value = product.price;
+        document.getElementById('editProductStock').value = product.stock;
+        document.getElementById('editBlockProduct').checked = product.listed === 'true';
+        // Image handling for edit needs separate logic if preloaded
+    }
+
+    // Hide Edit Product Modal
+    function hideEditProductModal() {
+        document.body.style.overflow = '';
+        editProductModal.style.display = 'none';
+    }
+
+    // Show Delete Product Modal
+    function showDeleteProductModal(event) {
+        event.preventDefault();
+        deleteProductModal.style.display = 'block';
+    }
+
+    // Hide Delete Product Modal
+    function hideDeleteProductModal() {
+        deleteProductModal.style.display = 'none';
+    }
+
+    // Clear Form Errors (unchanged)
+    function clearErrors(form) {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => {
+            if (el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
+    }
+
+    // Display Form Errors (unchanged)
+    function displayFormError(productForm, errors) {
+        clearErrors(productForm);
+        if (errors && typeof errors === 'object') {
+            Object.entries(errors).forEach(([field, message]) => {
+                const input = productForm.querySelector(`.${field}`);
+                if (input) {
+                    input.classList.add('is-invalid');
+                    let feedback = input.nextElementSibling;
+                    if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                        feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        input.parentNode.appendChild(feedback);
+                    }
+                    feedback.textContent = message;
+                    feedback.style.display = 'block';
+                }
+            });
+        }
+    }
+
+    // Validate Form (add checkbox validation)
+    // function validateForm(data) {
+    //     const digit = /\d/;
+    //     let errors = {};
+    //     if (!data.name) errors.name = 'Name is required!!';
+    //     if (!data.description) errors.description = 'Description is required!!';
+    //     if (!data.category) errors.category = 'Please select Category!!';
+    //     if (!data.brand) errors.brand = 'Please select Brand!!';
+    //     if (!data.regularPrice) errors.regularPrice = 'Regular Price is required!!';
+    //     else if (!digit.test(data.regularPrice)) errors.regularPrice = 'Regular Price should be in digits!!';
+    //     if (data.salePrice && !digit.test(data.salePrice)) errors.salePrice = 'Sale Price should be in digits!!';
+    //     if (!data.stock) errors.stock = 'Stock is required!!';
+    //     else if (!digit.test(data.stock)) errors.stock = 'Stock should be in digits!!';
+    //     if (data.offer) {
+    //         if (data.offer >= 100) errors.offer = 'Offer should be under 100!!';
+    //         else if (data.offer < 0) errors.offer = 'Negative value not acceptable!!';
+    //         else if (!digit.test(data.offer)) errors.offer = 'Offer should be in digits!!';
+    //     }
+    //     const imageInputs = document.querySelectorAll('input[name="images"]');
+    //     if (imageInputs.length === 0 || Array.from(imageInputs).every(input => !input.files?.length && !input.dataset?.preloaded)) {
+    //         errors.image = 'At least one image is required!!';
+    //     }
+    //     return Object.keys(errors).length > 0 ? errors : null;
+    // }
+    function validateForm(data) {
+        const digit = /\d/;
+        let errors = {};
+
+        if (!data.name) {
+            errors.name = 'Name is required!!';
+        }
+
+        if (!data.description) {
+            errors.description = 'Description is required!!';
+        }
+
+        if (!data.category) {
+            errors.category = 'Please select Category!!';
+        }
+
+        if (!data.brand) {
+            errors.brand = 'Please select Brand!!';
+        }
+
+        if (!data.regularPrice) {
+            errors.regularPrice = 'Regular Price is required!!';
+        } else if (!digit.test(data.regularPrice)) {
+            errors.regularPrice = 'Regular Price should be in digits!!';
+        }
+
+        if (data.salePrice && !digit.test(data.salePrice)) {
+            errors.salePrice = 'Sale Price should be in digits!!';
+        }
+
+        if (!data.stock) {
+            errors.stock = 'Stock is required!!';
+        } else if (!digit.test(data.stock)) {
+            errors.stock = 'Stock should be in digits!!';
+        }
+
+        if (data.offer) {
+            if (data.offer >= 100) {
+                errors.offer = 'Offer should be under 100!!';
+            } else if (data.offer < 0) {
+                errors.offer = 'Negative value not acceptable!!';
+            } else if (!digit.test(data.offer)) {
+                errors.offer = 'Offer should be in digits!!';
+            }
+        }
+
+        const imageInputs = document.querySelectorAll('input[name="image"]');
+        if (imageInputs.length === 0 || Array.from(imageInputs).every(input => input.files.length === 0)) {
+            errors.image = 'At least one image is required!!';
+        }
+
+        return Object.keys(errors).length > 0 ? errors : null;
+    }
+
+
+    // Image Handling Functions
+    function viewImage(event, imgNumber, prefix) {
+        const input = event.target;
+        const container = document.getElementById(`${prefix}CropperContainer${imgNumber}`);
+        const croppedImage = document.getElementById(`${prefix}CroppedImage${imgNumber}`);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                croppedImage.src = e.target.result;
+                container.style.display = 'block';
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(croppedImage, { aspectRatio: 1 }); // Initialize Cropper.js
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Crop and Save Image
+    function cropAndSave(imgNumber, prefix) {
+        const container = document.getElementById(`${prefix}CropperContainer${imgNumber}`);
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas();
+            if (canvas) {
+                canvas.toBlob((blob) => {
+                    const croppedFile = new File([blob], `cropped_image_${imgNumber}.jpg`, { type: 'image/jpeg' });
+                    croppedImages[imgNumber - 1] = croppedFile;
+                    container.style.display = 'none';
+                    cropper.destroy();
+                }, 'image/jpeg');
+            }
+        }
+    }
+
+    function cancelCrop(imgNumber, prefix) {
+        const container = document.getElementById(`${prefix}CropperContainer${imgNumber}`);
+        const input = document.getElementById(`${prefix}ProductImage${imgNumber}`);
+        input.value = '';
+        container.style.display = 'none';
+        if (cropper) cropper.destroy();
+    }
+
+    // Expose viewImage functions with prefix
+    window.viewImage1 = (event) => viewImage(event, 1, 'add');
+    window.viewImage2 = (event) => viewImage(event, 2, 'add');
+    window.viewImage3 = (event) => viewImage(event, 3, 'add');
+    window.viewImage4 = (event) => viewImage(event, 4, 'add');
+    // Add edit versions if needed
+    window.editViewImage1 = (event) => viewImage(event, 1, 'edit');
+    window.editViewImage2 = (event) => viewImage(event, 2, 'edit');
+    window.editViewImage3 = (event) => viewImage(event, 3, 'edit');
+    window.editViewImage4 = (event) => viewImage(event, 4, 'edit');
+
+    // Validate and Submit Add Product
+    window.ValidateAndSubmit = async function() {
+        const formData = new FormData(addProductForm);
+        const jsonData = Object.fromEntries(formData);
+        Object.keys(jsonData).forEach(key => {
+            if (typeof jsonData[key] === 'string') jsonData[key] = jsonData[key].trim();
+        });
+        const errors = validateForm(jsonData);
+        if (errors) {
+            displayFormError(addProductForm, errors);
+            return;
+        }
+        croppedImages.forEach((image, index) => {
+            if (image) formData.set(`image${index + 1}`, image);
+        });
+        try {
+            const response = await fetch('/admin/addProduct', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire('Success', data.message || 'Product added successfully', 'success').then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.message || 'Failed to add product', 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Something went wrong while adding product', 'error');
+            console.error(error);
+        }
+    };
+
+    // Validate and Submit Edit Product
+    window.ValidateAndSubmitEdit = async function() {
+        const formData = new FormData(editProductForm);
+        const jsonData = Object.fromEntries(formData);
+        Object.keys(jsonData).forEach(key => {
+            if (typeof jsonData[key] === 'string') jsonData[key] = jsonData[key].trim();
+        });
+        const errors = validateForm(jsonData);
+        if (errors) {
+            displayFormError(editProductForm, errors);
+            return;
+        }
+        croppedImages.forEach((image, index) => {
+            if (image) formData.set(`image${index + 1}`, image);
+        });
+        try {
+            const response = await fetch('/admin/editProduct', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire('Success', data.message || 'Product updated successfully', 'success').then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.message || 'Failed to update product', 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Something went wrong while updating product', 'error');
+            console.error(error);
+        }
+    };
+
+    // Attach event listeners
+    document.getElementById('addProductButton').addEventListener('click', showAddProductModal);
+    document.querySelectorAll('.edit-product').forEach(btn => btn.addEventListener('click', showeditProductModal));
+    document.querySelectorAll('.delete-product').forEach(btn => btn.addEventListener('click', showDeleteProductModal));
+
+    // Setup cropper buttons
+    setupCropperButtons();
+});
+</script> -->
+
+
+
+<!--Shopping Page-->
+<aside class="sidebar">
+    <!-- Categories Filter -->
+    <h2>Categories</h2>
+    <p>0 Selected <a href="/products">Reset</a></p>
+    <% if (category && category.length > 0) { %>
+        <% category.forEach(cat => { %>
+            <% if (cat.isListed) { %>
+                <label>
+                    <input type="checkbox" name="category" value="<%= cat._id %>">
+                    <%= cat.name %> (<%= cat.productCount || 0 %>)
+                </label><br>
+            <% } %>
+        <% }) %>
+    <% } else { %>
+        <p>No categories available.</p>
+    <% } %>
+
+    <!-- Price Filter -->
+    <h2>Price</h2>
+    <p>0 Selected <a href="/products">Reset</a></p>
+    <label><input type="checkbox" name="price" value="low-high"> LOW - HIGH</label><br>
+    <label><input type="checkbox" name="price" value="high-low"> HIGH - LOW</label><br>
+    <label><input type="checkbox" name="price" value="below-10000"> BELOW - 10000</label><br>
+    <label><input type="checkbox" name="price" value="above-10000"> ABOVE - 10000</label><br>
+
+    <!-- Brand Filter -->
+    <h2>Brand</h2>
+    <p>0 Selected <a href="/products">Reset</a></p>
+    <% if (brands && brands.length > 0) { %>
+        <% brands.forEach(brand => { %>
+            <% if (!brand.isBlocked) { %>
+                <label>
+                    <input type="checkbox" name="brand" value="<%= brand._id %>">
+                    <%= brand.brandName %> (<%= brand.productCount || 0 %>)
+                </label><br>
+            <% } %>
+        <% }) %>
+    <% } else { %>
+        <p>No brands available.</p>
+    <% } %>
+
+    <!-- Availability Filter -->
+    <h2>Availability</h2>
+    <p>0 Selected <a href="/products">Reset</a></p>
+    <% if (products && products.length > 0) { %>
+        <label><input type="checkbox" name="availability" value="in-stock"> IN STOCK (<%= products.filter(p => p.inStock).length %>)</label><br>
+        <label><input type="checkbox" name="availability" value="out-of-stock"> OUT OF STOCK (<%= products.filter(p => !p.inStock).length %>)</label><br>
+    <% } else { %>
+        <label><input type="checkbox" name="availability" value="in-stock"> IN STOCK (0)</label><br>
+        <label><input type="checkbox" name="availability" value="out-of-stock"> OUT OF STOCK (0)</label><br>
+    <% } %>
+</aside>
+
+
+<nav class="brudcrumb">
+    <a href="/">Home</a> >
+    <a href="/account">My Account</a> >
+    <a href="/account/details">My Details</a> >
+    <a href="/account/details/profile">My Profile</a>
+</nav>
+
+
+<profile>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="/stylesheet/user/profile.css">
+    <style>
+        body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+
+nav.brudcrumb {
+    margin-bottom: 20px;
+}
+
+.brudcrumb a {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+}
+
+.brudcrumb a:hover {
+    text-decoration: underline;
+}
+
+.details-container {
+    display: flex;
+    max-width: 1000px;
+    margin: 0 auto;
+    gap: 20px;
+}
+
+.sidebar {
+    width: 200px;
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    color: #333;
+    margin: 0 0 15px;
+}
+
+.sidebar a {
+    display: block;
+    text-decoration: none;
+    color: #f5a623;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 5px 0;
+    transition: color 0.3s ease;
+}
+
+.sidebar a.active {
+    font-weight: bold;
+    color: #e69520;
+}
+
+.sidebar a:hover {
+    color: #e69520;
+}
+
+.profile-container {
+    flex: 1;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-picture img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f5a623;
+}
+
+.profile-header-info h2 {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+}
+
+.profile-header-info p {
+    font-size: 16px;
+    color: #666;
+    margin: 5px 0 0;
+}
+
+.profile-details {
+    margin-top: 20px;
+}
+
+.profile-details h3 {
+    font-size: 18px;
+    color: #f5a623;
+    margin: 0 0 20px;
+}
+
+.detail-row {
+    margin-bottom: 20px;
+}
+
+.detail-group label {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.detail-group p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+    padding: 12px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.edit-btn {
+    background-color: #f5a623;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+    background-color: #e69520;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: #fff;
+    width: 600px;
+    max-width: 90%;
+    margin: 100px auto;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.modal-content h3 {
+    font-size: 18px;
+    color: #f5a623;
+    margin: 0 0 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+.form-group textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #f5a623;
+    background-color: #fff;
+}
+
+.profile-picture input[type="file"] {
+    padding: 10px 0;
+    border: none;
+    background: none;
+}
+
+.picture-preview img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.save-btn {
+    background-color: #f5a623;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+    transition: background-color 0.3s ease;
+}
+
+.save-btn:hover {
+    background-color: #e69520;
+}
+    </style>
+</head>
+<body>
+    <nav class="brudcrumb">
+        <a href="/">Home</a> >
+        <a href="/account">My Account</a> >
+        <a href="/account/profile">Profile</a>
+    </nav>
+
+    <div class="details-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <h2>My Details</h2>
+            <a href="/account/details/profile" class="active">My Profile</a>
+            <a href="/account/details/password">Change Password</a>
+            <a href="/account/details/address">My Address</a>
+        </div>
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <!-- Profile Header with Picture -->
+            <div class="profile-header">
+                <div class="profile-picture">
+                    <img id="profile-pic-display" src="https://via.placeholder.com/150" alt="Profile Picture">
+                </div>
+                <div class="profile-header-info">
+                    <h2 id="username-display"><%=user.name%></h2>
+                    <p id="email-display"><%=user.email%></p>
+                </div>
+            </div>
+
+            <!-- Profile Details -->
+            <div class="profile-details">
+                <h3>Profile Information</h3>
+                <div class="detail-row">
+                    <div class="detail-group">
+                        <label>Phone Number</label>
+                        <p id="phone-display"><%=user.phone%></p>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-group">
+                        <label>Address</label>
+                        <p id="address-display">Kingston, 5236, United State</p>
+                    </div>
+                </div>
+                <button class="edit-btn" onclick="openEditModal()">Edit Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <form action="" id="profileForm">
+                <span class="close-btn" onclick="closeEditModal()">×</span>
+            <h3>Edit Profile</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" id="username-input" value="AlexJohn21">
+                </div>
+                <div class="form-group profile-picture">
+                    <label>Profile Picture</label>
+                    <input type="file" id="profile-pic-input" accept="image/*">
+                    <div class="picture-preview">
+                        <img id="profile-pic-preview" src="https://via.placeholder.com/150" alt="Preview">
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email-input" value="johnlex@gmail.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="phone-input" value="+91 80665808788">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="address-input">Kingston, 5236, United State</textarea>
+                </div>
+            </div>
+            <button class="save-btn" form="profileForm" onclick="saveChanges()">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal() {
+            document.getElementById('edit-modal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        function saveChanges() {
+            // Update the display values with the input values
+            document.getElementById('username-display').textContent = document.getElementById('username-input').value;
+            document.getElementById('email-display').textContent = document.getElementById('email-input').value;
+            document.getElementById('phone-display').textContent = document.getElementById('phone-input').value;
+            document.getElementById('address-display').textContent = document.getElementById('address-input').value;
+
+            // Update profile picture if a new one is selected
+            const fileInput = document.getElementById('profile-pic-input');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-pic-display').src = e.target.result;
+                    document.getElementById('profile-pic-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+
+            // Close the modal
+            closeEditModal();
+        }
+
+        // Preview profile picture when a new one is selected
+        document.getElementById('profile-pic-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-pic-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Close the modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('edit-modal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
+    </script>
+</body>
+</html>
+</profile>
+
+
+<profilejs>
+    <script>
+    async function submitForm() {
+        clearErrors(profileForm);
+        const formData = new FormData(profileForm);
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            if (key !== 'profileImage') {
+                jsonData[key] = value.trim();
+            }
+        });
+    
+        let errors = validateUser(jsonData);
+        if (errors) {
+            displayFormErrors(profileForm, errors);
+            return;
+        }
+    
+        try {
+            const response = await fetch('/editProfile', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+    
+            if (!data.success) {
+                if (data.errors) {
+                    displayFormErrors(profileForm, data.errors);
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to update profile.', 'error');
+                }
+                return;
+            }
+    
+            Swal.fire('Success', data.message || 'Profile updated successfully!', 'success')
+                .then(() => {
+                    window.location.replace(data.redirectUrl);
+                });
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            Swal.fire('Error', 'Something went wrong while updating the profile.', 'error');
+        }
+    }
+    
+    function displayFormErrors(form, errors) {
+        clearErrors(form);
+        if (errors && typeof errors === 'object') {
+            Object.entries(errors).forEach(([field, message]) => {
+                const input = form.querySelector(`input[name="${field}"]`);
+                if (input) {
+                    input.classList.add('is-invalid');
+                    const feedback = input.nextElementSibling;
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                        feedback.textContent = message;
+                    }
+                }
+            });
+        }
+    }
+    
+    function clearErrors(form) {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    }
+    
+    function validateUser(data) {
+        const namePattern = /^[A-Za-z\s]+$/;
+        const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
+        const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/; // More flexible phone pattern
+        let errors = {};
+    
+        if (!data.name) {
+            errors.name = "First name is required!";
+        } else if (!namePattern.test(data.name)) {
+            errors.name = "Name can only contain letters and spaces!";
+        }
+        if (!data.email) {
+            errors.email = "Email is required!";
+        } else if (!emailPattern.test(data.email)) {
+            errors.email = "Invalid email format!";
+        }
+        if (!data.phone) {
+            errors.phone = "Phone number is required!";
+        } else if (!phonePattern.test(data.phone)) {
+            errors.phone = "Phone number format is invalid!";
+        }
+    
+        return Object.keys(errors).length > 0 ? errors : null;
+    }
+</script>
+    
+</profilejs>
+<changePassword>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Password</title>
+    <link rel="stylesheet" href="/stylesheet/user/profile.css">
+</head>
+<body>
+    
+    <header>
+        <%- include('../partials/users/header', { search }) %>
+    </header>
+    <div class="container">
+        <!-- Navigation Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="separator">></span>
+            <a href="/account">My Account</a>
+            <span class="separator">></span>
+            <a href="/account/details">My Details</a>
+            <span class="separator">></span>
+            <span class="current">Change Password</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <h3>My Details</h3>
+                <ul>
+                    <li><a href="/profile">My Profile</a></li>
+                    <li class="active"><a href="/passwordManage">Change Password</a></li>
+                    <li><a href="/account/address">My Address</a></li>
+                </ul>
+            </div>
+
+            <!-- Change Password Form -->
+            <div class="profile-form">
+                <h2>Change Password</h2>
+                <form id="changePasswordForm">
+                    <!-- Current Password and OTP in the same row -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password <span class="required">*</span></label>
+                            <div class="input-with-button">
+                                <input type="password" id="currentPassword" name="currentPassword" class="currentPassword" placeholder="Current Password" required>
+                                <button type="button" id="sendOtpButton" class="btn-verify">Send OTP</button>
+                            </div>
+                            <div class="invalid-feedback currentPasswordError "></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="otp">Enter OTP <span class="required">*</span></label>
+                            <div class="otp-section">
+                                <div class="otp-input-wrapper" id="otpInputs">
+                                    <input type="text" class="otp-input" maxlength="1" required>
+                                    <input type="text" class="otp-input" maxlength="1" required>
+                                    <input type="text" class="otp-input" maxlength="1" required>
+                                    <input type="text" class="otp-input" maxlength="1" required>
+                                    <input type="text" class="otp-input" maxlength="1" required>
+                                    <input type="text" class="otp-input" maxlength="1" required>
+                                </div>
+                                <button type="button" id="verifyOtpButton" class="btn-verify">Verify</button>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">New Password <span class="required">*</span></label>
+                        <input type="password" id="newPassword" name="newPassword" class="newPassword" placeholder="New Password" required disabled>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password <span class="required">*</span></label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="confirmPassword" placeholder="Confirm New Password" required disabled>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save" disabled>Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <%- include('../partials/users/footer') %>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('changePasswordForm');
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const currentPasswordInput = document.getElementById('currentPassword');
+            const sendOtpButton = document.getElementById('sendOtpButton');
+            const verifyOtpButton = document.getElementById('verifyOtpButton');
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const submitButton = form.querySelector('button[type="submit"]');
+            let isOtpSent = false;
+            let isOtpVerified = false;
+
+            // OTP Input Handling
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    // Allow only numbers
+                    if (!/^\d*$/.test(value)) {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Move to next input if current is filled
+                    if (value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    // Move to previous input on backspace if current is empty
+                    if (e.key === 'Backspace' && !input.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+
+                // Paste handling
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasteData = e.clipboardData.getData('text').replace(/\D/g, '');
+                    if (pasteData.length > 0) {
+                        for (let i = 0; i < Math.min(pasteData.length, otpInputs.length); i++) {
+                            otpInputs[i].value = pasteData[i] || '';
+                            if (i < otpInputs.length - 1 && pasteData[i]) {
+                                otpInputs[i + 1].focus();
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Send OTP
+            sendOtpButton.addEventListener('click', async () => {
+                const currentPassword = currentPasswordInput.value.trim();
+                if (!currentPassword) {
+                    displayFormErrors(form,{ 'otp' :'Current password is required!'});
+                    return;
+                }
+
+                try {
+                    sendOtpButton.disabled = true;
+                    const response = await fetch('/checkPassword', {
+                        method: 'POST',
+                        body: JSON.stringify({ currentPassword }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire('Success', 'OTP sent successfully!', 'success');
+                        isOtpSent = true;
+                        currentPasswordInput.disabled = true;
+                        sendOtpButton.disabled = true;
+                        otpInputs.forEach(input => input.disabled = false);
+                        verifyOtpButton.disabled = false;
+                    } else {
+                    displayFormErrors(form,data.errors);
+                    document.querySelector(".currentPasswordError").textContent = data.errors.currentPassword;
+
+                    // // displayFormErrors(form,{ 'otp' :'Current password is required!'});
+
+                        displayFormError('currentPassword', data.message || 'Failed to send OTP!')
+                        document.getElementById('')
+                        isOtpSent = false;
+                    }
+                } catch (error) {
+                    console.error('Error sending OTP:', error);
+                    Swal.fire('Error', 'Failed to send OTP.', 'error');
+                    isOtpSent = false;
+                } finally {
+                    sendOtpButton.disabled = false;
+                }
+            });
+
+            // Verify OTP
+            verifyOtpButton.addEventListener('click', async () => {
+                const otp = Array.from(otpInputs).map(input => input.value).join('');
+                if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                    displayFormError('otp', 'Please enter a valid 6-digit OTP!');
+                    return;
+                }
+
+                try {
+                    verifyOtpButton.disabled = true;
+                    const response = await fetch('/confirmOTP', {
+                        method: 'POST',
+                        body: JSON.stringify({ otp }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire('Success', 'OTP verified successfully!', 'success');
+                        isOtpVerified = true;
+                        // Enable other fields
+                        newPasswordInput.disabled = false;
+                        confirmPasswordInput.disabled = false;
+                        submitButton.disabled = false;
+                        otpInputs.forEach(input => input.disabled = true);
+                        verifyOtpButton.disabled = true;
+                    } else {
+                        displayFormError('otp', data.message || 'Invalid OTP!');
+                        isOtpVerified = false;
+                    }
+                } catch (error) {
+                    console.error('Error verifying OTP:', error);
+                    Swal.fire('Error', 'Failed to verify OTP.', 'error');
+                    isOtpVerified = false;
+                } finally {
+                    verifyOtpButton.disabled = false;
+                }
+            });
+
+            // Form Submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!isOtpSent) {
+                    Swal.fire('Error', 'Please send the OTP first!', 'error');
+                    return;
+                }
+
+                if (!isOtpVerified) {
+                    Swal.fire('Error', 'Please verify the OTP first!', 'error');
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const jsonData = Object.fromEntries(formData);
+
+                // Validate passwords
+                let errors = validateForm(jsonData);
+                if (errors) {
+                    console.log('Validation error : ', errors)
+                    displayFormErrors(form, errors);
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/changepassword', {
+                        method: 'PATCH',
+                        body: JSON.stringify(jsonData),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        if (data.errors) {
+                            displayFormErrors(form, data.errors);
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to update password.', 'error');
+                        }
+                        return;
+                    }
+
+                    Swal.fire('Success', data.message || 'Password updated successfully!', 'success')
+                        .then(() => {
+                            form.reset();
+                            otpInputs.forEach(input => input.value = ''); // Clear OTP inputs
+                            // Reset states
+                            isOtpSent = false;
+                            isOtpVerified = false;
+                            newPasswordInput.disabled = true;
+                            confirmPasswordInput.disabled = true;
+                            submitButton.disabled = true;
+                            currentPasswordInput.disabled = false;
+                            sendOtpButton.disabled = false;
+                            otpInputs.forEach(input => input.disabled = true);
+                            verifyOtpButton.disabled = true;
+                        });
+                } catch (error) {
+                    console.error('Error updating password:', error);
+                    Swal.fire('Error', 'Something went wrong while updating the password.', 'error');
+                }
+            });
+
+            function validateForm(data) {
+                let errors = {};
+
+                // if (!data.currentPassword) {
+                //     errors.currentPassword = "Current password is required!";
+                // }
+
+                if (!data.newPassword) {
+                    errors.newPassword = "New password is required!";
+                } else if (data.newPassword.length < 8) {
+                    errors.newPassword = "New password must be at least 8 characters long!";
+                }
+
+                if (!data.confirmPassword) {
+                    errors.confirmPassword = "Confirm password is required!";
+                } else if (data.newPassword !== data.confirmPassword) {
+                    errors.confirmPassword = "Passwords do not match!";
+                }
+
+                return Object.keys(errors).length > 0 ? errors : null;
+            }
+
+            function displayFormErrors(form, errors) {
+                clearErrors(form);
+                if (errors && typeof errors === 'object') {
+                    Object.entries(errors).forEach(([field, message]) => {
+                        if (field === 'otp') {
+                            const otpWrapper = document.getElementById('otpInputs');
+                            otpWrapper.classList.add('is-invalid');
+                            const feedback = otpWrapper.parentElement.querySelector('.invalid-feedback');
+                            if (feedback) {
+                                feedback.textContent = message;
+                            }
+                        } else {
+                            const input = form.querySelector(`.${field}`);
+                            if (input) {
+                                input.classList.add('is-invalid');
+                                const feedback = input.parentElement.querySelector('.invalid-feedback');
+                                if (feedback) {
+                                    feedback.textContent = message;
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            
+            // function displayFormError(field, message) {
+            //     clearErrors(form);
+            //     if (field === 'otp') {
+            //         const otpWrapper = document.getElementById('otpInputs');
+            //         otpWrapper.classList.add('is-invalid');
+            //         const feedback = otpWrapper.parentElement.querySelector('.invalid-feedback');
+            //         if (feedback) {
+            //             feedback.textContent = message;
+            //         }
+            //     } else {
+            //         const input = form.querySelector(`[name="${field}"]`);
+            //         if (input) {
+            //             input.classList.add('is-invalid');
+            //             const feedback = input.parentElement.querySelector('.invalid-feedback');
+            //             if (feedback) {
+            //                 feedback.textContent = message;
+            //             }
+            //         }
+            //     }
+            // }
+
+
+            // function displayFormError(form, errors){
+            //     clearErrors(form)
+
+            //     if(errors && typeof errors === 'object'){
+            //         Object.entries(errors).forEach(([field,message]) => {
+
+            //             const input = form.querySelector(`.${field}`) 
+                                                                
+            //             if(input){
+            //                 input.classList.add('is-invalid')
+            //                 const feedback = input.nextElementSibling;
+            //                 if(feedback && feedback.classList.contains('invalid-feedback')){
+            //                     feedback.textContent = message
+            //                 } else {
+            //                     const feedbackDiv = document.createElement('div');
+            //                     feedbackDiv.className = 'invalid-feedback';
+            //                     feedbackDiv.textContent = message;
+            //                     input.parentNode.appendChild(feedbackDiv);
+            //                 }
+            //             }
+            //         })
+            //     }
+            // }
+
+
+            function clearErrors(form) {
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+            }
+        });
+    </script>
+</body>
+</html>
+</changePassword>
+
+<product>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail</title>
+    <link rel="stylesheet" href="/stylesheet/user/product.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <%- include('../partials/users/header', {search}) %>
+    </header>
+    <nav class="breadcrumb">
+        <a href="/">Home</a> > <a href="/shop">All Products</a> > <a href="#"><%= product.productName %></a>
+    </nav>
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-images">
+                <!-- Main Image with Zoom Container -->
+                <div class="main-image-container">
+                    <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 0) { %>
+                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="main-image" id="mainImage">
+                    <% } else { %>
+                        <span>No Main Image</span>
+                    <% } %>
+                    <!-- Zoom Lens and Result -->
+                    <div class="zoom-lens" id="zoomLens"></div>
+                    <div class="zoom-result" id="zoomResult"></div>
+                </div>
+
+                <!-- Thumbnail Images -->
+                <div class="thumbnail-images">
+                    <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 1) { %>
+                        <% product.productImage.slice(1).forEach((image, index) => { %>
+                            <img src="/uploads/products/<%= image %>" alt="<%= product.productName %> Thumbnail <%= index + 1 %>" 
+                                 class="thumbnail <%= index === 0 ? 'active' : '' %>" data-src="/uploads/products/<%= image %>">
+                        <% }) %>
+                    <% } else { %>
+                        <span>No Thumbnails Available</span>
+                    <% } %>
+                </div>
+            </div>
+            <div class="product-info">
+                <h1><%= product.productName %></h1>
+                <div class="price">
+                    <span class="current">₹ <%= product.salePrice %></span>
+                    <span class="original">₹ <%= product.regularPrice %></span>
+                    <span class="current offer"><%= totalOffer ? totalOffer + ' %' : '' %></span>
+                </div>
+                <p class="rating">★★★★★ <span class="stock"><%= product.quantity === 0 ? 'Out of Stock' : 'Available' %></span></p>
+                <p class="description">
+                    <%= product.description %>
+                </p>
+                <div class="quantity">
+                    <label for="quantity-input">Quantity :</label>
+                    <div class="quantity-selector">
+                        <button type="button" class="quantity-btn minus">-</button>
+                        <input type="text" id="quantity-input" value="1" readonly>
+                        <button type="button" class="quantity-btn plus">+</button>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="add-to-cart" id="addtoCart" data-id="<%=product._id%>">Add to Cart</button>
+                    <button class="buy-now">Buy Now</button>
+                    <button class="wishlist-btn" data-wishlisted="false">
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="tabs">
+            <button class="tab active" data-tab="specifications">Specifications</button>
+            <button class="tab" data-tab="reviews">Reviews</button>
+            <div class="sku">Brand: <%= product.brand.brandName %></div>
+            <div class="category">Category: <%= product.category.name %> <span class="offer"><%= product.category.categoryOffer ? product.category.categoryOffer + '%' : '' %></span></div>
+        </div>
+        <!-- <div class="tab-content active" id="specifications">
+            <% if (product.specifications && product.specifications.length > 0) { %>
+                <table>
+                    <% product.specifications.forEach(spec => { %>
+                        <tr>
+                            <th><%= spec.key %></th>
+                            <td><%= spec.value || '-' %></td>
+                        </tr>
+                    <% }) %>
+                </table>
+            <% } else { %>
+                <p>No specifications available.</p>
+            <% } %>
+        </div> -->
+        <div class="tab-content" id="reviews">
+            <p>No customer reviews yet</p>
+        </div>
+        <div class="related-products">
+            <h2>Related Products</h2>
+            <div class="product-grid">
+                <% for(let i = 0; i < relatedProducts.length; i++) { %>
+                    <div class="product-card">
+                        <% if (relatedProducts[i].productImage && relatedProducts[i].productImage.length > 0) { %>
+                            <img src="/uploads/products/<%= relatedProducts[i].productImage[0] %>" alt="<%= relatedProducts[i].productName %>">
+                        <% } else { %>
+                            <span>No Image</span>
+                        <% } %>
+                        <h3><%= relatedProducts[i].productName %></h3>
+                        <p>₹ <%= relatedProducts[i].salePrice %></p>
+                        <span class="rating"><%= '★'.repeat(relatedProducts[i].rating ? relatedProducts[i].rating : 1) %></span>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <%- include('../partials/users/footer') %>
+    </footer>
+    <script>
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Image Switching and Zoom Effect
+        document.addEventListener('DOMContentLoaded', () => {
+            const minusBtn = document.querySelector('.quantity-btn.minus');
+            const plusBtn = document.querySelector('.quantity-btn.plus');
+            const quantityInput = document.querySelector('#quantity-input');
+            const cartButton = document.getElementById('addtoCart');
+
+            cartButton.addEventListener('click', () => {
+                const productId = cartButton.dataset.id;
+                addToCart(productId);
+            });
+
+            minusBtn.addEventListener('click', function() {
+                let quantity = parseInt(quantityInput.value);
+                if (quantity > 1) {
+                    quantityInput.value = quantity - 1;
+                }
+            });
+
+            plusBtn.addEventListener('click', function() {
+                let quantity = parseInt(quantityInput.value);
+                quantityInput.value = quantity + 1;
+            });
+
+            // Image Switching
+            const mainImage = document.getElementById('mainImage');
+            const thumbnails = document.querySelectorAll('.thumbnail');
+
+            thumbnails.forEach(thumbnail => {
+                thumbnail.addEventListener('click', () => {
+                    const newSrc = thumbnail.getAttribute('data-src');
+                    mainImage.src = newSrc;
+
+                    // Update active class
+                    thumbnails.forEach(t => t.classList.remove('active'));
+                    thumbnail.classList.add('active');
+                });
+            });
+
+            // Zoom Effect
+            const mainImageContainer = document.querySelector('.main-image-container');
+            const zoomLens = document.getElementById('zoomLens');
+            const zoomResult = document.getElementById('zoomResult');
+
+            // Set zoom result background to the main image
+            if (mainImage) {
+                zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
+            }
+
+            mainImageContainer.addEventListener('mouseenter', () => {
+                zoomLens.style.display = 'block';
+                zoomResult.style.display = 'block';
+            });
+
+            mainImageContainer.addEventListener('mouseleave', () => {
+                zoomLens.style.display = 'none';
+                zoomResult.style.display = 'none';
+            });
+
+            mainImageContainer.addEventListener('mousemove', (e) => {
+                const rect = mainImage.getBoundingClientRect();
+                const lensWidth = zoomLens.offsetWidth;
+                const lensHeight = zoomLens.offsetHeight;
+                const resultWidth = zoomResult.offsetWidth;
+                const resultHeight = zoomResult.offsetHeight;
+
+                // Calculate mouse position relative to the image
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                // Keep lens within image bounds
+                x = Math.max(lensWidth / 2, Math.min(x, rect.width - lensWidth / 2));
+                y = Math.max(lensHeight / 2, Math.min(y, rect.height - lensHeight / 2));
+
+                // Position the lens
+                zoomLens.style.left = `${x - lensWidth / 2}px`;
+                zoomLens.style.top = `${y - lensHeight / 2}px`;
+
+                // Calculate zoom ratio
+                const ratioX = resultWidth / lensWidth;
+                const ratioY = resultHeight / lensHeight;
+
+                // Set zoom result background size
+                const imgWidth = mainImage.naturalWidth;
+                const imgHeight = mainImage.naturalHeight;
+                zoomResult.style.backgroundSize = `${imgWidth * ratioX}px ${imgHeight * ratioY}px`;
+
+                // Position the zoomed background
+                const bgPosX = (x - lensWidth / 2) * ratioX;
+                const bgPosY = (y - lensHeight / 2) * ratioY;
+                zoomResult.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
+            });
+
+            // Update zoom result background when main image changes
+            thumbnails.forEach(thumbnail => {
+                thumbnail.addEventListener('click', () => {
+                    zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
+                });
+            });
+
+            // Wishlist Toggle
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const icon = btn.querySelector('i');
+                    btn.classList.toggle('active');
+                    const isActive = btn.classList.contains('active');
+                    icon.className = isActive ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+
+                    // Optionally update server or local storage here
+                    // e.g., send AJAX call to add/remove from wishlist
+                });
+            });
+        });
+
+        async function addToCart(productId) {
+            const quantity = document.querySelector('#quantity-input').value;
+
+            if (quantity > 0) {
+                try {
+                    const response = await fetch('/addtocart', {
+                        method: "POST",
+                        body: JSON.stringify({ productId, quantity }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire('success', data.message || 'Product added to cart successfully', 'success');
+                        window.location.replace(data.redirectUrl);
+                    } else {
+                        Swal.fire('error', data.message || 'Product adding to cart is failed', 'error');
+                        // window.location.reload();
+                    }
+                } catch (error) {
+                    console.log('failed to add product to cart: ', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+</product>
+
+
+<pagination>
+    /shop?price=LOW%20-%20HIGH&&page=2
+
+</pagination>
+
+<shop>
+    <!-- Availability Filter -->
+    <h2>Availability</h2>
+    <p>0 Selected <span ><a href="#" id="reset-availability">Reset</a></span></p>
+    <% if (products && products.length > 0) { %>
+        <label><input type="radio" name="stock" class="stock" value="IN STOCK"> IN STOCK (<%= products.filter(p => p.quantity > 0 ).length %>)</label><br>
+        <label><input type="radio" name="stock" class="stock" value="OUT OF STOCK"> OUT OF STOCK (<%= products.filter(p => p.quantity < 1).length %>)</label><br>
+    <% } else { %>
+        <!-- <label><input type="radio" name="stock" value="1"> IN STOCK (0)</label><br>
+        <label><input type="radio" name="stock" value="0">IN STOCK (0)</label><br> -->
+    <% } %>
+</shop>

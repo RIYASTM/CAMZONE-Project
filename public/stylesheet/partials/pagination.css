@@ -1,0 +1,28 @@
+/* Pagination */
+.pagination {
+    position: fixed;
+    bottom: 4%;
+    right: 4%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    /* margin-top: 20px; */
+    color: #a0a0a0;
+}
+
+.pagination-controls button {
+    background: none;
+    border: none;
+    color: var(--border-color);
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.pagination-controls button:hover {
+    color: #fff;
+}
+
+.pagination span {
+    margin: 0 10px;
+}

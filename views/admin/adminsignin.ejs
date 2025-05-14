@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="/stylesheet/admin/signin.css"> 
+</head>
+<body>
+    <div class="container">
+        <div class="left-section">
+            <div class="logo">
+                <img src="/images/icons/CAMZONE.png" alt="CameraZone">
+            </div>
+            <h1 class="welcome-text">Hello Welcome...</h1>
+        </div>
+        
+        <div class="right-section">
+            <div class="signin-form">
+                <h2>Sign in</h2>
+                <p>Enter your details below</p>
+                
+                <form action="/admin/signin" method="POST" id="adminSigninForm">
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Email" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="form-group password-group">
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                        <div class="invalid-feedback"></div>
+                        <button type="button" class="toggle-password">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <button type="submit" class="signin-button" form="adminSigninForm">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="/javascript/admins/adminSignin.js"></script>
+
+    <script>
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        });
+    </script>
+</body>
+</html>

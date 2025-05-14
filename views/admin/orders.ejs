@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/admin/orders.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+            
+            <!-- Orders Top Bar -->
+            <div class="orders-top-bar">
+                <div class="top-left">
+                    <span>All Orders |</span>
+                    <select class="sort-by">
+                        <option value="default">Sort by</option>
+                        <option value="date">Date</option>
+                        <option value="total">Total</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+                <div class="top-center">
+                    <input type="text" class="search-bar" placeholder="Search">
+                </div>
+                <div class="top-right">
+                    <select class="filter">
+                        <option value="all">Filter</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Orders Table -->
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order Items</th>
+                            <th>Customer</th>
+                            <th>Order Date</th>
+                            <th>Order Total</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% orders.forEach(order => { %>
+                            <tr>
+                                <td><i class="fas fa-camera"></i> <%= order.item %></td>
+                                <td><%= order.customer %></td>
+                                <td><%= order.date %></td>
+                                <td><%= order.total %></td>
+                                <td><%= order.method %></td>
+                                <td>
+                                    <select class="status-dropdown">
+                                        <option value="processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                        <option value="shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                        <option value="delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                        <option value="cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                    </select>
+                                </td>
+                                <td><a href="#" class="action-link">Update Status</a></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <%- include('../partials/pagination',{ currentPages, totalPages }) %>
+        </div>
+    </div>
+           
+</body>
+</html>

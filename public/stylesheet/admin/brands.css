@@ -1,0 +1,357 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+:root {
+    --primary-color: #1e1e1e;
+    --secondary-color: #282828;
+    --text-color: #333;
+    --light-gray: #f5f5f5;
+    --border-color: #FCA311;
+}
+
+body {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+/* Brands Top Bar */
+.brands-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: var(--secondary-color);
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.top-left {
+    display: flex;
+    align-items: center;
+}
+
+.top-left span {
+    margin-right: 10px;
+    color: #a0a0a0;
+}
+
+.sort-by {
+    padding: 5px;
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.top-center .search-bar {
+    padding: 8px 15px;
+    width: 300px;
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+    border-radius: 5px;
+    outline: none;
+}
+
+.clear {
+    position: absolute;
+    padding: 5px;
+    background: none;
+    border: none;
+    color: var(--border-color);
+    cursor: pointer;
+    right: -4px;
+    top: -10px;
+    font-size: 35px;
+}
+
+.top-right {
+    display: flex;
+    align-items: center;
+}
+
+.filter {
+    padding: 5px;
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.add-brand {
+    padding: 8px 15px;
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-brand:hover {
+    background-color: #5a6268;
+}
+
+/* Brands Table */
+.brands-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--secondary-color);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.brands-table th, .brands-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+.brands-table th {
+    background-color: #333;
+    color: #a0a0a0;
+    font-weight: bold;
+}
+
+.brands-table td {
+    color: #fff;
+}
+
+.brands-table .action-icon {
+    margin-left: 10px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.brands-table .action-icon:hover {
+    color: var(--border-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .brands-top-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .top-left, .top-center, .top-right {
+        width: 100%;
+    }
+
+    .top-center .search-bar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .brands-table th, .brands-table td {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .brands-table th, .brands-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .top-right {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter, .add-brand {
+        width: 100%;
+        margin-right: 0;
+    }
+}
+
+/* Modal styling */
+.brand-modal {
+    background-color: var(--primary-color);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    width: 400px;
+    margin: 20px auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.brand-modal h2 {
+    text-align: center;
+    color: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    padding: 8px 0;
+    font-weight: lighter;
+}
+
+/* Form styling */
+.category-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ccc;
+}
+
+.form-group label .required {
+    color: #ff4d4d;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--border-color);
+    box-shadow: 0 0 5px var(--border-color);
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    color: #ccc;
+    font-weight: 400;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    color: #ccc;
+}
+
+.checkbox-group input {
+    width: auto;
+    margin-left: 20px;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Button styling */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.add-btn {
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+}
+
+.add-btn:hover {
+    background-color: #5a6268;
+}
+
+.save-btn {
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+}
+
+.save-btn:hover {
+    background-color: #5a6268;
+}
+
+.cancel-btn {
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+}
+
+.cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Modal-specific styling */
+#addBrandModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: #3a3a3a;
+}
+
+#addBrandModal.active {
+    display: block;
+}
+
+/* Modal-specific styling */
+#editBrandModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: #3a3a3a;
+}
+
+#editBrandModal.active {
+    display: block;
+}

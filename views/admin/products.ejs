@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <link rel="stylesheet" href="/stylesheet/admin/products.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+            
+            <!-- Products Top Bar -->
+            <div class="products-top-bar">
+                <div class="top-left">
+                    <span>All Products |</span>
+                    <select class="sort-by">
+                        <option value="default">Sort by</option>
+                        <option value="name">Name</option>
+                        <option value="price">Price</option>
+                        <option value="stock">Stock</option>
+                    </select>
+                </div>
+                <div class="top-center" style="position: relative; display: inline-block;">
+                    <input type="text" class="search-bar" id="search" placeholder="Search" value="<%= search %>">
+                    <% if(search){ %>
+                        <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+                    <% } %>
+                </div>
+                <div class="top-right">
+                    <button class="stock-manage">Stock Manage</button>
+                    <select class="filter">
+                        <option value="all">Filter</option>
+                        <option value="listed">Listed</option>
+                        <option value="unlisted">Unlisted</option>
+                    </select>
+                    <button class="add-product" id="addProductButton">Add New Product</button>
+                </div>
+            </div>
+            
+            <!-- Products Table -->
+            <div class="products-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Brand</th>
+                            <th>Category</th>
+                            <th>Created At</th>
+                            <th>Price</th>
+                            <th>Sell Price</th>
+                            <th>Stock</th>
+                            <th>Offer</th>
+                            <th>Listed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% products.forEach(product => { %>
+                            <tr>
+                                <td>
+                                    <% if (product.productImage && product.productImage.length > 0) { %>
+                                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>" style="width: 100px; height: 100px; object-fit: fill;">
+                                    <% } else { %>
+                                        <span>No Image</span>
+                                    <% } %>
+                                </td>
+                                <td><%= product.productName %></td>
+                                <td><%= product.brand.brandName %></td>
+                                <td><%= product.category.name %></td>
+                                <td><%= new Date(product.createdAt).toLocaleDateString() %></td>
+                                <td><%= '₹ ' + product.regularPrice %></td>
+                                <td><%= '₹ ' + product.salePrice%></td>
+                                <td><%= product.quantity + ' Pcs' %></td>
+                                <td><%= product.productOffer ? product.productOffer + '%' : '-' %></td>
+                                <td><%= product.isBlocked ? 'Blocked' : 'Active' %></td>
+                                <td>
+                                    <a href="#" class="action-icon editProductButton" 
+                                       data-id="<%= product._id %>" 
+                                       data-name="<%= product.productName %>" 
+                                       data-description="<%= product.description %>" 
+                                       data-brand="<%= product.brand._id %>" 
+                                       data-category="<%= product.category._id %>" 
+                                       data-regularprice="<%= product.regularPrice %>" 
+                                       data-saleprice="<%= product.salePrice %>" 
+                                       data-productoffer="<%= product.productOffer %>" 
+                                       data-stock="<%= product.quantity %>" 
+                                       data-listed="<%= product.isBlocked %>" 
+                                       data-images="<%= JSON.stringify(product.productImage) %>"><i class="fas fa-edit"></i></a>
+                                    <a href="#" class="action-icon deleteProduct" data-id="<%= product._id %>" data-name="<%= product.productName %>"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal product-modal" id="addProductModal">
+        <div class="modal-content">
+            <button type="button" class="close-btn" id="cancelAddProductButton">×</button>
+            <div class="modal-header">
+                <h2>Add New Product</h2>
+            </div>
+            <form action="/admin/addProduct" method="POST" id="addProductForm" enctype="multipart/form-data">
+                <div id="general-error" class="general-error"></div>
+                <div class="form-group">
+                    <label for="productName">Name <span class="required">*</span></label>
+                    <input type="text" id="productName" name="productName" class="productName" placeholder="Product name">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Description <span class="required">*</span></label>
+                    <textarea id="productDescription" name="description" class="description" placeholder="Product description"></textarea>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productCategory">Category <span class="required">*</span></label>
+                        <select name="category" id="productCategory" class="category">
+                            <option disabled selected>Select Category</option>
+                            <% for(let i = 0; i < category.length; i++) { %>
+                                <option value="<%= category[i]._id %>"><%= category[i].name %></option>
+                            <% } %>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productBrand">Brand <span class="required">*</span></label>
+                        <select name="brand" id="productBrand" class="brand">
+                            <option disabled selected>Select Product Brand</option>
+                            <% for(let i = 0; i < brands.length; i++) { %>
+                                <option value="<%= brands[i]._id %>"><%= brands[i].brandName %></option>
+                            <% } %>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="regularPrice">Regular Price <span class="required">*</span></label>
+                        <input type="number" id="regularPrice" name="regularPrice" class="regularPrice" step="0.01" placeholder="Regular Price">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="salePrice">Sale Price <span class="required">*</span></label>
+                        <input type="number" id="salePrice" name="salePrice" class="salePrice" step="0.01" placeholder="Sale Price">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productStock">Stock <span class="required">*</span></label>
+                        <input type="number" id="productStock" name="stock" class="stock" placeholder="Stock">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productOffer">Product Offer (%)</label>
+                        <input type="number" id="productOffer" name="productOffer" class="productOffer" placeholder="Product Offer">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <!--Specificatins-->
+                    <!-- <div class="form-group">
+                        <label>Specifications:</label>
+                        <div id="specifications-container">
+                            <div class="spec-row">
+                                <input type="text" class="spec-key" placeholder="Specification Name (e.g., AF Modes)">
+                                <input type="text" class="spec-value" placeholder="Value (e.g., One-Shot AF)">
+                                <button type="button" class="remove-spec-btn">Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-spec-btn">Add Specification</button>
+                    </div> -->
+                    <div class="form-group image-group">
+                        <label for="productImage1">Image 1 <span class="required">*</span></label>
+                        <input type="file" id="productImage1" accept="image/*" class="productImage" onchange="initCropper(event, 1, 'add')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="preview1"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="productImage2">Image 2</label>
+                        <input type="file" id="productImage2" accept="image/*" class="productImage" onchange="initCropper(event, 2, 'add')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="preview2"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="productImage3">Image 3</label>
+                        <input type="file" id="productImage3" accept="image/*" class="productImage" onchange="initCropper(event, 3, 'add')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="preview3"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="productImage4">Image 4</label>
+                        <input type="file" id="productImage4" accept="image/*" class="productImage" onchange="initCropper(event, 4, 'add')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="preview4"></div>
+                    </div>
+                    <div class="image-cropper-container" id="cropperContainer" style="display: none;">
+                        <img id="cropperImage" src="" alt="Image to Crop">
+                        <div class="cropper-buttons">
+                            <button type="button" id="cropSaveButton" class="btn-sm btn-primary">Crop & Save</button>
+                            <button type="button" id="cropCancelButton" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn save-btn">Add Product</button>
+                    <div class="checkbox-group">
+                        <label>Block Product: 
+                            <input type="checkbox" id="blockProduct" name="isBlocked">
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal product-modal" id="editProductModal">
+        <div class="modal-content">
+            <button type="button" class="close-btn" id="cancelEditProductButton">×</button>
+            <div class="modal-header">
+                <h2>Edit Product</h2>
+            </div>
+            <form action="/admin/editProduct" method="POST" id="editProductForm" enctype="multipart/form-data">
+                <div id="general-error" class="general-error"></div>
+                <input type="hidden" id="productId" name="id">
+                <div class="form-group">
+                    <label for="editProductName">Name <span class="required">*</span></label>
+                    <input type="text" id="editProductName" name="productName" class="productName" placeholder="Product name">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductDescription">Description <span class="required">*</span></label>
+                    <textarea id="editProductDescription" name="description" class="description" placeholder="Product description"></textarea>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="editProductCategory">Category <span class="required">*</span></label>
+                        <select name="category" id="editProductCategory" class="category">
+                            <option disabled selected>Select Category</option>
+                            <% for(let i = 0; i < category.length; i++) { %>
+                                <option value="<%= category[i]._id %>"><%= category[i].name %></option>
+                            <% } %>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductBrand">Brand <span class="required">*</span></label>
+                        <select name="brand" id="editProductBrand" class="brand">
+                            <option disabled selected>Select Product Brand</option>
+                            <% for(let i = 0; i < brands.length; i++) { %>
+                                <option value="<%= brands[i]._id %>"><%= brands[i].brandName %></option>
+                            <% } %>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRegularPrice">Regular Price <span class="required">*</span></label>
+                        <input type="number" id="editRegularPrice" name="regularPrice" class="regularPrice" step="0.01" placeholder="Regular Price">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSalePrice">Sale Price <span class="required">*</span></label>
+                        <input type="number" id="editSalePrice" name="salePrice" class="salePrice" step="0.01" placeholder="Sale Price">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductStock">Stock <span class="required">*</span></label>
+                        <input type="number" id="editProductStock" name="stock" class="stock" placeholder="Stock">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductOffer">Product Offer (%)</label>
+                        <input type="number" id="editProductOffer" name="productOffer" class="productOffer" placeholder="Product Offer">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="editProductImage1">Image 1</label>
+                        <input type="file" id="editProductImage1" accept="image/*" class="productImage" onchange="initCropper(event, 1, 'edit')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="editPreview1"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="editProductImage2">Image 2</label>
+                        <input type="file" id="editProductImage2" accept="image/*" class="productImage" onchange="initCropper(event, 2, 'edit')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="editPreview2"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="editProductImage3">Image 3</label>
+                        <input type="file" id="editProductImage3" accept="image/*" class="productImage" onchange="initCropper(event, 3, 'edit')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="editPreview3"></div>
+                    </div>
+                    <div class="form-group image-group">
+                        <label for="editProductImage4">Image 4</label>
+                        <input type="file" id="editProductImage4" accept="image/*" class="productImage" onchange="initCropper(event, 4, 'edit')">
+                        <div class="invalid-feedback"></div>
+                        <div class="image-preview" id="editPreview4"></div>
+                    </div>
+                    <div class="image-cropper-container" id="editCropperContainer" style="display: none;">
+                        <img id="editCropperImage" src="" alt="Image to Crop">
+                        <div class="cropper-buttons">
+                            <button type="button" id="editCropSaveButton" class="btn-sm btn-primary">Crop & Save</button>
+                            <button type="button" id="editCropCancelButton" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn save-btn">Save Changes</button>
+                    <div class="checkbox-group">
+                        <label>Block Product: 
+                            <input type="checkbox" id="editBlockProduct" name="isBlocked">
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Product Modal -->
+    <div class="modal product-modal" id="deleteProductModal">
+        <div class="modal-content">
+            <h2>Confirm Delete</h2>
+            <p id="deleteProductMessage"></p>
+            <div class="form-actions">
+                <button type="button" class="btn delete-btn" id="confirmDeleteButton">Delete</button>
+                <button type="button" class="btn cancel-btn" id="cancelDeleteButton">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+
+    <script>
+
+        const search = document.getElementById('search')
+        const searchValue = search.value
+
+        document.getElementById('search').addEventListener('keypress',function(e){
+            const  searchValue = search.value
+
+            if(e.key === 'Enter'){
+                window.location.href = `?search=${searchValue}`
+            }
+        })
+
+        if(searchValue){ 
+
+        document.getElementById('clear-button').addEventListener('click',function(e){
+
+            window.location.href = `/admin/products`
+        })
+        }
+
+
+
+        let cropper;
+        let currentImageIndex;
+        let currentModalType;
+        let croppedBlobs = {};
+
+        const addProductModal = document.getElementById('addProductModal');
+        const editProductModal = document.getElementById('editProductModal');
+        const deleteProductModal = document.getElementById('deleteProductModal');
+        const addProductForm = document.getElementById('addProductForm');
+        const editProductForm = document.getElementById('editProductForm');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add Product
+            const addProductButton = document.getElementById('addProductButton');
+            const cancelAddButton = document.getElementById('cancelAddProductButton');
+            addProductButton.addEventListener('click', showAddProductModal);
+            cancelAddButton.addEventListener('click', hideAddProductModal);
+
+            // Edit Product
+            const cancelEditButton = document.getElementById('cancelEditProductButton');
+            cancelEditButton.addEventListener('click', hideEditProductModal);
+
+            document.querySelectorAll('.editProductButton').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const id = button.dataset.id;
+                    const productName = button.dataset.name;
+                    const description = button.dataset.description;
+                    const brand = button.dataset.brand;
+                    const category = button.dataset.category;
+                    const regularPrice = button.dataset.regularprice;
+                    const salePrice = button.dataset.saleprice;
+                    const productOffer = button.dataset.productoffer;
+                    const stock = button.dataset.stock;
+                    const isBlocked = button.dataset.listed === 'true';
+                    const images = JSON.parse(button.dataset.images || '[]');
+
+                    showEditProductModal(id, productName, description, brand, category, regularPrice, salePrice, productOffer, stock, images, isBlocked);
+                });
+            });
+
+            // Delete Product
+            document.querySelectorAll('.deleteProduct').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    const id = button.dataset.id;
+                    const name = button.dataset.name;
+                    showDeleteProductModal(id, name);
+                });
+            });
+
+            // Initialize Cropper buttons
+            document.getElementById('cropSaveButton').addEventListener('click', saveCroppedImage);
+            document.getElementById('cropCancelButton').addEventListener('click', cancelCrop);
+            document.getElementById('editCropSaveButton').addEventListener('click', saveCroppedImage);
+            document.getElementById('editCropCancelButton').addEventListener('click', cancelCrop);
+
+            // Add Product Form Submission
+            addProductForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(addProductForm);
+                const jsonData = {};
+                formData.forEach((value, key) => {
+                    jsonData[key] = value;
+                });
+                Object.keys(jsonData).forEach(key => {
+                    if (typeof jsonData[key] === 'string') {
+                        jsonData[key] = jsonData[key].trim();
+                    }
+                });
+
+                const errors = validateForm(jsonData);
+                if (errors) {
+                    displayFormError(addProductForm, errors);
+                    return;
+                }
+
+                // Append cropped images to FormData
+                let hasImages = false;
+                for (let i = 1; i <= 4; i++) {
+                    if (croppedBlobs[i]) {
+                        formData.append('productImage', croppedBlobs[i], `cropped-image-${i}.png`);
+                        hasImages = true;
+                    }
+                }
+
+                if (!hasImages) {
+                    Swal.fire('Error', 'At least one cropped image is required!', 'error');
+                    return;
+                }
+
+                // Log FormData for debugging
+                console.log('FormData contents:');
+                for (let pair of formData.entries()) {
+                    console.log(`${pair[0]}: ${pair[1]}`);
+                }
+
+                try {
+                    const response = await fetch('/admin/addProduct', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (!data.success) {
+                        Swal.fire('Error', data.message || 'Validation error', 'error');
+                        return;
+                    }
+                    Swal.fire('Success', data.message, 'success').then(() => {
+                        window.location.replace(data.redirectUrl);
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'Something went wrong while adding product: ' + error.message, 'error');
+                }
+            });
+
+            // Edit Product Form Submission
+            editProductForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(editProductForm);
+                const jsonData = {};
+                formData.forEach((value, key) => {
+                    jsonData[key] = value;
+                });
+                Object.keys(jsonData).forEach(key => {
+                    if (typeof jsonData[key] === 'string') {
+                        jsonData[key] = jsonData[key].trim();
+                    }
+                });
+
+                console.log('salePrice : ', jsonData )
+                const errors = validateForm(jsonData);
+                if (errors) {
+                    displayFormError(editProductForm, errors);
+                    return;
+                }
+
+                // Append cropped images to FormData
+                for (let i = 1; i <= 4; i++) {
+                    if (croppedBlobs[i]) {
+                        formData.append('productImage', croppedBlobs[i], `cropped-image-${i}.png`);
+                    }
+                }
+
+                // Log FormData for debugging
+                console.log('Edit FormData contents:');
+                for (let pair of formData.entries()) {
+                    console.log(`${pair[0]}: ${pair[1]}`);
+                }
+
+                try {
+                    const response = await fetch('/admin/editProduct', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (!data.success) {
+                        Swal.fire('Error', data.message || 'Validation error', 'error');
+                        return;
+                    }
+                    Swal.fire('Success', data.message || 'Product edited successfully', 'success').then(() => {
+                        window.location.replace(data.redirectUrl);
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'Something went wrong while editing product: ' + error.message, 'error');
+                }
+            });
+
+            // Cancel Delete Button
+            document.getElementById('cancelDeleteButton').addEventListener('click', hideDeleteProductModal);
+        });
+
+        // Modal Functions
+        function showAddProductModal() {
+            addProductModal.style.display = 'block';
+            croppedBlobs = {};
+            clearPreviews('add');
+        }
+
+        function hideAddProductModal() {
+            addProductModal.style.display = 'none';
+            resetCropper();
+            clearPreviews('add');
+        }
+
+        function showEditProductModal(id, name, description, brand, category, regularPrice, salePrice, productOffer, stock, images, isBlocked) {
+            document.getElementById('productId').value = id;
+            document.getElementById('editProductName').value = name;
+            document.getElementById('editProductDescription').value = description;
+            document.getElementById('editProductBrand').value = brand;
+            document.getElementById('editProductCategory').value = category;
+            document.getElementById('editRegularPrice').value = regularPrice;
+            document.getElementById('editSalePrice').value = salePrice;
+            document.getElementById('editProductOffer').value = productOffer;
+            document.getElementById('editProductStock').value = stock;
+            document.getElementById('editBlockProduct').checked = isBlocked;
+
+            // Display existing images
+            for (let i = 1; i <= 4; i++) {
+                const preview = document.getElementById(`editPreview${i}`);
+                if (images[i-1]) {
+                    preview.innerHTML = `<img src="/Uploads/products/${images[i-1]}" alt="Image ${i}" style="width: 100px; height: 100px; object-fit: cover;">`;
+                } else {
+                    preview.innerHTML = '';
+                }
+            }
+
+            editProductModal.style.display = 'block';
+            croppedBlobs = {};
+        }
+
+        function hideEditProductModal() {
+            editProductModal.style.display = 'none';
+            resetCropper();
+            clearPreviews('edit');
+        }
+
+        function showDeleteProductModal(id, name) {
+            const deleteProductMessage = document.getElementById('deleteProductMessage');
+            const confirmButton = document.getElementById('confirmDeleteButton');
+
+            deleteProductMessage.textContent = `Are you sure you want to delete ${name}?`;
+
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            newConfirmButton.addEventListener('click', () => deleteProduct(id));
+
+            deleteProductModal.style.display = 'block';
+        }
+
+        function hideDeleteProductModal() {
+            deleteProductModal.style.display = 'none';
+        }
+
+        async function deleteProduct(productId) {
+            try {
+                const response = await fetch('/admin/deleteProduct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    Swal.fire('Product Removed', 'The product has been removed', 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Failed', data.message || 'Product removal failed', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'An error occurred while deleting product', 'error');
+                console.log('Product removal failed: ', error);
+            }
+        }
+
+        // Cropper Functions
+        function initCropper(event, index, modalType) {
+            const input = event.target;
+            const file = input.files[0];
+            if (!file) return;
+
+            currentImageIndex = index;
+            currentModalType = modalType;
+
+            const cropperContainer = document.getElementById(modalType === 'add' ? 'cropperContainer' : 'editCropperContainer');
+            const cropperImage = document.getElementById(modalType === 'add' ? 'cropperImage' : 'editCropperImage');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                cropperImage.src = e.target.result;
+                cropperContainer.style.display = 'block';
+
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveCroppedImage() {
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 300,
+                height: 300,
+                // fillColor : '#ffffff'
+            });
+
+            canvas.toBlob(blob => {
+                const preview = document.getElementById(`${currentModalType === 'add' ? 'preview' : 'editPreview'}${currentImageIndex}`);
+                preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Cropped Image ${currentImageIndex}" style="width: 100px; height: 100px; object-fit: cover;">`;
+                croppedBlobs[currentImageIndex] = blob;
+
+                // Clear the file input to prevent sending the original image
+                const input = document.getElementById(`${currentModalType === 'add' ? 'productImage' : 'editProductImage'}${currentImageIndex}`);
+                input.value = '';
+
+                console.log(`Cropped image ${currentImageIndex} saved to croppedBlobs`);
+
+                resetCropper();
+            }, 'image/png');
+
+            // const context = canvas.getContext('2d');
+            // context.fillStyle = '#ffffff';
+            // context.fillRect(0, 0, canvas.width, canvas.height);
+            // context.drawImage(cropper.getCroppedCanvas(), 0, 0);
+
+            // canvas.toBlob(blob => {
+            //     const preview = document.getElementById(`${currentModalType === 'add' ? 'preview' : 'editPreview'}${currentImageIndex}`);
+            //     preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Cropped Image ${currentImageIndex}" style="width: 100px; height: 100px; object-fit: cover;">`;
+            //     croppedBlobs[currentImageIndex] = blob;
+
+            //     // Clear the file input to prevent sending the original image
+            //     const input = document.getElementById(`${currentModalType === 'add' ? 'productImage' : 'editProductImage'}${currentImageIndex}`);
+            //     input.value = '';
+
+            //     console.log(`Cropped image ${currentImageIndex} saved to croppedBlobs`, blob);
+
+            //     resetCropper();
+            // }, 'image/jpeg', 0.8)
+        }
+
+        function cancelCrop() {
+            resetCropper();
+            const input = document.getElementById(`${currentModalType === 'add' ? 'productImage' : 'editProductImage'}${currentImageIndex}`);
+            input.value = '';
+            const preview = document.getElementById(`${currentModalType === 'add' ? 'preview' : 'editPreview'}${currentImageIndex}`);
+            preview.innerHTML = '';
+        }
+
+        function resetCropper() {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            document.getElementById('cropperContainer').style.display = 'none';
+            document.getElementById('editCropperContainer').style.display = 'none';
+        }
+
+        function clearPreviews(modalType) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`${modalType === 'add' ? 'preview' : 'editPreview'}${i}`).innerHTML = '';
+                const input = document.getElementById(`${modalType === 'add' ? 'productImage' : 'editProductImage'}${i}`);
+                if (input) input.value = '';
+            }
+            croppedBlobs = {};
+        }
+
+        // Error Handling
+        function clearErrors(productForm) {
+            productForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            productForm.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        }
+
+        function displayFormError(productForm, errors) {
+            clearErrors(productForm);
+
+            if (errors && typeof errors === 'object') {
+                Object.entries(errors).forEach(([field, message]) => {
+                    const input = productForm.querySelector(`.${field}`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = message;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Validation
+        function validateForm(data) {
+
+            const salePrice = Number(data.salePrice)
+            const regularPrice = Number(data.regularPrice)
+
+            const digit = /^\d+(\.\d{1,2})?$/;
+            let errors = {};
+
+            if (!data.productName) {
+                errors.productName = 'Name is required!';
+            }
+
+            if (!data.description) {
+                errors.description = 'Description is required!';
+            }
+
+            if (!data.category) {
+                errors.category = 'Please select a Category!';
+            }
+
+            if (!data.brand) {
+                errors.brand = 'Please select a Brand!';
+            }
+
+            if (!regularPrice) {
+                errors.regularPrice = 'Regular Price is required!';
+            } else if (!digit.test(regularPrice)) {
+                errors.regularPrice = 'Regular Price should be a valid number!';
+            }
+
+            if (!salePrice) {
+                errors.salePrice = 'Sale Price is required!';
+            } else if (!digit.test(salePrice)) {
+                errors.salePrice = 'Sale Price should be a valid number!';
+            } else if(salePrice > regularPrice){
+                errors.salePrice = 'Sale Price should be lessthan Regular Price!'
+            }
+            
+            if (!data.stock) {
+                errors.stock = 'Stock is required!';
+            } else if (!digit.test(data.stock)) {
+                errors.stock = 'Stock should be a whole number!';
+            }
+
+            if (data.productOffer) {
+                if (parseInt(data.productOffer) >= 100) {
+                    errors.productOffer = 'Offer should be under 100!';
+                } else if (parseInt(data.productOffer) < 0) {
+                    errors.productOffer = 'Negative value not acceptable!';
+                } else if (!digit.test(data.productOffer)) {
+                    errors.productOffer = 'Offer should be a whole number!';
+                }
+            }
+
+            return Object.keys(errors).length > 0 ? errors : null;
+        }
+    </script>
+</body>
+</html>

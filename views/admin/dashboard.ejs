@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/admin/dashboard.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+            
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h1>Welcome Admin...</h1>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Revenue</span>
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="stat-value">$25k</div>
+                    <div class="stat-change positive">+11.01% <i class="fas fa-arrow-up"></i></div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Visits</span>
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="stat-value">367K</div>
+                    <div class="stat-change positive">+9.15% <i class="fas fa-arrow-up"></i></div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Visits</span>
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="stat-value">367K</div>
+                    <div class="stat-change positive">+9.15% <i class="fas fa-arrow-up"></i></div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Orders</span>
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="stat-value">56</div>
+                    <div class="stat-change negative">-0.58% <i class="fas fa-arrow-down"></i></div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Active Users</span>
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="stat-value">239K</div>
+                    <div class="stat-change negative">-1.48% <i class="fas fa-arrow-down"></i></div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-container">
+                <!-- Revenue Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <span>Revenue</span>
+                            <div class="dropdown">
+                                <span>This week</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="chart-actions">
+                            <div class="chart-type">
+                                <i class="fas fa-th-large"></i>
+                                <span>Orders</span>
+                            </div>
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <div class="chart-y-labels">
+                            <span>360K</span>
+                            <span>270K</span>
+                            <span>180K</span>
+                            <span>90K</span>
+                            <span>0</span>
+                        </div>
+                        <div class="chart-placeholder">
+                            <div class="tooltip">Fri: 18,298</div>
+                            <!-- Chart would be rendered by a library like Chart.js -->
+                        </div>
+                        <div class="chart-x-labels">
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                            <span>Sun</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Selling Products -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <span>Top Selling Products</span>
+                            <div class="dropdown">
+                                <span>This week</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="chart-actions">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                    </div>
+                    <div class="products-table">
+                        <div class="table-header">
+                            <div class="product-name">Product name</div>
+                            <div class="price">Price</div>
+                            <div class="sales">Sales</div>
+                        </div>
+                        <div class="table-body">
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera"></i> CANON EOS R5 MARK II</div>
+                                <div class="price">₹5,05,995</div>
+                                <div class="sales">₹75,89,925</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera"></i> EOS R6 Mark II</div>
+                                <div class="price">₹2,17,995</div>
+                                <div class="sales">₹26,15,940</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera"></i> Alpha 7C Compact</div>
+                                <div class="price">₹1,49,695</div>
+                                <div class="sales">₹25,86,510</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera-retro"></i> RF70-200mm f2.8L IS USM Z</div>
+                                <div class="price">₹2,95,992</div>
+                                <div class="sales">₹88,79,760</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-video"></i> HVL-F28RM</div>
+                                <div class="price">₹3,495</div>
+                                <div class="sales">₹1,74,750</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera"></i> Canon STM Dual Fisheye</div>
+                                <div class="price">₹1,07,995</div>
+                                <div class="sales">₹16,19,925</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera"></i> SEL70200GM2</div>
+                                <div class="price">₹9,995</div>
+                                <div class="sales">₹2,79,860</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera-retro"></i> Speedlite 600EX II-RT</div>
+                                <div class="price">₹32,995</div>
+                                <div class="sales">₹14,84,775</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="product-name"><i class="fas fa-camera"></i> NIKON COOLPIX P1100</div>
+                                <div class="price">₹83,695</div>
+                                <div class="sales">₹20,92,375</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="orders-container">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <span>Recent Orders</span>
+                            <div class="dropdown">
+                                <span>This week</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="chart-actions">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                    </div>
+                    <div class="orders-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Customer</th>
+                                    <th>Order Total</th>
+                                    <th>Order Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>RF70-200mm f2.8L IS USM Z</td>
+                                    <td>Anoop M</td>
+                                    <td>₹2,95,992.00</td>
+                                    <td><span class="status pending">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>EOS R6 Mark II</td>
+                                    <td>Alex John</td>
+                                    <td>₹2,17,995.00</td>
+                                    <td><span class="status shipped">Shipped</span></td>
+                                </tr>
+                                <tr>
+                                    <td>CANON EOS R5 MARK II</td>
+                                    <td>Fulana Begam</td>
+                                    <td>₹5,05,995.00</td>
+                                    <td><span class="status delivered">Delivered</span></td>
+                                </tr>
+                                <tr>
+                                    <td>CANON EOS R5 MARK II</td>
+                                    <td>Shefin N</td>
+                                    <td>₹5,05,995.00</td>
+                                    <td><span class="status cancelled">Cancelled</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // For dropdown functionality
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            dropdown.addEventListener('click', function() {
+                // Toggle dropdown logic would go here
+            });
+        });
+    </script>
+</body>
+</html>

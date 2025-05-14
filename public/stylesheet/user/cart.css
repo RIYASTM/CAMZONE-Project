@@ -1,0 +1,262 @@
+/* General Cart Page Styling */
+.cart-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    /* background-color: var(--background-color) ; */
+}
+
+a{
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #333;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb span {
+    color: #333;
+}
+
+/* Cart Container */
+.cart-container {
+    display: flex;
+    gap: 20px;
+}
+
+/* Cart Items Section */
+.cart-items {
+    flex: 3;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.cart-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 10px 0;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+}
+
+.cart-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.cart-product {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cart-product img {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.cart-product span {
+    font-size: 16px;
+    color: #333;
+}
+
+.cart-quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 95px;
+}
+
+.quantity-btn {
+    background: #f0f0f0;
+    border: none;
+    padding: 5px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.quantity-btn:hover {
+    background: #ddd;
+}
+
+.quantity-input {
+    width: 25px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding: 5px;
+    font-size: 16px;
+}
+
+.quantity-input:focus {
+    outline: none;
+}
+
+.cart-subtotal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    color: #333;
+}
+
+.remove-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #888;
+}
+
+.remove-item:hover {
+    color: #ff0000;
+}
+
+/* Cart Total Section */
+.cart-total {
+    flex: 1;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.cart-total h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+}
+
+.coupon-section {
+    margin: 15px 0;
+}
+
+.coupon-toggle {
+    width: 100%;
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+}
+
+.coupon-toggle:hover {
+    background: #e68900;
+}
+
+.coupon-input {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.coupon-input input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.coupon-input button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.coupon-input button:hover {
+    background: #0056b3;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Cart Actions */
+.cart-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+}
+
+.continue-shopping, .proceed-checkout {
+    background: #ff9800;
+    color: white;
+}
+
+.continue-shopping:hover, .proceed-checkout:hover {
+    background: #e68900;
+}
+
+.update-cart {
+    background: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+}
+
+.update-cart:hover {
+    background: #f0f0f0;
+}
+
+.clear-cart {
+    background: #fff;
+    border: 1px solid #ff0000;
+    color: #ff0000;
+}
+
+.clear-cart:hover {
+    background: #ff0000;
+    color: white;
+}

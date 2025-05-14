@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers | CAMZONE</title>
+    <link rel="stylesheet" href="/stylesheet/admin/customers.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
+    <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Include Sidebar -->
+        <%- include('../partials/admins/sidebar') %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Include Header -->
+            <%- include('../partials/admins/header') %>
+            
+            <!-- Customers Top Bar -->
+            <div class="customers-top-bar">
+                <div class="top-left">
+                    <span>Customers |</span>
+                    <select class="sort-by">
+                        <option value="default">Sort by</option>
+                        <option value="name">Name</option>
+                        <option value="date">Date</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+                <div class="top-center" style="position: relative; display: inline-block;">
+                    <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search%>">
+                    <%if(search){%>
+                    <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+                    <%}%>
+                </div>
+                <div class="top-right">
+                    <select class="filter">
+                        <option value="all">Filter</option>
+                        <option value="active">Active</option>
+                        <option value="deleted">Blocked</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Customers Table -->
+            <div class="customers-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone No</th>
+                            <th>Created On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <%for(let i = 0 ; i < data.length ; i ++ ) {%>
+                            <tr>
+                                <td><%= data[i].name %></td>
+                                <td><%= data[i].email %></td>
+                                <td><%= data[i].phone %></td>
+                                <td><%= data[i].createdOn.toString().split(' ').slice(1,4).join(' ') %> </td>
+                                <td>
+                                    <% if(data[i].isBlocked === false) {%>
+                                    <!-- <button class="filter"><a href="/admin/blockCustomer?id=<%=data[i]._id%>" onclick="blockCustomer('<%=data[i]._id%>')">BLock</a></button> -->
+                                    <button class="filter" onclick="blockUser()">BLock</button>
+                                    <% }else{ %>
+                                        <button class="filter"><a href="/admin/unblockCustomer?id=<%=data[i]._id%>">Unblock</a></button>
+                                    <% } %>
+                                    </td>
+                                    
+
+                            </tr>
+                            <% } %>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/admins/customers.js"></script>
+</body>
+</html>

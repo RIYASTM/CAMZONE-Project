@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - CAMZONE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/stylesheet/user/cart.css">
+</head>
+<body>
+    <%- include('../partials/users/header') %>
+
+    <section class="cart-page">
+        <nav class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="separator">></span>
+            <span class="current">Cart</span>
+        </nav>
+
+        <div class="cart-container">
+            <!-- Cart Items Section -->
+            <div class="cart-items">
+                <div class="cart-header">
+                    <span>Product</span>
+                    <span>Quantity</span>
+                    <span>Subtotal</span>
+                </div>
+
+                <% if (cartItems && cartItems.length > 0) { %>
+                    <% cartItems.forEach(item => { %>
+                        <div class="cart-item">
+                            <div class="cart-product">
+                                <img src="/Uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
+                                <span><%= item.product.productName %></span>
+                            </div>
+                            <div class="cart-quantity">
+                                <button class="quantity-btn minus" data-id="<%= item.product._id %>" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
+                                <input type="text" class="quantity-input" data-product-id="<%= item.product._id %>" value="<%= item.quantity >= item.product.quantity ? item.product.quantity : item.quantity %>" readonly>
+                                <button class="quantity-btn plus" data-id="<%= item.product._id %>" data-stock="<%= item.product.quantity %>" <%= item.quantity >= item.product.quantity ? 'disabled' : '' %>>+</button>
+                            </div>
+                            <div class="cart-subtotal">
+                                ₹ <%= (item.totalPrice).toLocaleString('en-IN') %>
+                                <button class="remove-item" data-id="<%= item.product._id %>">
+                                    <i class="fas fa-circle-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>Your cart is empty.</p>
+                <% } %>
+            </div>
+
+            <!-- Cart Total Section -->
+            <div class="cart-total">
+                <h2>Cart Total</h2>
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span>₹ <%= subtotal.toLocaleString('en-IN') %></span>
+                </div>
+                <div class="coupon-section">
+                    <a href="/coupon" class="coupon-toggle">Coupons <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="total-row">
+                    <span>Total Amount</span>
+                    <span>₹ <%= total.toLocaleString('en-IN') %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Actions -->
+        <div class="cart-actions">
+            <a href="/shop" class="btn continue-shopping">Continue Shopping</a>
+            <a href="/checkout" class="btn proceed-checkout">Proceed to Checkout</a>
+        </div>
+    </section>
+
+    <%- include('../partials/users/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Quantity buttons
+        document.querySelectorAll('.quantity-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                const productId = this.getAttribute('data-id');
+                const input = this.parentElement.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+                let quantity = parseInt(input.value);
+                const originalQuantity = quantity;
+                const stock = parseInt(this.parentElement.querySelector('.plus').getAttribute('data-stock'));
+
+                console.log('Product ID:', productId, 'Current Quantity:', quantity, 'Stock:', stock);
+
+                if (this.classList.contains('minus') && quantity > 1) {
+                    quantity--;
+                } else if (this.classList.contains('plus') && quantity < stock) {
+                    quantity++;
+                }
+
+                if (quantity !== originalQuantity) {
+                    input.value = quantity;
+                    await updateCartItem(productId, quantity, input, originalQuantity);
+                }
+            });
+        });
+
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', async function() {
+                const productId = this.getAttribute('data-id');
+                await removeCartItem(productId);
+            });
+        })
+
+        async function updateCartItem(productId, quantity, input, originalQuantity) {
+            try {
+                const response = await fetch('/updateCart', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity })
+                });
+                console.log('Update cart response status:', response.status);
+                const data = await response.json();
+                console.log('Update cart response data:', data);
+                if (data.success) {
+                    location.reload();
+                } else {
+                    input.value = originalQuantity;
+                    Swal.fire('Error', data.message || 'Failed to update cart item.', 'error');
+                }
+            } catch (error) {
+                input.value = originalQuantity; 
+                console.error('Error updating cart:', error);
+                Swal.fire('Error', 'Something went wrong while updating the cart.', 'error');
+            }
+        }
+
+        async function removeCartItem(productId) {
+            try {
+                const response = await fetch('/cartRemove', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
+                });
+                console.log('Remove cart response status:', response.status);
+                const data = await response.json();
+                console.log('Remove cart response data:', data);
+                if (data.success) {
+                    location.reload();
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to remove item from cart.', 'error');
+                }
+            } catch (error) {
+                console.error('Error removing item:', error);
+                Swal.fire('Error', 'Something went wrong while removing the item.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

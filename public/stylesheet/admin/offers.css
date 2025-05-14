@@ -1,0 +1,37 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+:root {
+    --primary-color: #1e1e1e;
+    --secondary-color: #282828;
+    --text-color: #333;
+    --light-gray: #f5f5f5;
+    --border-color: #FCA311;
+}
+
+body {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+}

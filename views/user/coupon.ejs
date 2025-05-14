@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Page</title>
+    <link rel="stylesheet" href="/stylesheet/user/coupon.css">
+</head>
+<body>
+    <header>
+
+        <%- include('../partials/users/header',{search}) %>
+    
+    </header>
+    <nav>
+        <a href="/">Home</a> &gt;
+        <a href="/cart">Cart</a> &gt;
+        <a href="/coupon">Coupon</a>
+    </nav>
+
+    <div class="coupon-container">
+        <div class="coupon-card">
+            <h2>🎉 Congratulations! 30% off your new purchase!</h2>
+            <p>Use the coupon now or look for it in your personal account.</p>
+            <div class="coupon-code">
+                <span>30%SALEOFF</span>
+                <button>Copy coupon</button>
+            </div>
+        </div>
+
+        <div class="coupon-card">
+            <h2>🎉 Congratulations! 10% off your new purchase!</h2>
+            <p>Use the coupon now or look for it in your personal account.</p>
+            <div class="coupon-code">
+                <span>10%SALEOFF</span>
+                <button>Copy coupon</button>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/users/footer') %>
+
+</body>
+</html>

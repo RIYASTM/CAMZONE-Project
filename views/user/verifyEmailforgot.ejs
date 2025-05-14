@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMZONE Verify Email</title>
+    <link rel="stylesheet" href="/stylesheet/user/emailVerify.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/header.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <header>
+
+        <%- include('../partials/users/header',{search}) %>
+    
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="breadcrumb-separator">›</span> 
+            <a href="/create-account">Create Account</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="">Forgot Password</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="">Verify Email</a>
+        </div>
+
+        <div class="verification-container">
+            <div class="image-section">
+                <img src="/images/Group 150.png" alt="Camera close-up" class="camera-image">
+            </div>
+
+            <div class="form-section">
+                <h1>Verify Email</h1>
+                <p>Enter OTP received in your email</p>
+                
+                <form  id="verifyOtpForm" >
+                    <div class="form-group">
+                        <input type="text" id="otp" name="otp" placeholder="OTP" class="otp-input"  >
+                        <label for="otp">OTP</label>
+                    </div>
+                    
+                    <button type="submit" form="verifyOtpForm" class="verify-btn" >Verify</button>
+                </form>
+                
+                <div class="resend-container">
+                    <a href="#" id="resend-link" >Resend OTP</a>
+                    <span id="timer">5 s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/users/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- <script src="/javascript/users/verifyEmail.js"></script> -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const verifyOtpForm = document.getElementById('verifyOtpForm');
+
+    console.log(verifyOtpForm, 'form')
+
+    verifyOtpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log('text')
+        const otp = document.getElementById('otp').value
+        console.log(otp)
+
+        try {
+            const response = await fetch('/verifyEmailforgot', {
+                method: 'POST',
+                body: JSON.stringify({otp}),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            console.log(data)
+
+            if (data.success) {
+                Swal.fire('Success',data.message || ' successful', 'success')
+                .then(() => {
+                    window.location.href = data.redirectUrl || '/signin';
+                });
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
+        }
+    });
+
+
+
+
+
+
+    let timerElement = document.getElementById('timer');
+    let resendLink = document.getElementById('resend-link');
+    let seconds = parseInt(timerElement.textContent);
+    
+    let countdownInterval = setInterval(() => {
+        seconds--;
+        timerElement.textContent = seconds + ' s';
+        
+        if (seconds <= 0) {
+            clearInterval(countdownInterval);
+            resendLink.classList.add('active');
+        }
+    }, 1000);
+    
+    resendLink.addEventListener('click', function(e) {
+        if (!resendLink.classList.contains('active')) {
+            e.preventDefault();
+            console.log('Link not active, preventing default');
+        } else {
+            e.preventDefault();
+            console.log('Link clicked, sending resend request');
+            fetch('/resend-Otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resend Response : ', data);
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: data.message || 'OTP resent successfully',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    seconds = 59;
+                    timerElement.textContent = seconds + ' s';
+                    resendLink.classList.remove('active');
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = setInterval(() => {
+                        seconds--;
+                        timerElement.textContent = seconds + ' s';
+                            if (seconds <= 0) {
+                                clearInterval(countdownInterval);
+                                countdownInterval = null;
+                                resendLink.classList.add('active');
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to resend OTP'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Resend OTP error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to resend OTP: ' + (error.message || 'Unknown error')
+                });
+            });
+        }
+    });
+
+});
+    </script>
+</body>
+</html>

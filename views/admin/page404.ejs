@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="/stylesheet/user/page-404.css"> 
+</head>
+<body>
+    <main class="error-container">
+        <h1>404 Not Found</h1>
+        <p>Your visited page not found. You may go home page.</p>
+        <a href="/admin" class="back-button">Back to home page</a>
+    </main>
+
+    <% if (typeof additionalMessage !== 'undefined') { %>
+    <div class="additional-message">
+        <p><%= additionalMessage %></p>
+    </div>
+    <% } %>
+</body>
+</html>

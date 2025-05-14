@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <link rel="stylesheet" href="/stylesheet/partials/users/header.css">
+    <link rel="stylesheet" href="/stylesheet/partials/users/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/stylesheet/user/page-404.css">
+</head>
+<body>
+
+
+    <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="breadcrumb-separator">›</span>
+        <span>404 Error</span>
+    </div>
+
+    <main class="error-container">
+        <h1>404 Not Found</h1>
+        <p>Your visited page not found. You may go home page.</p>
+        <a href="/" class="back-button">Back to home page</a>
+    </main>
+
+    <% if (typeof additionalMessage !== 'undefined') { %>
+    <div class="additional-message">
+        <p><%= additionalMessage %></p>
+    </div>
+    <% } %>
+
+
+</body>
+</html>

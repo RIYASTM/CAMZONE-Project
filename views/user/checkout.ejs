@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Page</title>
+    <link rel="stylesheet" href="/stylesheet/user/checkout.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> >
+        <a href="/cart">Cart</a> >
+        <a href="/checkout">Check Out</a>
+    </nav>
+
+    <div class="checkout-container">
+        <div class="billing-details">
+            <h2>Billing Details</h2>
+            <h3>Delivery Address:</h3>
+            <label>
+                <input type="radio" name="address" checked>
+                Jaswant Raj Desai, Kottayam Medical College Bypass Rd, Gandhi Nagar, Arpookkara, 686008
+            </label>
+            <label>
+                <input type="radio" name="address">
+                Abhishek Prabhat, Kottayam, Thirunelli Temple (P.O.), Thirunelli, 670646
+            </label>
+            <label>
+                <input type="radio" name="address">
+                Amir Kulkarni, Second Street, Palayam, Thiruvananthapuram, 695001
+            </label>
+            <label>
+                <input type="radio" name="address">
+                New Address:
+            </label>
+
+            <div class="new-address">
+                <input type="text" placeholder="Enter Your Name" value="Your Name">
+                <input type="text" placeholder="Street Address" value="Kingston, 5236">
+                <input type="text" placeholder="Apartment, floor, etc. (optional)" value="Brotype">
+                <input type="text" placeholder="Town/City" value="Calicut">
+                <div class="address-row">
+                    <input type="text" placeholder="Pin" value="673645">
+                    <input type="text" placeholder="District" value="District">
+                    <input type="text" placeholder="Phone Number" value="+91 80665808788">
+                    <input type="text" placeholder="State" value="State">
+                </div>
+            </div>
+        </div>
+
+        <div class="order-summary">
+            <div class="summary-details">
+                <p>Subtotal: <span>₹26,552.35</span></p>
+                <p>Shipping: <span>₹0</span></p>
+                <p>Promotion/Discount: <span>₹0</span></p>
+                <p>GST: <span>₹1,754.34.65</span></p>
+                <h3>Total: <span>₹8,01,987.00</span></h3>
+            </div>
+
+            <div class="payment-methods">
+                <label>
+                    <input type="radio" name="payment" checked>
+                    Pay With Wallet
+                </label>
+                <label>
+                    <input type="radio" name="payment">
+                    Debit / Credit Card
+                </label>
+                <div class="card-details">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
+                    <input type="text" placeholder="Card Number" value="XXXX XXXX XXXX XXXX">
+                    <div class="card-row">
+                        <input type="text" placeholder="Card Expiry" value="05 29">
+                        <input type="text" placeholder="CVV" value="2029">
+                    </div>
+                    <input type="text" placeholder="Name on Card" value="Alex John">
+                </div>
+                <label>
+                    <input type="radio" name="payment">
+                    Net Banking
+                </label>
+                <label>
+                    <input type="radio" name="payment">
+                    Cash on delivery
+                </label>
+            </div>
+
+            <button class="place-order">Place Order</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile</title>
+    <link rel="stylesheet" href="/stylesheet/user/profile.css">
+</head>
+<body>
+    <header>
+        <%- include('../partials/users/header',{search}) %>
+    </header>
+    <div class="container">
+        <!-- Navigation Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="separator">></span>
+            <a href="/myAccount">My Account</a>
+            <span class="separator">></span>
+            <a href="/profile">My Details</a>
+            <span class="separator">></span>
+            <span class="current">My Profile</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <h3>My Details</h3>
+                <ul>
+                    <li class="active"><a href="/profile">My Profile</a></li>
+                    <li><a href="/passwordManage">Change Password</a></li>
+                    <li><a href="/address">My Address</a></li>
+                </ul>
+            </div>
+
+            <!-- Profile Form -->
+            <div class="profile-form">
+                <h2>Update Profile</h2>
+                <button type="button" id="cancelButton" class="btn-cancel" style="display: none;">X</button>
+                
+                <form enctype="multipart/form-data" id="profileForm">
+                    <div class="form-layout">
+                        
+                        <div class="form-fields">
+                            <div class="form-group">
+                                <label for="name">Name <span class="required">*</span> :</label>
+                                <input type="text" id="name" name="name" value="<%= user.name || 'Alex' %>" disabled>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <!-- <div class="form-group">
+                                <label for="address">Address</label>
+                                <input type="text" id="address" name="address" value="#" disabled>
+                                <div class="invalid-feedback"></div>
+                            </div> -->
+                            <div class="form-group">
+                                <label for="email">Email <span class="required">*</span> :</label>
+                                <input type="email" id="email" name="email" value="<%= user.email || 'johnalex@gmail.com' %>" disabled>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone No <span class="required">*</span> :</label>
+                                <input type="tel" id="phone" name="phone" value="<%= user.phone || '+91 8086508788' %>" disabled>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-picture-section">
+                            <label>Profile Picture</label>
+                            <div class="profile-picture-container" id="profilePicContainer">
+                                <% if (user && user.profileImage) { %>
+                                    <img src="/uploads/profile/<%= user.profileImage %>" alt="<%= user.name %>" id="profilePreview" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
+                                <% } else { %>
+                                    <div class="profile-placeholder">
+                                        <span class="plus-icon">+</span>
+                                    </div>
+                                <% } %>
+                                <input type="file" id="profileImage" name="profileImage" accept="image/*" style="display: none;" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="editButton" form="profileForm" class="btn-edit">Edit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <%- include('../partials/users/footer') %>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileForm = document.getElementById('profileForm');
+            const formInputs = profileForm.querySelectorAll('input');
+            const profilePicContainer = document.getElementById('profilePicContainer');
+            const fileInput = document.getElementById('profileImage');
+            const previewImg = document.getElementById('profilePreview');
+            const editButton = document.getElementById('editButton');
+            const cancelButton = document.getElementById('cancelButton');
+            const originalValues = {};
+
+            formInputs.forEach(input => {
+                originalValues[input.name] = input.value;
+            });
+            originalValues.profileImage = previewImg ? previewImg.src : '';
+
+            //Edit Profile Datas displaying
+            editButton.addEventListener('click', function() {
+                if (editButton.textContent === 'Edit') {
+                    formInputs.forEach(input => input.disabled = false);
+                    fileInput.disabled = false;
+                    editButton.textContent = 'Save Changes';
+                    editButton.className = 'btn-save';
+                    cancelButton.style.display = 'inline-block';
+                    profilePicContainer.style.cursor = 'pointer';
+                    profilePicContainer.classList.add('editable');
+                } else {
+                    submitForm();
+                }
+            });
+
+            cancelButton.addEventListener('click', function() {
+                formInputs.forEach(input => {
+                    input.disabled = true;
+                    input.value = originalValues[input.name];
+                    editButton.textContent = 'Edit';
+                    editButton.className = 'btn-edit';
+                    cancelButton.style.display = 'none';
+                    profilePicContainer.style.cursor = 'default';
+                    profilePicContainer.classList.remove('editable');
+                    clearErrors(profileForm);
+                });
+                fileInput.disabled = true;
+                if (previewImg) {
+                    previewImg.src = originalValues.profileImage;
+                } else if (!previewImg && originalValues.profileImage === '') {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'profile-placeholder';
+                    placeholder.innerHTML = '<span class="plus-icon">+</span>';
+                    profilePicContainer.innerHTML = '';
+                    profilePicContainer.appendChild(placeholder);
+                    profilePicContainer.appendChild(fileInput);
+                }
+                
+            });
+
+            profilePicContainer.addEventListener('click', function() {
+                if (!fileInput.disabled) {
+                    fileInput.click();
+                }
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    if (this.files[0].size > 5 * 1024 * 1024) {
+                        Swal.fire('Error', 'Profile picture must be less than 5MB.', 'error');
+                        this.value = '';
+                        return;
+                    }
+                    if (!this.files[0].type.startsWith('image/')) {
+                        Swal.fire('Error', 'Please upload a valid image file.', 'error');
+                        this.value = '';
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (previewImg) {
+                            previewImg.src = e.target.result;
+                        } else {
+                            const newImg = document.createElement('img');
+                            newImg.src = e.target.result;
+                            newImg.id = 'profilePreview';
+                            const placeholder = document.querySelector('.profile-placeholder');
+                            if (placeholder) {
+                                profilePicContainer.removeChild(placeholder);
+                            }
+                            profilePicContainer.appendChild(newImg);
+                        }
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            async function submitForm() {
+                clearErrors(profileForm);
+                const formData = new FormData(profileForm);
+                const jsonData = {};
+                formData.forEach((value, key) => {
+                    if (key !== 'profileImage') {
+                        jsonData[key] = value.trim();
+                    }
+                });
+
+                let errors = validateUser(jsonData);
+                if (errors) {
+                    displayFormErrors(profileForm, errors);
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/editProfile', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        if (data.errors) {
+                            displayFormErrors(profileForm, data.errors);
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to update profile.', 'error');
+                        }
+                        return;
+                    }
+
+                    Swal.fire('Success', data.message || 'Profile updated successfully!', 'success')
+                        .then(() => {
+                            window.location.replace(data.redirectUrl);
+                        });
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    Swal.fire('Error', 'Something went wrong while updating the profile.', 'error');
+                }
+            }
+
+            function displayFormErrors(form, errors) {
+                clearErrors(form);
+                if (errors && typeof errors === 'object') {
+                    Object.entries(errors).forEach(([field, message]) => {
+                        const input = form.querySelector(`input[name="${field}"]`);
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            const feedback = input.nextElementSibling;
+                            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                feedback.textContent = message;
+                            }
+                        }
+                    });
+                }
+            }
+            
+            function clearErrors(form) {
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+            }
+            
+            function validateUser(data) {
+                const namePattern = /^[A-Za-z\s]+$/;
+                const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
+                const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/; // More flexible phone pattern
+                let errors = {};
+
+                if (!data.name) {
+                    errors.name = "First name is required!";
+                } else if (!namePattern.test(data.name)) {
+                    errors.name = "Name can only contain letters and spaces!";
+                }
+                if (!data.email) {
+                    errors.email = "Email is required!";
+                } else if (!emailPattern.test(data.email)) {
+                    errors.email = "Invalid email format!";
+                }
+                if (!data.phone) {
+                    errors.phone = "Phone number is required!";
+                } else if (!phonePattern.test(data.phone)) {
+                    errors.phone = "Phone number format is invalid!";
+                }
+
+                return Object.keys(errors).length > 0 ? errors : null;
+            }
+        
+        });
+    </script>
+</body>
+</html>

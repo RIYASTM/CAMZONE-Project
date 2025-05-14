@@ -1,0 +1,57 @@
+<div class="sidebar">
+    <div class="logo">
+        <img src="/images/icons/CAMZONE.png" alt="CameraZone">
+    </div>
+    
+    <nav class="sidebar-nav">
+        <div class="nav-item <%- currentPage === 'dashboard' ? 'active' : '' %>">
+            <i class="fas fa-chart-line"></i>
+            <span><a href="/admin/dashboard">Dashboard</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'products' ? 'active' : '' %>">
+            <i class="fas fa-box"></i>
+            <span><a href="/admin/products">Products</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'customers' ? 'active' : '' %>">
+            <i class="fas fa-users"></i>
+            <span><a href="/admin/customers">Customers</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'orders' ? 'active' : '' %>">
+            <i class="fas fa-shopping-cart"></i>
+            <span><a href="/admin/orders">Orders</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'reports' ? 'active' : '' %>">
+            <i class="fas fa-chart-bar"></i>
+            <span><a href="/admin/reports">Reports</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'coupons' ? 'active' : '' %>">
+            <i class="fas fa-ticket-alt"></i>
+            <span><a href="/admin/coupons">Coupons</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'category' ? 'active' : '' %>">
+            <i class="fas fa-list"></i>
+            <span><a href="/admin/category">Category</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'offers' ? 'active' : '' %>">
+            <i class="fas fa-gift"></i>
+            <span><a href="/admin/offers">Offers</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'banners' ? 'active' : '' %>">
+            <i class="fas fa-image"></i>
+            <span><a href="/admin/banners">Banners</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'brands' ? 'active' : '' %>">
+            <i class="fas fa-tags"></i>
+            <span><a href="/admin/brands">Brands</a></span>
+        </div>
+        <div class="nav-item <%- currentPage === 'settings' ? 'active' : '' %>">
+            <i class="fas fa-cog"></i>
+            <span><a href="/admin/settings">Settings</a></span>
+        </div>
+    </nav>
+    
+    <div class="logout-section">
+        <a href="/admin/logout"><button class="logout-btn" type="submit">Logout</button></a>
+        <div class="copyright">© 2025 Camzone</div>
+    </div>
+</div>
