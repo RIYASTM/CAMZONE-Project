@@ -4,11 +4,11 @@ const {Schema} = mongoose
 const productSchema = new Schema ({
     productName : {
         type : String,
-        reuqired : true
+        required : true
     },
     description : {
         type : String,
-        reuqired : true
+        required : true
     },
     brand : {
         type :  Schema.Types.ObjectId,

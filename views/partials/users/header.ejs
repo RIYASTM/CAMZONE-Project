@@ -40,7 +40,7 @@
             </a> -->
             <a href="/cart">
                 <img src="/images/icons/shopping-cart.png" alt="Cart" class="icon">
-                Cart <span class="cart-count">0</span>
+                Cart <span class="cart-count"><%= cart ? (cart.items.length > 0 ? cart.items.length : 0) : 0 %></span>
             </a>
             <a href="/wishlist">
                 <img src="/images/icons/heart.png" alt="wishlist" class="icon">

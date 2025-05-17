@@ -8,7 +8,7 @@
 </head>
 <body>
     <header>
-        <%- include('../partials/users/header' ,{search}) %>
+        <%- include('../partials/users/header', {search, cart}) %>
     </header>
     <nav>
         <a href="/">Home</a> > <a href="/shop">All Products</a>
@@ -17,36 +17,28 @@
         <aside class="sidebar">
             <p><button id="clear-all">Clear All Filters</button></p>
             <h2>Filter</h2>
-            <p>0 Selected <span><a href="#" id="reset-filter" >Reset</a></span></p>
+            <p>0 Selected <span><a href="#" id="reset-filter">Reset</a></span></p>
             <label><input type="radio" name="name" class="sortName" value="A-Z"> A - Z </label><br>
-            <label><input type="radio" name="name" class="sortName" value="Z - A"> Z - A </label><br>
+            <label><input type="radio" name="name" class="sortName" value="Z-A"> Z - A </label><br>
             
             <!-- Price Filter -->
             <h2>Price</h2>
             <p>0 Selected <span><a href="#" id="reset-price">Reset</a></span></p>
-            <label><input type="radio" name="price" class="filterPrice" value="LOW - HIGH"> LOW - HIGH</label><br>
-            <label><input type="radio" name="price" class="filterPrice" value="HIGH - LOW"> HIGH - LOW</label><br>
-            <label><input type="radio" name="price" class="filterPrice" value="below 10000"> BELOW - 10000</label><br>
-            <label><input type="radio" name="price" class="filterPrice" value="10000">10000 - 50000</label><br>
-            <label><input type="radio" name="price" class="filterPrice" value="50000">50000 - 100000</label><br>
-            <label><input type="radio" name="price" class="filterPrice" value="100000">100000 - 500000</label><br>
-            <label><input type="radio" name="price" class="filterPrice" value="500000">ABOVE 500000</label><br>
-            <!-- <a href="/filterPrice?sr=1"> LOW - HIGH</a><br>
-            <a href="/filterPrice?sr=-1"> HIGH - LOW</a><br>
-            <a href="/filterPrice?gt=0&&lt=10000"> BELOW - 10000</a><br>
-            <a href="/filterPrice?gt=10000&&lt=50000"> ABOVE - 10000</a><br>
-            <a href="/filterPrice?gt=50000&&lt=100000"> ABOVE - 50000</a><br>
-            <a href="/filterPrice?gt=100000&&lt=1000000"> ABOVE - 100000</a><br> -->
+            <label><input type="radio" name="price" class="filterPrice" value="LOW-HIGH"> LOW - HIGH</label><br>
+            <label><input type="radio" name="price" class="filterPrice" value="HIGH-LOW"> HIGH - LOW</label><br>
+            <label><input type="radio" name="price" class="filterPrice" value="below-10000"> BELOW - 10000</label><br>
+            <label><input type="radio" name="price" class="filterPrice" value="10000-50000"> 10000 - 50000</label><br>
+            <label><input type="radio" name="price" class="filterPrice" value="50000-100000"> 50000 - 100000</label><br>
+            <label><input type="radio" name="price" class="filterPrice" value="100000-500000"> 100000 - 500000</label><br>
+            <label><input type="radio" name="price" class="filterPrice" value="above-500000"> ABOVE 500000</label><br>
             
             <!-- Categories Filter -->
             <h2>Categories</h2>
-            <p>0 Selected <span ><a href="#" id="reset-category">Reset</a></span></p>
+            <p>0 Selected <span><a href="#" id="reset-category">Reset</a></span></p>
             <% if (category && category.length > 0) { %>
                 <% category.forEach(cat => { %>
                     <% if (cat.isListed) { %>
-                            <!-- <a href="/filter?category=<%= cat._id %>"><%= cat.name %> </a> -->
-                            <label><input type="checkbox" name="category" class="category" value="<%= cat._id %>"> <%= cat.name %></label>
-                        <br>
+                        <label><input type="checkbox" name="category" class="category" value="<%= cat._id %>"> <%= cat.name %></label><br>
                     <% } %>
                 <% }) %>
             <% } else { %>
@@ -55,13 +47,11 @@
             
             <!-- Brand Filter -->
             <h2>Brand</h2>
-            <p>0 Selected <span ><a href="#" id="reset-brand">Reset</a></span></p>
+            <p>0 Selected <span><a href="#" id="reset-brand">Reset</a></span></p>
             <% if (brands && brands.length > 0) { %>
                 <% brands.forEach(brand => { %>
                     <% if (!brand.isBlocked) { %>
-                            <!-- <a href="/filter?brand=<%= brand._id %>"><%= brand.brandName %> </a> -->
-                            <label><input type="checkbox" name="brand" class="brand" value="<%= brand._id %>"> <%= brand.brandName %></label>
-                        <br>
+                        <label><input type="checkbox" name="brand" class="brand" value="<%= brand._id %>"> <%= brand.brandName %></label><br>
                     <% } %>
                 <% }) %>
             <% } else { %>
@@ -74,7 +64,7 @@
             <% if (products && products.length > 0) { %>
                 <% products.forEach(product => { %>
                     <div class="product-card">
-                        <a href="/product?id=<%=product._id%>">
+                        <a href="/product?id=<%= product._id %>">
                             <% if (product.productImage && (Array.isArray(product.productImage) ? product.productImage.length > 0 : product.productImage)) { %>
                                 <img src="/uploads/products/<%= Array.isArray(product.productImage) ? product.productImage[0] : product.productImage %>" alt="<%= product.productName %>">
                             <% } else { %>
@@ -95,9 +85,8 @@
                 <p>No products available.</p>
             <% } %>
         </main>
-        <!-- Banner Image -->
     </div>
-    <div class="banner-image" ></div>
+    <div class="banner-image"></div>
 
     <div class="pagination" data-total-pages="<%= totalPages %>">
         <span><%= currentPages %> of <%= totalPages %></span>
@@ -128,19 +117,16 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", () => {
-
         const brandCheckboxes = document.querySelectorAll('.brand');
         const categoryCheckBoxes = document.querySelectorAll('.category');
-        const filterPrices = document.querySelectorAll('.filterPrice')
-        const sortNames = document.querySelectorAll('.sortName')
-        const stockSort = document.querySelectorAll('.stock')
-        const resetFilter = document.getElementById('reset-filter')
-        const resetPrice = document.getElementById('reset-price')
-        const resetavailability = document.getElementById('reset-availability')
-        const resetCategory = document.getElementById('reset-category')
-        const resetBrand = document.getElementById('reset-brand')
-
-        //All Clear
+        const filterPrices = document.querySelectorAll('.filterPrice');
+        const sortNames = document.querySelectorAll('.sortName');
+        const stockSort = document.querySelectorAll('.stock');
+        const resetFilter = document.getElementById('reset-filter');
+        const resetPrice = document.getElementById('reset-price');
+        const resetavailability = document.getElementById('reset-availability');
+        const resetCategory = document.getElementById('reset-category');
+        const resetBrand = document.getElementById('reset-brand');
         const clearAllBtn = document.getElementById('clear-all');
 
         function applyFilters() {
@@ -153,37 +139,39 @@
                 .map(cb => cb.value);
 
             const selectedPrices = document.querySelector('input.filterPrice:checked')?.value || '';
-            // const selectedSortPrice = document.querySelector('input.sortPrice:checked')?.value || '';
             const selectedSortName = document.querySelector('input.sortName:checked')?.value || '';
-
-            const selectedStockSort = document.querySelector('input.stock:checked')?.value || ''
-
+            const selectedStockSort = document.querySelector('input.stock:checked')?.value || '';
 
             let queryParts = [];
 
             if (selectedBrands.length > 0) {
-                queryParts.push(selectedBrands.map(b => `brand=${b}`).join('&'));
+                queryParts.push(selectedBrands.map(b => `brand=${encodeURIComponent(b)}`).join('&'));
             }
 
             if (selectedCategories.length > 0) {
-                queryParts.push(selectedCategories.map(c => `category=${c}`).join('&'));
+                queryParts.push(selectedCategories.map(c => `category=${encodeURIComponent(c)}`).join('&'));
             }
 
-            if(selectedPrices){
-                queryParts.push(`price=${selectedPrices}`)
+            if (selectedPrices) {
+                queryParts.push(`price=${encodeURIComponent(selectedPrices)}`);
             }
 
-            if(selectedSortName){
-                queryParts.push(`sortName=${selectedSortName}`)
+            if (selectedSortName) {
+                queryParts.push(`sortName=${encodeURIComponent(selectedSortName)}`);
             }
 
-            if(selectedStockSort){
-                queryParts.push(`sortQuantity=${selectedStockSort}`)
+            if (selectedStockSort) {
+                queryParts.push(`sortQuantity=${encodeURIComponent(selectedStockSort)}`);
             }
+
+            // Preserve the current page if it exists
+            const params = new URLSearchParams(window.location.search);
+            const currentPage = params.get('page') || '1';
+            queryParts.push(`page=${currentPage}`);
 
             const finalQuery = queryParts.join('&');
 
-            console.log('Filters : ',finalQuery)
+            console.log('Filters: ', finalQuery);
 
             if (finalQuery) {
                 window.location.href = `/shop?${finalQuery}`;
@@ -192,64 +180,71 @@
             }
         }
 
+        // Event Listeners for Filters and Sorting
         brandCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
         categoryCheckBoxes.forEach(cb => cb.addEventListener('change', applyFilters));
         filterPrices.forEach(radio => radio.addEventListener('change', applyFilters));
-        sortNames.forEach(radio => radio.addEventListener('change', applyFilters))
-        stockSort.forEach(radio => radio.addEventListener('change', applyFilters))
+        sortNames.forEach(radio => radio.addEventListener('change', applyFilters));
+        stockSort.forEach(radio => radio.addEventListener('change', applyFilters));
 
+        // Reset Filter Handlers
         resetFilter.addEventListener('click', (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             sortNames.forEach(cb => cb.checked = false);
-            applyFilters()
+            applyFilters();
         });
 
         resetPrice.addEventListener('click', (e) => {
-            e.preventDefault()
-            filterPrices.forEach(cb => cb.checked = false)
-            applyFilters()
-        })
+            e.preventDefault();
+            filterPrices.forEach(cb => cb.checked = false);
+            applyFilters();
+        });
 
         resetBrand.addEventListener('click', (e) => {
-            e.preventDefault()
-            brandCheckboxes.forEach(cb => cb.checked = false)
-            applyFilters()
-        })
+            e.preventDefault();
+            brandCheckboxes.forEach(cb => cb.checked = false);
+            applyFilters();
+        });
 
         resetCategory.addEventListener('click', (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             categoryCheckBoxes.forEach(cb => cb.checked = false);
-            applyFilters()
+            applyFilters();
         });
 
-        resetavailability.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            stockSort.forEach(cb => cb.checked = false);
-            applyFilters()
-        });
+        if (resetavailability) {
+            resetavailability.addEventListener('click', (e) => {
+                e.preventDefault();
+                stockSort.forEach(cb => cb.checked = false);
+                applyFilters();
+            });
+        }
 
         clearAllBtn.addEventListener('click', (e) => {
             e.preventDefault();
             document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
                 input.checked = false;
             });
-
             window.location.href = '/shop';
         });
 
-        // Parse URL query parameters
+        // Parse URL query parameters and set the state of inputs
         const params = new URLSearchParams(window.location.search);
 
         // Set checkboxes for brands
-        params.getAll('brand').forEach(brand => {
-            const input = document.querySelector(`.brand[value="${brand}"]`);
-            if (input) input.checked = true;
+        const selectedBrands = params.getAll('brand');
+        brandCheckboxes.forEach(cb => {
+            if (selectedBrands.includes(cb.value)) {
+                cb.checked = true;
+            }
         });
 
         // Set checkboxes for categories
-        params.getAll('category').forEach(category => {
-            const input = document.querySelector(`.category[value="${category}"]`);
-            if (input) input.checked = true;
+        const selectedCategories = params.getAll('category');
+        categoryCheckBoxes.forEach(cb => {
+            if (selectedCategories.includes(cb.value)) {
+                cb.checked = true;
+            }
         });
 
         // Set radio for price filter
@@ -266,8 +261,24 @@
             if (input) input.checked = true;
         }
 
-});
-
+        // Update "Selected" counts in the UI
+        document.querySelectorAll('.sidebar p').forEach(p => {
+            if (p.textContent.includes('Selected')) {
+                const sectionHeader = p.parentElement.querySelector('h2').textContent;
+                let count = 0;
+                if (sectionHeader === 'Filter') {
+                    count = document.querySelectorAll('input.sortName:checked').length;
+                } else if (sectionHeader === 'Price') {
+                    count = document.querySelectorAll('input.filterPrice:checked').length;
+                } else if (sectionHeader === 'Categories') {
+                    count = document.querySelectorAll('input.category:checked').length;
+                } else if (sectionHeader === 'Brand') {
+                    count = document.querySelectorAll('input.brand:checked').length;
+                }
+                p.firstChild.textContent = `${count} Selected `;
+            }
+        });
+    });
     </script>
 </body>
 </html>

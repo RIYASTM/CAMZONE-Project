@@ -62,11 +62,13 @@
                     <tbody>
                         <% orders.forEach(order => { %>
                             <tr>
-                                <td><i class="fas fa-camera"></i> <%= order.item %></td>
-                                <td><%= order.customer %></td>
-                                <td><%= order.date %></td>
-                                <td><%= order.total %></td>
-                                <td><%= order.method %></td>
+                                <% order.orderedItems.forEach(item => { %>
+                                <td><i class="fas fa-camera"></i> <%= item.product.productName %></td>
+                                
+                                <td><%= order.address.name %></td>
+                                <td><%= order.createdOn.toString().split(' ').splice(1,3).join(' ') %></td>
+                                <td><%= order.totalPrice %></td>
+                                <td><%= order.paymentMethod %></td>
                                 <td>
                                     <select class="status-dropdown">
                                         <option value="processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
@@ -77,13 +79,13 @@
                                 </td>
                                 <td><a href="#" class="action-link">Update Status</a></td>
                             </tr>
+                            <% }) %>
                         <% }) %>
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
-            <%- include('../partials/pagination',{ currentPages, totalPages }) %>
         </div>
     </div>
            

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Canon Mark II</title>
+    <link rel="stylesheet" href="/stylesheet/user/orderDetails.css">
+</head>
+<body>
+    <% if(order){ %>
+    <nav class="top-nav">
+        <a href="/">Home</a> >
+        <a href="/account">My Account</a> >
+        <a href="/orders">My Orders</a> >
+        <a href="/productDetails/?id=<%= productItem.product._id %>"><%= productItem.product.productName %></a>
+
+    </nav>
+    <div class="order-details-container">
+        <div class="product-section">
+            <h2>Product</h2>
+            <div class="product-info">
+                <img src="/uploads/products/<%= productItem.product.productImage[0] %>" alt="<%= productItem.product.productName %>">
+                <div class="product-details">
+                    <h3><%= productItem.product.productName %></h3>
+                    <p class="price">₹ <%= productItem.price %></p>
+                    <p>Quantity: <%= productItem.quantity %></p>
+                </div>
+            </div>
+        </div>        
+        <div class="delivery-section">
+            <h2>Delivery Address</h2>
+            <p><strong><%= order.address.name %></strong></p>
+            <p><%= order.address.landMark %><%= order.address.streetAddress%><%= order.address.city %><%= order.address.district %><%= order.address.state %> - <%= order.address.pincode %></p>
+            <!-- <p>KINFRA Techno Industrial Park, Bnotype, Kakkanchery, Chelambra, Kerala 673634 National Highway 66, near calicut University Chelambra - 673634, Kerala</p> -->
+            <p><strong>Phone number:</strong> <%= order.address.phone %></p>
+            <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+            <p><strong>Order number:</strong> <%= order._id %></p>
+        </div>
+
+        <div class="tracking-section">
+            <h2>Track</h2>
+            <div class="tracking-status">
+                <div class="status-item completed">
+                    <span class="dot"></span>
+                    <div>
+                        <p><strong>Order Confirmed</strong> Thu, 20th Feb '25</p>
+                        <p>Your Order has been placed</p>
+                    </div>
+                </div>
+                <div class="status-item completed">
+                    <span class="dot"></span>
+                    <div>
+                        <p><strong>Shipped</strong> Thu, 20th Feb '25</p>
+                        <p>Your Order has been shipped</p>
+                    </div>
+                </div>
+                <div class="status-item completed">
+                    <span class="dot"></span>
+                    <div>
+                        <p><strong>Out of Delivery</strong> Fri, 21st Feb '25</p>
+                        <p>Your item is out of delivery</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="schedule-btn">Schedule Order</button>
+                <button class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <%}%>
+</body>
+</html>

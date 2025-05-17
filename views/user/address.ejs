@@ -339,10 +339,10 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
-                            <label for="phone1">Phone 1 <span class="required">*</span></label>
+                            <label for="phone">Phone  <span class="required">*</span></label>
                             <div class="phone-input-wrapper">
                                 <div class="country-code" id="countryCode1">+91</div>
-                                <input type="tel" id="phone1" name="phone1" placeholder="Phone Number 1">
+                                <input type="tel" id="phone" name="phone" placeholder="Phone Number 1">
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
@@ -434,10 +434,10 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
-                            <label for="phone">Phone 2 <span class="required">*</span></label>
+                            <label for="altPhone">Phone 2 <span class="required">*</span></label>
                             <div class="phone-input-wrapper">
                                 <div class="country-code" id="countryCode2">+91</div>
-                                <input type="tel" id="phone" name="phone" placeholder="Phone number" required>
+                                <input type="tel" id="altPhone" name="altPhone" placeholder="Phone number" required>
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
@@ -544,7 +544,7 @@
                         .then(() => {
                             modal.classList.remove('active');
                             addressForm.reset();
-                            window.location.reload(); // Refresh to show updated address list
+                            window.location.reload();
                         });
                 } catch (error) {
                     console.error(`Error ${isUpdate ? 'updating' : 'adding'} address:`, error);

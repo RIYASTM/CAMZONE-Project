@@ -17,3 +17,4 @@ document.getElementById('clear-button').addEventListener('click',function(e){
     window.location.href = `/admin/customers`
 })
 }
+

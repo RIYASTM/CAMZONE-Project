@@ -22,7 +22,7 @@ const addressSchema = new Schema({
         },
         landMark : {
             type : String,
-            required : true
+            // required : true
         },
         city : {
             type : String,
@@ -50,7 +50,7 @@ const addressSchema = new Schema({
         },
         altPhone : {
             type : String,
-            required :  true
+            // required :  true
         },
         isDeleted : {
             type : Boolean,

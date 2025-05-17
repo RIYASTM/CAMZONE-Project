@@ -1,0 +1,146 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+.top-nav {
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.top-nav a {
+    text-decoration: none;
+    color: #333;
+}
+
+.order-details-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product-section, .delivery-section, .tracking-section {
+    flex: 1;
+    min-width: 250px;
+}
+
+.product-section h2, .delivery-section h2, .tracking-section h2 {
+    margin: 0 0 15px;
+    font-size: 18px;
+    color: #333;
+}
+
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.product-info img {
+    width: 150px;
+    height: 150px;
+}
+
+.product-details h3 {
+    margin: 0 0 5px;
+    font-size: 16px;
+}
+
+.product-details .price {
+    color: #333;
+    font-weight: bold;
+    margin: 0 0 5px;
+}
+
+.product-details p {
+    margin: 0;
+    color: #666;
+}
+
+.delivery-section p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.delivery-section p strong {
+    color: #333;
+}
+
+.tracking-status {
+    margin-bottom: 20px;
+}
+
+.status-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.status-item .dot {
+    width: 10px;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 50%;
+    margin-top: 5px;
+}
+
+.status-item.completed .dot {
+    background-color: #28a745;
+}
+
+.status-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 20px;
+    height: calc(100% - 20px);
+    width: 2px;
+    background-color: #ccc;
+}
+
+.status-item.completed:not(:last-child)::after {
+    background-color: #28a745;
+}
+
+.status-item p {
+    margin: 0;
+    color: #666;
+}
+
+.status-item p strong {
+    color: #333;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.schedule-btn, .cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.schedule-btn {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.cancel-btn {
+    background-color: #dc3545;
+    color: #fff;
+}

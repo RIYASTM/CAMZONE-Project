@@ -1,19 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const userAuth = require('../middleware/userAuth')
-const userController = require('../controllers/users/userController');
-const { checkBlockedStatus } = require('../middleware/userAuth');
 const passport = require('passport');
+
+//Helper Functions
+
 const {uploadProfile} = require('../helpers/multer')
 
+//MiddleWares Functions
+
+const userAuth = require('../middleware/userAuth')
+// const { checkBlockedStatus } = require('../middleware/userAuth');
+
+
+//Controller Functions
+
+const userController = require('../controllers/users/userController');
 const cartController = require('../controllers/users/cartController')
 const couponController = require('../controllers/users/couponController')
 const checkoutController = require('../controllers/users/checkoutController')
 const accountController = require('../controllers/users/accountController')
 const passwordController = require('../controllers/users/passwordController')
-const addressController = require('../controllers/users/addressContrller')
+const addressController = require('../controllers/users/addressController')
 const profileController = require('../controllers/users/profileController')
+const orderControlller = require('../controllers/users/orderController')
 
+
+//Routers
 
 
 router.get('/',userController.loadHomePage);
@@ -41,11 +53,9 @@ router.get('/pageNotFound', userController.pageNotFound);
 router.get('/signout', userController.signout);
 
 
-
 //Account Controllings
 
 router.get('/myAccount', userAuth, accountController.loadMyAccount)
-
 
 
 //Password Resetting
@@ -63,7 +73,6 @@ router.get('/resetPassword',userController.loadResetPassword)
 router.post('/resetPassword',userController.resetPassword)
 
 
-
 //Password changing
 
 router.get('/passwordManage', userAuth, passwordController.loadPassword)
@@ -73,7 +82,6 @@ router.post('/checkPassword', userAuth , passwordController.checkPassword)
 router.post('/confirmOTP',userAuth, passwordController.confirmOTP)
 
 router.patch('/changepassword', userAuth, passwordController.changePassword)
-
 
 
 //Address Managing
@@ -87,12 +95,10 @@ router.patch('/editAddress', userAuth, addressController.editAddress)
 router.patch('/deleteAddress/:id', userAuth, addressController.deleteAddress)
 
 
-
 //Profile Management
 router.get('/profile', userAuth,profileController.loadProfile)
 
 router.post('/editProfile', uploadProfile, userAuth, profileController.editProfile)
-
 
 
 //Cart
@@ -108,7 +114,7 @@ router.patch('/cartRemove', userAuth , cartController.removeItem)
 
 //Coupon
 
-router.get('/coupon', couponController.loadCoupon)
+router.get('/coupon',userAuth, couponController.loadCoupon)
 
 
 
@@ -116,17 +122,22 @@ router.get('/coupon', couponController.loadCoupon)
 
 router.get('/checkout',userAuth, checkoutController.loadCheckout )
 
+router.post('/checkout', userAuth, checkoutController.checkout)
+
+//Order
+router.get('/orderSuccess',  orderControlller.loadOrderSuccess)
 
 
+//My Orders
+
+router.get('/myOrders' , userAuth , orderControlller.loadMyOrders)
+
+//Order Details
+
+router.get('/productDetails', userAuth , orderControlller.loadOrderDetails)
 
 
-
-
-
-
-
-
-
+//Google Auth
 
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -142,5 +153,7 @@ router.get("/auth/google/callback",
         res.redirect("/");
     }
 );
+
+
 
 module.exports = router;

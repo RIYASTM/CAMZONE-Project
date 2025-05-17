@@ -1,0 +1,183 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+a{
+    text-decoration: none;
+    color: #000;
+}
+
+.breadcrumb {
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb span {
+    color: #333;
+}
+
+.container {
+    display: flex;
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px 0;
+    color: #666;
+    cursor: pointer;
+}
+
+.sidebar li.active {
+    color: #000;
+    font-weight: bold;
+}
+
+.orders {
+    flex: 1;
+    margin-left: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.orders header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.orders h1 {
+    font-size: 24px;
+}
+
+.filter-search {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-search select,
+.filter-search input {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.order-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-right: 20px;
+}
+
+.order-details {
+    flex: 1;
+}
+
+.order-details h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.order-details p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.order-details .status.pending {
+    color: #ff9800;
+}
+
+.order-details .status.delivered {
+    color: #4caf50;
+}
+
+.order-details .status.cancelled {
+    color: #f44336;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.order-actions button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.order-actions .cancel,
+.order-actions .return {
+    background-color: #ff9800;
+    color: #fff;
+}
+
+.order-actions .review {
+    background-color: #fff;
+    border: 1px solid #ff9800;
+    color: #ff9800;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.pagination span {
+    font-size: 16px;
+}

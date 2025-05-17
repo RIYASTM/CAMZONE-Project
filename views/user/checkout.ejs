@@ -3,91 +3,787 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout Page</title>
+    <title>Checkout Page | CAMZONE</title>
     <link rel="stylesheet" href="/stylesheet/user/checkout.css">
 </head>
 <body>
-    <nav>
-        <a href="/">Home</a> >
-        <a href="/cart">Cart</a> >
-        <a href="/checkout">Check Out</a>
+    <!-- Header -->
+    <%- include('../partials/users/header', { search, cart }) %>
+
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/cart">Cart</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+        </ol>
     </nav>
 
-    <div class="checkout-container">
-        <div class="billing-details">
-            <h2>Billing Details</h2>
-            <h3>Delivery Address:</h3>
-            <label>
-                <input type="radio" name="address" checked>
-                Jaswant Raj Desai, Kottayam Medical College Bypass Rd, Gandhi Nagar, Arpookkara, 686008
-            </label>
-            <label>
-                <input type="radio" name="address">
-                Abhishek Prabhat, Kottayam, Thirunelli Temple (P.O.), Thirunelli, 670646
-            </label>
-            <label>
-                <input type="radio" name="address">
-                Amir Kulkarni, Second Street, Palayam, Thiruvananthapuram, 695001
-            </label>
-            <label>
-                <input type="radio" name="address">
-                New Address:
-            </label>
+    <!-- Main Checkout Section -->
+    <main class="checkout-container">
+        <!-- Billing Details Section -->
+        <section class="billing-details" aria-labelledby="billing-details-heading">
+            <h2 id="billing-details-heading">Billing Details</h2>
+            
+            <!-- Delivery Address Selection -->
+            <div class="address-selection">
+                <h3>Delivery Address</h3>
+                <div class="address-list">
+                    <% address.forEach(addr => { %>
+                        <div class="address-item">
+                            <label class="address-option">
+                                <input type="radio" name="address" class="address-radio" value="<%= addr._id %>" aria-label="Select delivery address for <%= addr.name %> at <%= addr.streetAddress %>, <%= addr.city %>">
+                                <span class="address-details">
+                                    <%= addr.name %>, <%= addr.streetAddress %>, <%= addr.city %>, <%= addr.state %>, <%=addr.district %> <%= addr.country %>, <%= addr.pincode %> (<%= addr.phone %>)
+                                </span>
+                            </label>
+                            <button type="button" class="edit-address-btn" data-address='<%= JSON.stringify(addr) %>'>Edit</button>
+                        </div>
+                    <% }) %>
+                    <label class="address-option">
+                        <input type="radio" name="address" id="newAddressRadio" class="address-radio" aria-label="Add a new address">
+                        <span class="address-details">Add a New Address</span>
+                    </label>
+                </div>
+            </div>
+        </section>
 
-            <div class="new-address">
-                <input type="text" placeholder="Enter Your Name" value="Your Name">
-                <input type="text" placeholder="Street Address" value="Kingston, 5236">
-                <input type="text" placeholder="Apartment, floor, etc. (optional)" value="Brotype">
-                <input type="text" placeholder="Town/City" value="Calicut">
-                <div class="address-row">
-                    <input type="text" placeholder="Pin" value="673645">
-                    <input type="text" placeholder="District" value="District">
-                    <input type="text" placeholder="Phone Number" value="+91 80665808788">
-                    <input type="text" placeholder="State" value="State">
+        <!-- Add Address Modal -->
+        <div class="modal" id="addAddressModal" role="dialog" aria-labelledby="addAddressModalTitle" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="addAddressModalTitle">Add New Address</h3>
+                    <button type="button" class="modal-close-btn" id="closeAddModalBtn" aria-label="Close modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addressForm" novalidate>
+                        <input type="hidden" id="addressId" name="addressId">
+                        <input type="hidden" id="formMode" name="formMode" value="add">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Name <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="name" name="name" placeholder="Name" required aria-required="true" aria-describedby="name-error">
+                                <div class="invalid-feedback" id="name-error" role="alert"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone <span class="required" aria-hidden="true">*</span></label>
+                                <div class="phone-input-wrapper">
+                                    <span class="country-code" id="countryCode1">+91</span>
+                                    <input type="tel" id="phone" name="phone" placeholder="Phone Number" required aria-required="true" aria-describedby="phone-error">
+                                    <div class="invalid-feedback" id="phone-error" role="alert"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="country">Country/Region <span class="required" aria-hidden="true">*</span></label>
+                                <div class="select-wrapper">
+                                    <select id="country" name="country" required aria-required="true" aria-describedby="country-error">
+                                        <option value="">Select your Country/Region</option>
+                                        <option value="India">India</option>
+                                        <option value="USA">United States</option>
+                                        <option value="UK">United Kingdom</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="country-error" role="alert"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">Town/City <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="city" name="city" placeholder="Town/City" required aria-required="true" aria-describedby="city-error">
+                                <div class="invalid-feedback" id="city-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="streetAddress">Street Address <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="streetAddress" name="streetAddress" placeholder="House No. and Street Name" required aria-required="true" aria-describedby="streetAddress-error">
+                                <div class="invalid-feedback" id="streetAddress-error" role="alert"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="landmark">Apartment/Landmark</label>
+                                <input type="text" id="landmark" name="landmark" placeholder="Apartment or Landmark" aria-describedby="landmark-error">
+                                <div class="invalid-feedback" id="landmark-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="state">State <span class="required" aria-hidden="true">*</span></label>
+                                <div class="select-wrapper">
+                                    <select id="state" name="state" required aria-required="true" aria-describedby="state-error">
+                                        <option value="">Select your State</option>
+                                        <option value="Kerala">Kerala</option>
+                                        <option value="Karnataka">Karnataka</option>
+                                        <option value="Tamil Nadu">Tamil Nadu</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="state-error" role="alert"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="district">District <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="district" name="district" placeholder="District" required aria-required="true" aria-describedby="district-error">
+                                <div class="invalid-feedback" id="district-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="altPhone">Alternate Phone</label>
+                                <div class="phone-input-wrapper">
+                                    <span class="country-code" id="countryCode2">+91</span>
+                                    <input type="tel" id="altPhone" name="altPhone" placeholder="Alternate Phone Number" aria-describedby="altPhone-error">
+                                    <div class="invalid-feedback" id="altPhone-error" role="alert"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pincode">Pin Code <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="pincode" name="pincode" placeholder="Pin Code" required aria-required="true" aria-describedby="pincode-error">
+                                <div class="invalid-feedback" id="pincode-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="addressType">Address Type</label>
+                                <div class="address-type-options">
+                                    <label class="radio-label">
+                                        <input type="radio" name="addressType" value="home" checked aria-label="Home address">
+                                        <span>Home</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="addressType" value="work" aria-label="Work address">
+                                        <span>Work</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="addressType" value="other" aria-label="Other address">
+                                        <span>Other</span>
+                                    </label>
+                                </div>
+                                <div class="invalid-feedback" id="addressType-error" role="alert"></div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="modal-cancel-btn" id="cancelAddModalBtn">Cancel</button>
+                            <button type="button" class="add-address-btn" id="addAddressBtn">Add Address</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <div class="order-summary">
+        <!-- Edit Address Modal -->
+        <div class="modal" id="editAddressModal" role="dialog" aria-labelledby="editAddressModalTitle" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="editAddressModalTitle">Edit Address</h3>
+                    <button type="button" class="modal-close-btn" id="closeEditModalBtn" aria-label="Close modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAddressForm" novalidate>
+                        <input type="hidden" id="editAddressId" name="addressId">
+                        <input type="hidden" id="editFormMode" name="formMode" value="edit">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editName">Name <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="editName" name="name" placeholder="Name" required aria-required="true" aria-describedby="editName-error">
+                                <div class="invalid-feedback" id="editName-error" role="alert"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPhone">Phone <span class="required" aria-hidden="true">*</span></label>
+                                <div class="phone-input-wrapper">
+                                    <span class="country-code" id="editCountryCode1">+91</span>
+                                    <input type="tel" id="editPhone" name="phone" placeholder="Phone Number" required aria-required="true" aria-describedby="editPhone-error">
+                                    <div class="invalid-feedback" id="editPhone-error" role="alert"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCountry">Country/Region <span class="required" aria-hidden="true">*</span></label>
+                                <div class="select-wrapper">
+                                    <select id="editCountry" name="country" required aria-required="true" aria-describedby="editCountry-error">
+                                        <option value="">Select your Country/Region</option>
+                                        <option value="India">India</option>
+                                        <option value="USA">United States</option>
+                                        <option value="UK">United Kingdom</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="editCountry-error" role="alert"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editCity">Town/City <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="editCity" name="city" placeholder="Town/City" required aria-required="true" aria-describedby="editCity-error">
+                                <div class="invalid-feedback" id="editCity-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editStreetAddress">Street Address <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="editStreetAddress" name="streetAddress" placeholder="House No. and Street Name" required aria-required="true" aria-describedby="editStreetAddress-error">
+                                <div class="invalid-feedback" id="editStreetAddress-error" role="alert"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editLandmark">Apartment/Landmark</label>
+                                <input type="text" id="editLandmark" name="landmark" placeholder="Apartment or Landmark" aria-describedby="editLandmark-error">
+                                <div class="invalid-feedback" id="editLandmark-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editState">State <span class="required" aria-hidden="true">*</span></label>
+                                <div class="select-wrapper">
+                                    <select id="editState" name="state" required aria-required="true" aria-describedby="editState-error">
+                                        <option value="">Select your State</option>
+                                        <option value="Kerala">Kerala</option>
+                                        <option value="Karnataka">Karnataka</option>
+                                        <option value="Tamil Nadu">Tamil Nadu</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="editState-error" role="alert"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editDistrict">District <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="editDistrict" name="district" placeholder="District" required aria-required="true" aria-describedby="editDistrict-error">
+                                <div class="invalid-feedback" id="editDistrict-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editAltPhone">Alternate Phone</label>
+                                <div class="phone-input-wrapper">
+                                    <span class="country-code" id="editCountryCode2">+91</span>
+                                    <input type="tel" id="editAltPhone" name="altPhone" placeholder="Alternate Phone Number" aria-describedby="editAltPhone-error">
+                                    <div class="invalid-feedback" id="editAltPhone-error" role="alert"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPincode">Pin Code <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="editPincode" name="pincode" placeholder="Pin Code" required aria-required="true" aria-describedby="editPincode-error">
+                                <div class="invalid-feedback" id="editPincode-error" role="alert"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editAddressType">Address Type</label>
+                                <div class="address-type-options">
+                                    <label class="radio-label">
+                                        <input type="radio" name="addressType" value="home" checked aria-label="Home address">
+                                        <span>Home</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="addressType" value="work" aria-label="Work address">
+                                        <span>Work</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="addressType" value="other" aria-label="Other address">
+                                        <span>Other</span>
+                                    </label>
+                                </div>
+                                <div class="invalid-feedback" id="editAddressType-error" role="alert"></div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="modal-cancel-btn" id="cancelEditModalBtn">Cancel</button>
+                            <button type="button" class="add-address-btn" id="updateAddressBtn">Update Address</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary Section -->
+        <section class="order-summary" aria-labelledby="order-summary-heading">
+            <h3 id="order-summary-heading">Order Summary</h3>
             <div class="summary-details">
-                <p>Subtotal: <span>₹26,552.35</span></p>
-                <p>Shipping: <span>₹0</span></p>
-                <p>Promotion/Discount: <span>₹0</span></p>
-                <p>GST: <span>₹1,754.34.65</span></p>
-                <h3>Total: <span>₹8,01,987.00</span></h3>
+                <p>Subtotal: <span>₹<%= cart.totalAmount.toFixed(2) %></span></p>
+                <p>Shipping: <span>₹<%= (cart.shippingCost || 0).toFixed(2) %></span></p>
+                <p>Coupon Offer: <span>₹<%= (cart.couponDiscount || 0).toFixed(2) %></span></p>
+                <p>GST (18%): <span>₹<%= ((cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0)) * 0.18).toFixed(2) %></span></p>
+                <h4>Total: <span>₹<%= (cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0) + (cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0)) * 0.18).toFixed(2) %></span></h4>
             </div>
 
+            <!-- Divider -->
+            <hr class="section-divider">
+
+            <!-- Payment Methods -->
             <div class="payment-methods">
-                <label>
-                    <input type="radio" name="payment" checked>
+                <h4>Payment Method</h4>
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="Razorpay" checked aria-label="Pay with RazorPay">
+                    RazorPay
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="Wallet" aria-label="Pay with Wallet">
                     Pay With Wallet
                 </label>
-                <label>
-                    <input type="radio" name="payment">
-                    Debit / Credit Card
-                </label>
-                <div class="card-details">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
-                    <input type="text" placeholder="Card Number" value="XXXX XXXX XXXX XXXX">
-                    <div class="card-row">
-                        <input type="text" placeholder="Card Expiry" value="05 29">
-                        <input type="text" placeholder="CVV" value="2029">
-                    </div>
-                    <input type="text" placeholder="Name on Card" value="Alex John">
-                </div>
-                <label>
-                    <input type="radio" name="payment">
-                    Net Banking
-                </label>
-                <label>
-                    <input type="radio" name="payment">
-                    Cash on delivery
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="Cash On Delivery" aria-label="Cash on Delivery">
+                    Cash on Delivery
                 </label>
             </div>
 
-            <button class="place-order">Place Order</button>
-        </div>
-    </div>
+            <!-- Place Order Button -->
+            <button type="button" class="place-order" id="placeOrderBtn">Place Order</button>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/users/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Modal Elements
+        const addAddressModal = document.getElementById('addAddressModal');
+        const editAddressModal = document.getElementById('editAddressModal');
+        const closeAddModalBtn = document.getElementById('closeAddModalBtn');
+        const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+        const cancelAddModalBtn = document.getElementById('cancelAddModalBtn');
+        const cancelEditModalBtn = document.getElementById('cancelEditModalBtn');
+
+        // Form Elements
+        const addressForm = document.getElementById('addressForm');
+        const editAddressForm = document.getElementById('editAddressForm');
+        const addAddressBtn = document.getElementById('addAddressBtn');
+        const updateAddressBtn = document.getElementById('updateAddressBtn');
+
+        // Address Radio Button Handling
+        const addressRadios = document.querySelectorAll('.address-radio');
+        const newAddressRadio = document.getElementById('newAddressRadio');
+        let triggeringElement = null;
+
+        // Predefined state options and country codes
+        const stateOptions = {
+            India: [
+                { value: "Kerala", text: "Kerala" },
+                { value: "Karnataka", text: "Karnataka" },
+                { value: "Tamil Nadu", text: "Tamil Nadu" }
+            ],
+            USA: [
+                { value: "California", text: "California" },
+                { value: "New York", text: "New York" },
+                { value: "Texas", text: "Texas" }
+            ],
+            UK: [
+                { value: "England", text: "England" },
+                { value: "Scotland", text: "Scotland" },
+                { value: "Wales", text: "Wales" }
+            ]
+        };
+
+        const countryCodes = {
+            India: "+91",
+            USA: "+1",
+            UK: "+44"
+        };
+
+        function updateStateOptions(countrySelect, stateSelectId) {
+            const country = countrySelect.value;
+            const stateSelect = document.getElementById(stateSelectId);
+            stateSelect.innerHTML = '<option value="">Select your State</option>';
+
+            if (country && stateOptions[country]) {
+                stateOptions[country].forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state.value;
+                    option.textContent = state.text;
+                    stateSelect.appendChild(option);
+                });
+            }
+
+            const isEditModal = stateSelectId === 'editState';
+            const countryCode1 = document.getElementById(isEditModal ? 'editCountryCode1' : 'countryCode1');
+            const countryCode2 = document.getElementById(isEditModal ? 'editCountryCode2' : 'countryCode2');
+            const newCode = country && countryCodes[country] ? countryCodes[country] : '+91';
+            countryCode1.textContent = newCode;
+            countryCode2.textContent = newCode;
+        }
+
+        // Add event listeners for country selects
+        const countrySelect = document.getElementById('country');
+        const editCountrySelect = document.getElementById('editCountry');
+
+        countrySelect.addEventListener('change', () => updateStateOptions(countrySelect, 'state'));
+        editCountrySelect.addEventListener('change', () => updateStateOptions(editCountrySelect, 'editState'));
+
+        function handleAddressRadioChange(e) {
+            if (newAddressRadio.checked) {
+                triggeringElement = e.target;
+                addAddressModal.style.display = 'block';
+                addAddressModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                document.getElementById('phone').focus();
+            }
+        }
+
+        addressRadios.forEach(radio => {
+            radio.addEventListener('change', handleAddressRadioChange);
+        });
+
+        // Modal Close Functions
+        function closeAddModal() {
+            addAddressModal.style.display = 'none';
+            addAddressModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            addressForm.reset();
+            clearFormErrors(addressForm);
+            newAddressRadio.checked = false;
+            if (triggeringElement) {
+                triggeringElement.focus();
+            }
+        }
+
+        function closeEditModal() {
+            editAddressModal.style.display = 'none';
+            editAddressModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            editAddressForm.reset();
+            clearFormErrors(editAddressForm);
+            if (triggeringElement) {
+                triggeringElement.focus();
+            }
+        }
+
+        closeAddModalBtn.addEventListener('click', closeAddModal);
+        cancelAddModalBtn.addEventListener('click', closeAddModal);
+        closeEditModalBtn.addEventListener('click', closeEditModal);
+        cancelEditModalBtn.addEventListener('click', closeEditModal);
+
+        // Esc Key Support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (addAddressModal.style.display === 'block') {
+                    closeAddModal();
+                }
+                if (editAddressModal.style.display === 'block') {
+                    closeEditModal();
+                }
+            }
+        });
+
+        // Edit Address Button Handling
+        const editAddressButtons = document.querySelectorAll('.edit-address-btn');
+        editAddressButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                triggeringElement = e.target;
+                const addressData = JSON.parse(button.getAttribute('data-address'));
+                editAddressModal.style.display = 'block';
+                editAddressModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                document.getElementById('editPhone').focus();
+
+                document.getElementById('editAddressId').value = addressData._id;
+                document.getElementById('editName').value = addressData.name || '';
+                document.getElementById('editPhone').value = addressData.phone ? addressData.phone.replace('+91', '') : '';
+                document.getElementById('editAltPhone').value = addressData.altPhone ? addressData.altPhone.replace('+91', '') : '';
+                document.getElementById('editCountry').value = addressData.country || '';
+                document.getElementById('editCity').value = addressData.city || '';
+                document.getElementById('editStreetAddress').value = addressData.streetAddress || '';
+                document.getElementById('editLandmark').value = addressData.landmark || '';
+                document.getElementById('editState').value = addressData.state || '';
+                document.getElementById('editDistrict').value = addressData.district || '';
+                document.getElementById('editPincode').value = addressData.pincode || '';
+
+                const addressTypeRadios = document.getElementsByName('addressType');
+                addressTypeRadios.forEach(radio => {
+                    radio.checked = radio.value === (addressData.addressType || 'home');
+                });
+
+                updateStateOptions(document.getElementById('editCountry'), 'editState');
+                document.getElementById('editState').value = addressData.state || '';
+            });
+        });
+
+        // Add Address Button Handling
+        addAddressBtn.addEventListener('click', async () => {
+            const errors = validateAddressForm(addressForm);
+            if (errors) {
+                displayFormErrors(addressForm, errors);
+                return;
+            }
+
+            const formData = Object.fromEntries(new FormData(addressForm));
+            const mode = formData.formMode;
+            delete formData.formMode;
+
+            const countryCode = countryCodes[formData.country] || '+91';
+            formData.phone = `${countryCode}${formData.phone}`;
+            if (formData.altPhone) {
+                formData.altPhone = `${countryCode}${formData.altPhone}`;
+            }
+
+            addAddressBtn.disabled = true;
+            addAddressBtn.textContent = 'Adding...';
+            const URL = '/addAddress'
+            //  mode === 'edit' ? '/editAddress' : '/addAddress'
+
+            try {
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('hello')
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    closeAddModal();
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed',
+                        text: data.message || `Failed to ${mode === 'edit' ? 'update' : 'add'} address.`
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: navigator.onLine
+                        ? `Error ${mode === 'edit' ? 'updating' : 'adding'} address: ${error.message}`
+                        : 'No internet connection. Please check your network and try again.'
+                });
+            } finally {
+                addAddressBtn.disabled = false;
+                addAddressBtn.textContent = 'Add Address';
+            }
+        });
+
+        // Update Address Button Handling
+        updateAddressBtn.addEventListener('click', async () => {
+            const errors = validateAddressForm(editAddressForm);
+            if (errors) {
+                displayFormErrors(editAddressForm, errors);
+                return;
+            }
+
+            const formData = Object.fromEntries(new FormData(editAddressForm));
+            const mode = formData.formMode;
+            delete formData.formMode;
+
+            const countryCode = countryCodes[formData.country] || '+91';
+            formData.phone = `${countryCode}${formData.phone}`;
+            if (formData.altPhone) {
+                formData.altPhone = `${countryCode}${formData.altPhone}`;
+            }
+
+            updateAddressBtn.disabled = true;
+            updateAddressBtn.textContent = 'Updating...';
+
+            try {
+                const response = await fetch('editAddress', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    closeEditModal();
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed',
+                        text: data.message || 'Failed to update address.'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: navigator.onLine
+                        ? 'Error updating address: ' + error.message
+                        : 'No internet connection. Please check your network and try again.'
+                });
+            } finally {
+                updateAddressBtn.disabled = false;
+                updateAddressBtn.textContent = 'Update Address';
+            }
+        });
+
+        // Place Order Button
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        placeOrderBtn.addEventListener('click', async () => {
+            const selectedAddress = document.querySelector('input[name="address"]:checked');
+            const paymentMethod = document.querySelector('input[name="payment"]:checked');
+
+            if (!selectedAddress) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Address',
+                    text: 'Please select a delivery address.'
+                });
+                return;
+            }
+
+            if (!paymentMethod) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Payment Method',
+                    text: 'Please select a payment method.'
+                });
+                return;
+            }
+
+            const addressData = { addressId: selectedAddress.value };
+            const paymentData = { method: paymentMethod.value };
+
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ addressId: addressData, payment: paymentData })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirectUrl || '/orderSuccess';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Order Failed',
+                        text: data.message || 'Failed to place order.'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: navigator.onLine
+                        ? 'Error placing order: ' + error.message
+                        : 'No internet connection. Please check your network and try again.'
+                });
+            } finally {
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.textContent = 'Place Order';
+            }
+        });
+
+        // Validation Functions
+        function validateAddressForm(form) {
+            const formData = Object.fromEntries(new FormData(form));
+            const namePattern = /^[a-zA-Z\s]+$/;
+            const phonePatterns = {
+                India: /^\d{10}$/,
+                USA: /^\d{10}$/,
+                UK: /^\d{10}$/
+            };
+            const pincodePatterns = {
+                India: /^\d{6}$/,
+                USA: /^\d{5}$/,
+                UK: /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/
+            };
+
+            let errors = {};
+
+            if (!formData.name) {
+                errors.name = "Name is required!";
+            } else if (!namePattern.test(formData.name)) {
+                errors.name = "Name can only contain letters and spaces!";
+            }
+
+            if (!formData.phone) {
+                errors.phone = "Phone number is required!";
+            } else if (formData.country && phonePatterns[formData.country]) {
+                if (!phonePatterns[formData.country].test(formData.phone)) {
+                    errors.phone = `Phone number must be exactly 10 digits for ${formData.country}!`;
+                }
+            } else {
+                errors.phone = "Phone number format not supported for this country!";
+            }
+
+            if (formData.altPhone && formData.country && phonePatterns[formData.country]) {
+                if (!phonePatterns[formData.country].test(formData.altPhone)) {
+                    errors.altPhone = `Alternate phone number must be exactly 10 digits for ${formData.country}!`;
+                }
+            }
+
+            if (!formData.country) {
+                errors.country = "Country is required!";
+            }
+
+            if (!formData.city) {
+                errors.city = "Town/City is required!";
+            }
+
+            if (!formData.streetAddress) {
+                errors.streetAddress = "Street address is required!";
+            }
+
+            if (!formData.state) {
+                errors.state = "State is required!";
+            }
+
+            if (!formData.district) {
+                errors.district = "District is required!";
+            }
+
+            if (!formData.pincode) {
+                errors.pincode = "Pincode is required!";
+            } else if (formData.country && pincodePatterns[formData.country]) {
+                if (!pincodePatterns[formData.country].test(formData.pincode)) {
+                    errors.pincode = `Invalid pincode format for ${formData.country}!`;
+                }
+            } else {
+                errors.pincode = "Pincode format not supported for this country!";
+            }
+
+            // Landmark is optional, so no validation required
+            // Removed: if (!formData.landMark) { errors.landMark = "Landmark is required!"; }
+
+            return Object.keys(errors).length > 0 ? errors : null;
+        }
+
+        function displayFormErrors(form, errors) {
+            clearFormErrors(form);
+            if (errors && typeof errors === 'object') {
+                Object.entries(errors).forEach(([field, message]) => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.parentElement.querySelector('.invalid-feedback');
+                        if (feedback) {
+                            feedback.textContent = message;
+                        }
+                    }
+                });
+            }
+        }
+
+        function clearFormErrors(form) {
+            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        }
+    });
+    </script>
 </body>
 </html>

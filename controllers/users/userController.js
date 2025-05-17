@@ -3,6 +3,7 @@ const User = require('../../model/userModel')
 const Brands = require('../../model/brandModel')
 const Products = require('../../model/productModel')
 const Category = require('../../model/categoryModel')
+const Cart = require('../../model/cartModel')
 
 const nodemailer = require('nodemailer')
 const env = require('dotenv').config()
@@ -26,6 +27,10 @@ const loadHomePage = async (req, res) => {
         const usermail = req.session.usermail;
 
         const user = await User.findOne({ email: usermail });
+
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
 
         const brands = await Brands.find({ isDeleted: false, isBlocked: false });
         const categories = await Category.find({ isListed: true });
@@ -93,6 +98,7 @@ const loadHomePage = async (req, res) => {
 
             return res.render('home', {
                 search,
+                cart,
                 user,
                 brands,
                 category: categories,
@@ -105,6 +111,7 @@ const loadHomePage = async (req, res) => {
 
         return res.render('home', {
             search,
+            cart,
             currentPage: 'home',
             brands,
             category: categories,
@@ -137,6 +144,10 @@ const loadShop = async (req, res) => {
         const user = await User.findOne({ email: usermail });
         
         const query = { isDeleted: false, isBlocked: false };
+
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
         
         let queryParts = [];
 
@@ -270,6 +281,8 @@ const loadShop = async (req, res) => {
         const limit = 20;
         const skip = (page - 1) * limit;
 
+
+
         const products = await Products.find(query)
             .sort(sortOption)
             .populate('brand')
@@ -292,6 +305,7 @@ const loadShop = async (req, res) => {
         if (user) {
             return res.render('shop', {
                 search,
+                cart,
                 user,
                 brands,
                 category: categories,
@@ -305,6 +319,7 @@ const loadShop = async (req, res) => {
 
         return res.render('shop', {
             search,
+            cart,
             brands,
             category: categories,
             products: products || [], 
@@ -329,7 +344,9 @@ const loadProduct = async (req, res) => {
 
         const usermail = req.session.usermail
 
+        const userId = req.session.user
 
+        const cart = userId ? await Cart.findOne({userId}) : 0
 
         const user = await User.findOne({ email: usermail })
 
@@ -369,6 +386,7 @@ const loadProduct = async (req, res) => {
 
             return res.render('product', {
                 search,
+                cart,
                 user,
                 brands: findBrand,
                 category: findCategory,
@@ -386,6 +404,7 @@ const loadProduct = async (req, res) => {
 
         return res.render('product', {
             search,
+            cart,
             brands: findBrand,
             category: findCategory,
             product,
@@ -405,9 +424,14 @@ const loadProduct = async (req, res) => {
 
 const loadSignin = async (req, res) => {
     try {
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
         const search = req.query.search || ''
         return res.render('signin', {
             currentPage: 'signin',
+            cart,
             search
         })
     } catch (error) {
@@ -487,10 +511,15 @@ const signin = async (req, res) => {
 const loadSignup = async (req, res) => {
     try {
         const search = req.query.search || ''
+
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
         
         return res.render('signup', {
             currentPage: 'signup',
-            search
+            search,
+            cart
         })
     } catch (error) {
         console.log('================================================')
@@ -596,9 +625,15 @@ const signout = async (req, res) => {
 const loadVerifyEmail = async (req, res) => {
     try {
         const search = req.query.search || ''
+
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
         return res.render('emailVerify', {
             currentPage: 'emailVerify',
-            search
+            search,
+            cart
         }
         )
     } catch (error) {
@@ -708,8 +743,13 @@ const resendOtp = async (req, res) => {
 
 const loadforgotPass = async (req, res) => {
     try {
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
         res.render('forgottPass', {
-            currentPage: 'forgottPass'
+            currentPage: 'forgottPass',
+            cart
         })
 
     } catch (error) {
@@ -764,9 +804,14 @@ const loadverifyEmailforgot = async (req, res) => {
 
         const search = req.query.search || ''
 
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
         res.render('verifyEmailforgot', {
             currentPage: 'verifyEmailforgot',
-            search
+            search,
+            cart
         })
 
 
@@ -807,9 +852,15 @@ const verifyEmailforgot = async (req, res) => {
 const loadResetPassword = async (req, res) => {
     try {
         const search = req.query.search || ''
+
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
         return res.render('resetPass', {
             currentPage: 'resetPass',
-            search
+            search,
+            cart
         })
     } catch (error) {
         console.errpr('Error occurred while loading reset Password Page : ', error)
@@ -876,11 +927,16 @@ const loadCart = async (req,res) => {
         search = req.query.search || ''
 
         const product = await Products.find({isBlocked : false})
+
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
         
         return res.render('cart',{
             currentPage : 'cart',
             product,
-            search : search
+            search,
+            cart
         })
 
     } catch (error) {

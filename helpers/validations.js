@@ -175,11 +175,11 @@ function validateAddress(data){
             if (!data.pincode || !pincodePattern.test(data.pincode)) {
                 errors.pincode = "Valid pincode is required 6 digits).";
             }
-            if (!data.phone1 || !phonePattern.test(data.phone1)) {
-                errors.phone1 = "Valid phone number 1 is required.";
-            }
             if (!data.phone || !phonePattern.test(data.phone)) {
-                errors.phone = "Valid phone number 2 is required.";
+                errors.phone = "Valid phone number 1 is required.";
+            }
+            if (!data.altPhone || !phonePattern.test(data.altPhone)) {
+                errors.altPhone = "Valid phone number 2 is required.";
             }
 
             return Object.keys(errors).length > 0 ? errors : null;

@@ -1,13 +1,13 @@
 /* Define root variables for light theme */
 :root {
-    --primary-color: #ff9800; /* Orange for links and highlights */
-    --secondary-color: #fff; /* White section background */
-    --accent-color: #ff9800; /* Orange for buttons and badges */
-    --text-color: #333; /* Dark text for light theme */
-    --light-gray: #fff; /* White background for container */
-    --border-color: #ddd; /* Light border */
-    --background-color: #fff; /* Body background */
-    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    --primary-color: #ff9800; 
+    --secondary-color: #fff; 
+    --accent-color: #ff9800; 
+    --text-color: #333; 
+    --light-gray: #fff; 
+    --border-color: #ddd; 
+    --background-color: #fff;
+    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* General Reset */
@@ -21,6 +21,11 @@
 body {
     color: var(--text-color);
     background-color: var(--light-gray);
+}
+
+a{
+    text-decoration: none;
+    color: var(--text-color);
 }
 
 /* Container */
@@ -39,13 +44,8 @@ body {
 }
 
 .breadcrumb a {
-    color: var(--primary-color);
     text-decoration: none;
     font-size: 14px;
-}
-
-.breadcrumb a:hover {
-    text-decoration: underline;
 }
 
 .breadcrumb .separator {

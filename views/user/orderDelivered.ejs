@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivered Orders</title>
+    <link rel="stylesheet" href="/stylesheet/user/orderTracking.css">
+    <!-- Include any font awesome or other icon library here -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="separator">></span>
+            <a href="/my-account">My Account</a>
+            <span class="separator">></span>
+            <a href="/my-orders">My Orders</a>
+            <span class="separator">></span>
+            <span class="current">Delivered</span>
+        </div>
+
+        <div class="content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h3>My Orders</h3>
+                <ul>
+                    <li class="active"><a href="/my-orders/delivered">Delivered</a></li>
+                    <li><a href="/my-orders/on-the-way">On The Way</a></li>
+                    <li><a href="/my-orders/cancelled">Cancelled</a></li>
+                    <li><a href="/my-orders/returned">Returned</a></li>
+                </ul>
+            </div>
+
+            <!-- Order List -->
+            <div class="order-content">
+                <div class="order-header">
+                    <h2>Delivered Items</h2>
+                </div>
+
+                <div class="filter-section">
+                    <button class="filter-button">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search">
+                    </div>
+                </div>
+
+                <div class="order-items">
+                    <!-- HVL-F28RMA Flash Order -->
+                    <div class="order-item">
+                        <div class="order-image">
+                            <img src="/images/hvl-f28rma.jpg" alt="HVL-F28RMA">
+                        </div>
+                        <div class="order-details">
+                            <h3 class="order-name">HVL-F28RMA</h3>
+                            <div class="order-info">Order placed on: 01-Feb-2025</div>
+                            <div class="order-status">
+                                <span class="status-label">Order Status: </span>
+                                <span class="status-delivered">Delivered on 03-Feb-2025</span>
+                            </div>
+                            <div class="order-actions">
+                                <button class="btn btn-secondary">Return</button>
+                                <button class="btn btn-primary">Write a Review</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button><i class="fas fa-chevron-left"></i></button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // You can add any JavaScript needed for the page functionality here
+    </script>
+</body>
+</html>

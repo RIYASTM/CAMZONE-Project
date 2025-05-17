@@ -1,36 +1,41 @@
 const User = require('../../model/userModel')
+const Address = require('../../model/addressModel')
+const Cart = require('../../model/cartModel')
+
+const {validateProfile} = require('../../helpers/validations')
 
 const session = require('express-session')
 
-const {validateProfile} = require('../../helpers/validations')
-const Address = require('../../model/addressModel')
 
 const loadProfile = async (req,res) => {
     try {
 
         const search = req.query.search || ''
 
-        const userid= req.session.user
+        const userId= req.session.user
         
-        if(!userid){
+        if(!userId){
             return res.status(404).json({success : false , message : 'User not authenticated!'})
         }
 
 
-        const user = await User.findById(userid)
+        const user = await User.findById(userId)
 
         if(!user ){
             return res.status(404).json({success : false , message : 'User not found!'})
         }
 
-        const address = await Address.findById(userid)
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
+        const address = await Address.findById(userId)
         
         
         return res.render('profile',{
             currentPage : 'profile',
             user,
             address,
-            search
+            search,
+            cart
         })
 
     } catch (error) {

@@ -1,11 +1,16 @@
 const mongoose = require('mongoose')
 const {Schema} = mongoose
-const {v4:uuidv4, stringify} = require('uuid')
+const {v4:uuidv4} = require('uuid')
 
 const orderSchema = new Schema ({
+    userId : {
+        type : Schema.Types.ObjectId,
+        ref : 'User',
+        required : true
+    },
     orderId : {
         type : String,
-        default : ()=>uuidv4(),
+        required : true,
         unique : true
     },
     orderedItems : [{
@@ -36,9 +41,50 @@ const orderSchema = new Schema ({
         required : true
     },
     address : {
-        type : Schema.Types.ObjectId,
-        ref : "Address",
-        required : true
+        addressType : {
+            type : String,
+            // required : true
+        },
+        name : {
+            type : String,
+            // required : true
+        },
+        streetAddress : {
+            type : String,
+            // required : true
+        },
+        landMark : {
+            type : String,
+            // required : true
+        },
+        city : {
+            type : String,
+            // required : true
+        },
+        state : {
+            type : String,
+            // required : true
+        },
+        district : {
+            type : String,
+            // required : true
+        },
+        country : {
+            type : String,
+            // required : true
+        },
+        pincode : {
+            type : Number,
+            // required : true
+        },
+        phone : {
+            type : String,
+            // required : true
+        },
+        altPhone : {
+            type : String,
+            // required :  true
+        }
     },
     invoiceDate : {
         type : Date,
@@ -57,6 +103,9 @@ const orderSchema = new Schema ({
     couponApplied : {
         type : Boolean,
         default : false
+    },
+    paymentMethod : {
+        type : String
     }
 })
 

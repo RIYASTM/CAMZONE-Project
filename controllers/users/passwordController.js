@@ -1,5 +1,6 @@
 
 const User = require("../../model/userModel")
+const Cart = require('../../model/cartModel')
 const bcrypt = require('bcrypt')
 const {validatePassword} = require('../../helpers/validations')
 const {generateOtp,sendOTP} = require('../../helpers/OTP')
@@ -11,10 +12,16 @@ const loadPassword = async (req,res) => {
     try {
         const search = req.query.search || ''
         const user = await User.findById(req.session.user)
+        
+        const userId = req.session.user
+
+        const cart = userId ? await Cart.findOne({userId}) : 0
+
         return res.render('password',{
             currentPage : 'password',
             search,
-            user
+            user,
+            cart
         })
 
     } catch (error) {

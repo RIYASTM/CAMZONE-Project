@@ -121,6 +121,7 @@
             </div>
             <form action="/admin/addProduct" method="POST" id="addProductForm" enctype="multipart/form-data">
                 <div id="general-error" class="general-error"></div>
+                <!-- Product details fields remain the same -->
                 <div class="form-group">
                     <label for="productName">Name <span class="required">*</span></label>
                     <input type="text" id="productName" name="productName" class="productName" placeholder="Product name">
@@ -173,35 +174,36 @@
                         <div class="invalid-feedback"></div>
                     </div>
                     
-                    <div class="form-group image-group">
-                        <label for="productImage1">Image 1 <span class="required">*</span></label>
-                        <input type="file" id="productImage1" accept="image/*" class="productImage" onchange="initCropper(event, 1, 'add')">
+                    <!-- Modified Image Upload Section -->
+                    <div class="form-group image-group" style="grid-column: span 2;">
+                        <label for="productImages">Product Images <span class="required">*</span> (Up to 4 images)</label>
+                        <input type="file" id="productImages" accept="image/*" class="productImage" multiple>
                         <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="preview1"></div>
+                        
+                        <div class="image-preview-container" id="imagePreviewContainer">
+                            <div class="image-preview-box" data-index="0" onclick="triggerFileInput()"></div>
+                            <div class="image-preview-box" data-index="1"></div>
+                            <div class="image-preview-box" data-index="2"></div>
+                            <div class="image-preview-box" data-index="3"></div>
+                        </div>
                     </div>
-                    <div class="form-group image-group">
-                        <label for="productImage2">Image 2</label>
-                        <input type="file" id="productImage2" accept="image/*" class="productImage" onchange="initCropper(event, 2, 'add')">
-                        <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="preview2"></div>
-                    </div>
-                    <div class="form-group image-group">
-                        <label for="productImage3">Image 3</label>
-                        <input type="file" id="productImage3" accept="image/*" class="productImage" onchange="initCropper(event, 3, 'add')">
-                        <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="preview3"></div>
-                    </div>
-                    <div class="form-group image-group">
-                        <label for="productImage4">Image 4</label>
-                        <input type="file" id="productImage4" accept="image/*" class="productImage" onchange="initCropper(event, 4, 'add')">
-                        <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="preview4"></div>
-                    </div>
+                    
                     <div class="image-cropper-container" id="cropperContainer" style="display: none;">
                         <img id="cropperImage" src="" alt="Image to Crop">
-                        <div class="cropper-buttons">
-                            <button type="button" id="cropSaveButton" class="btn-sm btn-primary">Crop & Save</button>
-                            <button type="button" id="cropCancelButton" class="btn btn-secondary">Cancel</button>
+                        <div class="cropper-controls">
+                            <div class="cropper-size-controls">
+                                <label for="cropperAspectRatio">Aspect Ratio:</label>
+                                <select id="cropperAspectRatio">
+                                    <option value="1">1:1 (Square)</option>
+                                    <option value="1.33">4:3</option>
+                                    <option value="0.75">3:4</option>
+                                    <option value="1.78">16:9</option>
+                                </select>
+                            </div>
+                            <div class="cropper-buttons">
+                                <button type="button" id="cropSaveButton" class="btn-sm btn-primary">Crop & Save</button>
+                                <button type="button" id="cropCancelButton" class="btn btn-secondary">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -217,6 +219,7 @@
         </div>
     </div>
 
+
     <!-- Edit Product Modal -->
     <div class="modal product-modal" id="editProductModal">
         <div class="modal-content">
@@ -227,6 +230,7 @@
             <form action="/admin/editProduct" method="POST" id="editProductForm" enctype="multipart/form-data">
                 <div id="general-error" class="general-error"></div>
                 <input type="hidden" id="productId" name="id">
+                <!-- Product details fields remain the same -->
                 <div class="form-group">
                     <label for="editProductName">Name <span class="required">*</span></label>
                     <input type="text" id="editProductName" name="productName" class="productName" placeholder="Product name">
@@ -278,35 +282,37 @@
                         <input type="number" id="editProductOffer" name="productOffer" class="productOffer" placeholder="Product Offer">
                         <div class="invalid-feedback"></div>
                     </div>
-                    <div class="form-group image-group">
-                        <label for="editProductImage1">Image 1</label>
-                        <input type="file" id="editProductImage1" accept="image/*" class="productImage" onchange="initCropper(event, 1, 'edit')">
+                    
+                    <!-- Modified Image Upload Section for Edit -->
+                    <div class="form-group image-group" style="grid-column: span 2;">
+                        <label for="editProductImages">Product Images (Up to 4 images)</label>
+                        <input type="file" id="editProductImages" accept="image/*" class="productImage" multiple>
                         <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="editPreview1"></div>
+                        
+                        <div class="image-preview-container" id="editImagePreviewContainer">
+                            <div class="image-preview-box" data-index="0" onclick="triggerEditFileInput()"></div>
+                            <div class="image-preview-box" data-index="1"></div>
+                            <div class="image-preview-box" data-index="2"></div>
+                            <div class="image-preview-box" data-index="3"></div>
+                        </div>
                     </div>
-                    <div class="form-group image-group">
-                        <label for="editProductImage2">Image 2</label>
-                        <input type="file" id="editProductImage2" accept="image/*" class="productImage" onchange="initCropper(event, 2, 'edit')">
-                        <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="editPreview2"></div>
-                    </div>
-                    <div class="form-group image-group">
-                        <label for="editProductImage3">Image 3</label>
-                        <input type="file" id="editProductImage3" accept="image/*" class="productImage" onchange="initCropper(event, 3, 'edit')">
-                        <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="editPreview3"></div>
-                    </div>
-                    <div class="form-group image-group">
-                        <label for="editProductImage4">Image 4</label>
-                        <input type="file" id="editProductImage4" accept="image/*" class="productImage" onchange="initCropper(event, 4, 'edit')">
-                        <div class="invalid-feedback"></div>
-                        <div class="image-preview" id="editPreview4"></div>
-                    </div>
+                    
                     <div class="image-cropper-container" id="editCropperContainer" style="display: none;">
                         <img id="editCropperImage" src="" alt="Image to Crop">
-                        <div class="cropper-buttons">
-                            <button type="button" id="editCropSaveButton" class="btn-sm btn-primary">Crop & Save</button>
-                            <button type="button" id="editCropCancelButton" class="btn btn-secondary">Cancel</button>
+                        <div class="cropper-controls">
+                            <div class="cropper-size-controls">
+                                <label for="editCropperAspectRatio">Aspect Ratio:</label>
+                                <select id="editCropperAspectRatio">
+                                    <option value="1">1:1 (Square)</option>
+                                    <option value="1.33">4:3</option>
+                                    <option value="0.75">3:4</option>
+                                    <option value="1.78">16:9</option>
+                                </select>
+                            </div>
+                            <div class="cropper-buttons">
+                                <button type="button" id="editCropSaveButton" class="btn-sm btn-primary">Crop & Save</button>
+                                <button type="button" id="editCropCancelButton" class="btn btn-secondary">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -339,31 +345,29 @@
 
     <script>
 
-        const search = document.getElementById('search')
-        const searchValue = search.value
+        // Existing scripts from the original code
+        const search = document.getElementById('search');
+        const searchValue = search.value;
 
-        document.getElementById('search').addEventListener('keypress',function(e){
-            const  searchValue = search.value
-
-            if(e.key === 'Enter'){
-                window.location.href = `?search=${searchValue}`
+        document.getElementById('search').addEventListener('keypress', function(e) {
+            const searchValue = search.value;
+            if (e.key === 'Enter') {
+                window.location.href = `?search=${searchValue}`;
             }
-        })
+        });
 
-        if(searchValue){ 
-
-        document.getElementById('clear-button').addEventListener('click',function(e){
-
-            window.location.href = `/admin/products`
-        })
+        if (searchValue) {
+            document.getElementById('clear-button').addEventListener('click', function(e) {
+                window.location.href = `/admin/products`;
+            });
         }
 
-
-
+        // New and modified script for handling multiple image upload
         let cropper;
         let currentImageIndex;
         let currentModalType;
         let croppedBlobs = {};
+        let existingImages = []; // For edit mode to store existing images
 
         const addProductModal = document.getElementById('addProductModal');
         const editProductModal = document.getElementById('editProductModal');
@@ -401,6 +405,20 @@
                 });
             });
 
+            // Set up file input event listeners
+            document.getElementById('productImages').addEventListener('change', handleFileSelect);
+            document.getElementById('editProductImages').addEventListener('change', handleFileSelect);
+
+            // Set up aspect ratio change listeners
+            document.getElementById('cropperAspectRatio').addEventListener('change', updateCropperAspectRatio);
+            document.getElementById('editCropperAspectRatio').addEventListener('change', updateCropperAspectRatio);
+
+            // Initialize Cropper buttons
+            document.getElementById('cropSaveButton').addEventListener('click', saveCroppedImage);
+            document.getElementById('cropCancelButton').addEventListener('click', cancelCrop);
+            document.getElementById('editCropSaveButton').addEventListener('click', saveCroppedImage);
+            document.getElementById('editCropCancelButton').addEventListener('click', cancelCrop);
+
             // Delete Product
             document.querySelectorAll('.deleteProduct').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -410,12 +428,6 @@
                     showDeleteProductModal(id, name);
                 });
             });
-
-            // Initialize Cropper buttons
-            document.getElementById('cropSaveButton').addEventListener('click', saveCroppedImage);
-            document.getElementById('cropCancelButton').addEventListener('click', cancelCrop);
-            document.getElementById('editCropSaveButton').addEventListener('click', saveCroppedImage);
-            document.getElementById('editCropCancelButton').addEventListener('click', cancelCrop);
 
             // Add Product Form Submission
             addProductForm.addEventListener('submit', async (e) => {
@@ -438,25 +450,17 @@
                     return;
                 }
 
-                // Append cropped images to FormData
-                let hasImages = false;
-                for (let i = 1; i <= 4; i++) {
-                    if (croppedBlobs[i]) {
-                        formData.append('productImage', croppedBlobs[i], `cropped-image-${i}.png`);
-                        hasImages = true;
-                    }
-                }
-
+                // Check for at least one image
+                const hasImages = Object.keys(croppedBlobs).length > 0;
                 if (!hasImages) {
-                    Swal.fire('Error', 'At least one cropped image is required!', 'error');
+                    Swal.fire('Error', 'At least one product image is required!', 'error');
                     return;
                 }
 
-                // Log FormData for debugging
-                console.log('FormData contents:');
-                for (let pair of formData.entries()) {
-                    console.log(`${pair[0]}: ${pair[1]}`);
-                }
+                // Append cropped images to FormData
+                Object.keys(croppedBlobs).forEach(index => {
+                    formData.append('productImage', croppedBlobs[index], `product-image-${index}.png`);
+                });
 
                 try {
                     const response = await fetch('/admin/addProduct', {
@@ -492,25 +496,23 @@
                     }
                 });
 
-                console.log('salePrice : ', jsonData )
                 const errors = validateForm(jsonData);
                 if (errors) {
                     displayFormError(editProductForm, errors);
                     return;
                 }
 
-                // Append cropped images to FormData
-                for (let i = 1; i <= 4; i++) {
-                    if (croppedBlobs[i]) {
-                        formData.append('productImage', croppedBlobs[i], `cropped-image-${i}.png`);
+                // Add existing images info to the form data
+                existingImages.forEach((img, index) => {
+                    if (img) {
+                        formData.append('existingImages', img);
                     }
-                }
+                });
 
-                // Log FormData for debugging
-                console.log('Edit FormData contents:');
-                for (let pair of formData.entries()) {
-                    console.log(`${pair[0]}: ${pair[1]}`);
-                }
+                // Append cropped images to FormData
+                Object.keys(croppedBlobs).forEach(index => {
+                    formData.append('productImage', croppedBlobs[index], `product-image-${index}.png`);
+                });
 
                 try {
                     const response = await fetch('/admin/editProduct', {
@@ -534,17 +536,178 @@
             document.getElementById('cancelDeleteButton').addEventListener('click', hideDeleteProductModal);
         });
 
+        // Helper functions for multiple image handling
+        function triggerFileInput() {
+            const fileInput = document.getElementById(currentModalType === 'add' ? 'productImages' : 'editProductImages');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            currentModalType = event.target.id === 'productImages' ? 'add' : 'edit';
+            const previewContainer = document.getElementById(currentModalType === 'add' ? 'imagePreviewContainer' : 'editImagePreviewContainer');
+            
+            // Find the next available slot (up to 4 images)
+            let availableSlot = -1;
+            for (let i = 0; i < 4; i++) {
+                const box = previewContainer.querySelector(`.image-preview-box[data-index="${i}"]`);
+                if (!box.querySelector('img')) {
+                    availableSlot = i;
+                    break;
+                }
+            }
+
+            if (availableSlot === -1) {
+                Swal.fire('Info', 'Maximum 4 images allowed. Please remove an image first.', 'info');
+                return;
+            }
+
+            // Process the first selected file
+            const file = files[0];
+            currentImageIndex = availableSlot;
+
+            // Initialize cropper
+            const cropperContainer = document.getElementById(currentModalType === 'add' ? 'cropperContainer' : 'editCropperContainer');
+            const cropperImage = document.getElementById(currentModalType === 'add' ? 'cropperImage' : 'editCropperImage');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                cropperImage.src = e.target.result;
+                cropperContainer.style.display = 'block';
+
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                // Get aspect ratio from the selector
+                const aspectRatioSelect = document.getElementById(currentModalType === 'add' ? 'cropperAspectRatio' : 'editCropperAspectRatio');
+                const aspectRatio = parseFloat(aspectRatioSelect.value);
+
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: aspectRatio,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    data: {
+                        width: 600,
+                        height: 600
+                    }
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateCropperAspectRatio(event) {
+            if (!cropper) return;
+            
+            const newAspectRatio = parseFloat(event.target.value);
+            cropper.setAspectRatio(newAspectRatio);
+        }
+
+        function saveCroppedImage() {
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 600,
+                height: 600
+            });
+
+            canvas.toBlob(blob => {
+                const previewContainer = document.getElementById(currentModalType === 'add' ? 'imagePreviewContainer' : 'editImagePreviewContainer');
+                const previewBox = previewContainer.querySelector(`.image-preview-box[data-index="${currentImageIndex}"]`);
+
+                // Clear previous content and add the image
+                previewBox.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                img.alt = `Product Image ${currentImageIndex + 1}`;
+                
+                // Add remove button
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-image';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    removeImage(currentModalType, currentImageIndex);
+                };
+                
+                previewBox.appendChild(img);
+                previewBox.appendChild(removeBtn);
+                
+                // Store the blob for later submission
+                croppedBlobs[currentImageIndex] = blob;
+                
+                // Clear the file input
+                document.getElementById(currentModalType === 'add' ? 'productImages' : 'editProductImages').value = '';
+                
+                resetCropper();
+            }, 'image/png', 0.95);
+        }
+
+        function removeImage(modalType, index) {
+            const previewContainer = document.getElementById(modalType === 'add' ? 'imagePreviewContainer' : 'editImagePreviewContainer');
+            const previewBox = previewContainer.querySelector(`.image-preview-box[data-index="${index}"]`);
+            
+            // Clear the preview box
+            previewBox.innerHTML = '';
+            
+            // Remove the blob from storage
+            delete croppedBlobs[index];
+            
+            // For edit mode, mark the image as removed
+            if (modalType === 'edit' && existingImages[index]) {
+                existingImages[index] = null;
+            }
+        }
+
+        function cancelCrop() {
+            resetCropper();
+            document.getElementById(currentModalType === 'add' ? 'productImages' : 'editProductImages').value = '';
+        }
+
+        function resetCropper() {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            document.getElementById('cropperContainer').style.display = 'none';
+            document.getElementById('editCropperContainer').style.display = 'none';
+        }
+
+        function clearImagePreviews(modalType) {
+            const previewContainer = document.getElementById(modalType === 'add' ? 'imagePreviewContainer' : 'editImagePreviewContainer');
+            
+            // Clear all preview boxes
+            for (let i = 0; i < 4; i++) {
+                const previewBox = previewContainer.querySelector(`.image-preview-box[data-index="${i}"]`);
+                if (previewBox) {
+                    previewBox.innerHTML = '';
+                }
+            }
+            
+            // Reset stored data
+            if (modalType === 'edit') {
+                existingImages = [];
+            }
+            croppedBlobs = {};
+        }
+
         // Modal Functions
         function showAddProductModal() {
             addProductModal.style.display = 'block';
             croppedBlobs = {};
-            clearPreviews('add');
+            currentModalType = 'add';
+            clearImagePreviews('add');
         }
 
         function hideAddProductModal() {
             addProductModal.style.display = 'none';
             resetCropper();
-            clearPreviews('add');
+            clearImagePreviews('add');
         }
 
         function showEditProductModal(id, name, description, brand, category, regularPrice, salePrice, productOffer, stock, images, isBlocked) {
@@ -559,24 +722,47 @@
             document.getElementById('editProductStock').value = stock;
             document.getElementById('editBlockProduct').checked = isBlocked;
 
+            // Reset existing images and previews
+            existingImages = Array(4).fill(null);
+            clearImagePreviews('edit');
+            croppedBlobs = {};
+            currentModalType = 'edit';
+
             // Display existing images
-            for (let i = 1; i <= 4; i++) {
-                const preview = document.getElementById(`editPreview${i}`);
-                if (images[i-1]) {
-                    preview.innerHTML = `<img src="/Uploads/products/${images[i-1]}" alt="Image ${i}" style="width: 100px; height: 100px; object-fit: cover;">`;
-                } else {
-                    preview.innerHTML = '';
+            const previewContainer = document.getElementById('editImagePreviewContainer');
+            images.forEach((image, index) => {
+                if (index < 4 && image) {
+                    const previewBox = previewContainer.querySelector(`.image-preview-box[data-index="${index}"]`);
+                    previewBox.innerHTML = '';
+                    
+                    const img = document.createElement('img');
+                    img.src = `/uploads/products/${image}`;
+                    img.alt = `Product Image ${index + 1}`;
+                    
+                    // Add remove button
+                    const removeBtn = document.createElement('div');
+                    removeBtn.className = 'remove-image';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        removeImage('edit', index);
+                    };
+                    
+                    previewBox.appendChild(img);
+                    previewBox.appendChild(removeBtn);
+                    
+                    // Store existing image reference
+                    existingImages[index] = image;
                 }
-            }
+            });
 
             editProductModal.style.display = 'block';
-            croppedBlobs = {};
         }
 
         function hideEditProductModal() {
             editProductModal.style.display = 'none';
             resetCropper();
-            clearPreviews('edit');
+            clearImagePreviews('edit');
         }
 
         function showDeleteProductModal(id, name) {
@@ -618,106 +804,6 @@
             }
         }
 
-        // Cropper Functions
-        function initCropper(event, index, modalType) {
-            const input = event.target;
-            const file = input.files[0];
-            if (!file) return;
-
-            currentImageIndex = index;
-            currentModalType = modalType;
-
-            const cropperContainer = document.getElementById(modalType === 'add' ? 'cropperContainer' : 'editCropperContainer');
-            const cropperImage = document.getElementById(modalType === 'add' ? 'cropperImage' : 'editCropperImage');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                cropperImage.src = e.target.result;
-                cropperContainer.style.display = 'block';
-
-                if (cropper) {
-                    cropper.destroy();
-                }
-
-                cropper = new Cropper(cropperImage, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                    autoCropArea: 0.8,
-                    responsive: true
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function saveCroppedImage() {
-            if (!cropper) return;
-
-            const canvas = cropper.getCroppedCanvas({
-                width: 300,
-                height: 300,
-                // fillColor : '#ffffff'
-            });
-
-            canvas.toBlob(blob => {
-                const preview = document.getElementById(`${currentModalType === 'add' ? 'preview' : 'editPreview'}${currentImageIndex}`);
-                preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Cropped Image ${currentImageIndex}" style="width: 100px; height: 100px; object-fit: cover;">`;
-                croppedBlobs[currentImageIndex] = blob;
-
-                // Clear the file input to prevent sending the original image
-                const input = document.getElementById(`${currentModalType === 'add' ? 'productImage' : 'editProductImage'}${currentImageIndex}`);
-                input.value = '';
-
-                console.log(`Cropped image ${currentImageIndex} saved to croppedBlobs`);
-
-                resetCropper();
-            }, 'image/png');
-
-            // const context = canvas.getContext('2d');
-            // context.fillStyle = '#ffffff';
-            // context.fillRect(0, 0, canvas.width, canvas.height);
-            // context.drawImage(cropper.getCroppedCanvas(), 0, 0);
-
-            // canvas.toBlob(blob => {
-            //     const preview = document.getElementById(`${currentModalType === 'add' ? 'preview' : 'editPreview'}${currentImageIndex}`);
-            //     preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Cropped Image ${currentImageIndex}" style="width: 100px; height: 100px; object-fit: cover;">`;
-            //     croppedBlobs[currentImageIndex] = blob;
-
-            //     // Clear the file input to prevent sending the original image
-            //     const input = document.getElementById(`${currentModalType === 'add' ? 'productImage' : 'editProductImage'}${currentImageIndex}`);
-            //     input.value = '';
-
-            //     console.log(`Cropped image ${currentImageIndex} saved to croppedBlobs`, blob);
-
-            //     resetCropper();
-            // }, 'image/jpeg', 0.8)
-        }
-
-        function cancelCrop() {
-            resetCropper();
-            const input = document.getElementById(`${currentModalType === 'add' ? 'productImage' : 'editProductImage'}${currentImageIndex}`);
-            input.value = '';
-            const preview = document.getElementById(`${currentModalType === 'add' ? 'preview' : 'editPreview'}${currentImageIndex}`);
-            preview.innerHTML = '';
-        }
-
-        function resetCropper() {
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-            document.getElementById('cropperContainer').style.display = 'none';
-            document.getElementById('editCropperContainer').style.display = 'none';
-        }
-
-        function clearPreviews(modalType) {
-            for (let i = 1; i <= 4; i++) {
-                document.getElementById(`${modalType === 'add' ? 'preview' : 'editPreview'}${i}`).innerHTML = '';
-                const input = document.getElementById(`${modalType === 'add' ? 'productImage' : 'editProductImage'}${i}`);
-                if (input) input.value = '';
-            }
-            croppedBlobs = {};
-        }
-
         // Error Handling
         function clearErrors(productForm) {
             productForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
@@ -743,9 +829,8 @@
 
         // Validation
         function validateForm(data) {
-
-            const salePrice = Number(data.salePrice)
-            const regularPrice = Number(data.regularPrice)
+            const salePrice = Number(data.salePrice);
+            const regularPrice = Number(data.regularPrice);
 
             const digit = /^\d+(\.\d{1,2})?$/;
             let errors = {};
@@ -777,7 +862,7 @@
             } else if (!digit.test(salePrice)) {
                 errors.salePrice = 'Sale Price should be a valid number!';
             } else if(salePrice > regularPrice){
-                errors.salePrice = 'Sale Price should be lessthan Regular Price!'
+                errors.salePrice = 'Sale Price should be less than Regular Price!';
             }
             
             if (!data.stock) {
@@ -798,6 +883,7 @@
 
             return Object.keys(errors).length > 0 ? errors : null;
         }
+    
     </script>
 </body>
 </html>

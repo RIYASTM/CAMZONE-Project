@@ -21,7 +21,7 @@ const loadCart = async (req,res) => {
         let cartItems = []
         let subTotal = 0
 
-        if(cart && cart.items.length > 0 ){
+        if(cart && cart.items.length > 0 ){ 
             cartItems = cart.items.filter(item => !item.isDeleted)
 
             
@@ -35,7 +35,11 @@ const loadCart = async (req,res) => {
 
                     console.log('Cart item quantity : ', item.quantity)
 
+                    item.price = product.salePrice
+                    item.totalPrice = product.salePrice * item.quantity
                     subTotal += product.salePrice * item.quantity
+
+
 
                 }else {
                     item.product = null
@@ -45,10 +49,21 @@ const loadCart = async (req,res) => {
             cartItems = cartItems.filter(item => item.product !== null)
         }
 
+        cart.totalAmount = cart.items.reduce((total, item) => total += item.totalPrice,0)
+
+        console.log('Total Price : ', cart.totalAmount)
+
+
+
+        // cart.totalAmount = 
+
+        // console.log('Cart total : ',cart.totalPrice)
         
         const total = subTotal;
 
-        console.log('Total price : ', total)
+        // console.log('Cart length : ', cart.items.length)
+
+        // console.log('Total price : ', total)
 
         return res.render('cart', {
             user,
@@ -56,7 +71,8 @@ const loadCart = async (req,res) => {
             cartItems: cartItems, 
             search: search,
             subtotal: subTotal,
-            total: total
+            total: total,
+            cart
         });
 
     } catch (error) {
@@ -117,6 +133,8 @@ const addToCart = async (req,res) => {
             }
         }
 
+        cartDoc.totalAmount = cartDoc.items.reduce((total, item) => total += item.totalPrice , 0)
+
         const saveCart = await cartDoc.save()
 
         if(!saveCart){
@@ -172,11 +190,11 @@ const cartUpdate = async (req,res) => {
         if (existItem) {
             existItem.quantity = parsedQuantity
             existItem.totalPrice = existItem.quantity * product.salePrice
-            cartDoc.totalAmount += cartDoc.items.reduce((total,item) => total + item.totalPrice, 0)
         }else {
             return res.status(404).json({success : false, message : 'Item not found'})
         }
-
+        
+        cartDoc.totalAmount = cartDoc.items.reduce((total,item) => total + item.totalPrice, 0)
 
         const saveCart = await cartDoc.save()
 

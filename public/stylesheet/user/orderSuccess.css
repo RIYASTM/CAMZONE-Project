@@ -1,0 +1,253 @@
+/* order-success.css */
+
+/* Container styling */
+.order-success-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  /* Breadcrumb navigation */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  
+  .breadcrumb a {
+    color: #666;
+    text-decoration: none;
+  }
+  
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+  
+  .breadcrumb .separator {
+    margin: 0 10px;
+    color: #ccc;
+  }
+  
+  .breadcrumb .current-page {
+    color: #333;
+    font-weight: 600;
+  }
+  
+  /* Order success card */
+  .order-success-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  
+  /* Success icon */
+  .success-icon {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Success title */
+  .success-title {
+    text-align: center;
+    color: #2c6c88;
+    font-size: 24px;
+    margin-bottom: 30px;
+    font-weight: 700;
+  }
+  
+  /* Order details */
+  .order-details {
+    background-color: #f7f9fc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .order-detail-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .detail-label {
+    font-weight: 600;
+    color: #666;
+  }
+  
+  .detail-value {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .status-confirmed {
+    color: #4CAF50;
+  }
+  
+  /* Order items section */
+  .order-items {
+    margin-bottom: 30px;
+  }
+  
+  .order-items h2, .shipping-address h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+  }
+  
+  .items-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .order-item {
+    display: flex;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #fff;
+  }
+  
+  .item-image {
+    width: 80px;
+    height: 80px;
+    margin-right: 15px;
+  }
+  
+  .item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .item-details {
+    flex: 1;
+  }
+  
+  .item-name {
+    font-size: 16px;
+    margin: 0 0 5px 0;
+  }
+  
+  .item-variant {
+    color: #777;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+  }
+  
+  .item-quantity-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .item-quantity {
+    color: #666;
+  }
+  
+  .item-price {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  
+  /* Order summary */
+  .order-summary {
+    margin-bottom: 30px;
+    background-color: #f7f9fc;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+  
+  .summary-row.total {
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  
+  .summary-row.discount {
+    color: #e74c3c;
+  }
+  
+  /* Shipping address */
+  .shipping-address {
+    margin-bottom: 30px;
+  }
+  
+  .shipping-address p {
+    margin: 5px 0;
+    color: #555;
+  }
+  
+  /* Action buttons */
+  .order-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+  
+  .btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary {
+    background-color: #FDB813;
+    color: #fff;
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background-color: #e6a400;
+  }
+  
+  .btn-secondary {
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #eaeaea;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .order-success-card {
+      padding: 20px;
+    }
+    
+    .order-details {
+      grid-template-columns: 1fr;
+    }
+    
+    .order-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+  }

@@ -32,6 +32,9 @@ const cartSchema = new Schema ({
         cancellationReason : {
             type : String,
             default : "None"
+        },isDeleted : {
+            type : Boolean,
+            default : false
         }
     }],
     totalAmount : {

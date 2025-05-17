@@ -1,5 +1,7 @@
 const User = require('../../model/userModel');
 const Address = require('../../model/addressModel');
+const Cart = require('../../model/cartModel')
+
 const {validateAddress} = require('../../helpers/validations')
 
 const loadAddress = async (req, res) => {
@@ -18,9 +20,13 @@ const loadAddress = async (req, res) => {
 
         const addresses = addressDoc ? addressDoc.address.filter(addr => !addr.isDeleted) : [];
 
+        const cart = await Cart.findOne({userId})
+        
+
         return res.render('address', {
             currentPage: 'address',
             user,
+            cart,
             address: addresses,
             search: req.query.search || ''
         });
