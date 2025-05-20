@@ -296,19 +296,19 @@
                                 <tr>
                                     <td><%= addr.name %>, <%= addr.streetAddress %>, <%= addr.city %>, <%= addr.state %>, <%= addr.country %>, <%= addr.pincode %></td>
                                     <td class="action-buttons">
-                                        <button class="btn-icon edit-btn" title="Edit" onclick="openEditModal('<%= addr.id %>')">✏️</button>
+                                        <button class="btn-icon edit-btn" title="Edit" data-id="<%= addr._id %>" data-address='<%- JSON.stringify(address) %>'>✏️</button>
                                         <button class="btn-icon delete-btn" title="Delete" onclick="deleteAddress('<%= addr.id %>')">🗑️</button>
                                     </td>
                                 </tr>
                             <% }) %>
                         <% } else { %>
-                            <tr>
+                            <!-- <tr>
                                 <td>Jaswant Raj Desai, Kottayam Medical College Bypass Rd, Gandhi Nagar, Arpookkara, 686008</td>
                                 <td class="action-buttons">
                                     <button class="btn-icon edit-btn" title="Edit" onclick="openEditModal('1')">✏️</button>
                                     <button class="btn-icon delete-btn" title="Delete" onclick="deleteAddress('1')">🗑️</button>
                                 </td>
-                            </tr>
+                            </tr> -->
                         <% } %>
                         </tbody>
                     </table>
@@ -352,7 +352,7 @@
                         <div class="form-group">
                             <label for="country">Country/Region <span class="required">*</span></label>
                             <div class="select-wrapper">
-                                <select id="country" name="country" required>
+                                <select id="country" name="country" >
                                     <option value="">Select your Country/Region</option>
                                     <option value="India">India</option>
                                     <option value="USA">United States</option>
@@ -363,7 +363,7 @@
                         </div>
                         <div class="form-group">
                             <label for="city">Town/City <span class="required">*</span></label>
-                            <input type="text" id="city" name="city" placeholder="Town / City" required>
+                            <input type="text" id="city" name="city" placeholder="Town / City" >
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -371,12 +371,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="streetAddress">Street Address <span class="required">*</span></label>
-                            <input type="text" id="streetAddress" name="streetAddress" placeholder="House no and Street Name" required>
+                            <input type="text" id="streetAddress" name="streetAddress" placeholder="House no and Street Name" >
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
-                            <label for="apartment">Apartment / LandMark</label>
-                            <input type="text" id="apartment" name="apartment" placeholder="Apartment Name">
+                            <label for="landMark">Apartment / LandMark</label>
+                            <input type="text" id="landMark" name="landMark" placeholder="LandMark Name">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -385,7 +385,7 @@
                         <div class="form-group">
                             <label for="state">State <span class="required">*</span></label>
                             <div class="select-wrapper">
-                                <select id="state" name="state" required>
+                                <select id="state" name="state" >
                                     <option value="">Select your State</option>
                                     <option value="Kerala">Kerala</option>
                                     <option value="Karnataka">Karnataka</option>
@@ -396,7 +396,7 @@
                         </div>
                         <div class="form-group">
                             <label for="district">District <span class="required">*</span></label>
-                            <input type="text" id="district" name="district" required>
+                            <input type="text" id="district" name="district" >
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -437,7 +437,7 @@
                             <label for="altPhone">Phone 2 <span class="required">*</span></label>
                             <div class="phone-input-wrapper">
                                 <div class="country-code" id="countryCode2">+91</div>
-                                <input type="tel" id="altPhone" name="altPhone" placeholder="Phone number" required>
+                                <input type="tel" id="altPhone" name="altPhone" placeholder="Phone number" >
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
@@ -455,11 +455,9 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- <script src="/javascript/users/address.js"></script> -->
 
     <script>
-        // Pass the backend-provided address data to JavaScript
-        const addressData = <%- JSON.stringify(address || []) %>;
-        console.log('Address Data : ', addressData)
 
         const countryCodeMap = {
             "India": "+91",
@@ -583,40 +581,52 @@
                 modal.classList.add('active');
             };
 
-            window.openEditModal = function(id) {
-                modalTitle.textContent = 'Edit Address';
-                saveAddressBtn.textContent = 'Update Address';
-                
-                const address = addressData.find(addr => addr._id == id); // Use loose equality since id may be string
-                if (address) {
-                    addressIdInput.value = address._id;
-                    document.getElementById('name').value = address.name || '';
-                    document.getElementById('phone1').value = address.phone || '';
-                    document.getElementById('country').value = address.country || '';
-                    document.getElementById('city').value = address.city || '';
-                    document.getElementById('streetAddress').value = address.streetAddress || '';
-                    document.getElementById('apartment').value = address.landMark || address.apartment || '';
-                    document.getElementById('state').value = address.state || '';
-                    document.getElementById('district').value = address.district || '';
-                    document.getElementById('email').value = address.email || '';
-                    document.getElementById('pincode').value = address.pincode || '';
-                    document.getElementById('phone').value = address.altPhone || address.phone || '';
-                    
-                    const addressTypeRadio = document.querySelector(`input[name="addressType"][value="${address.addressType || 'home'}"]`);
-                    if (addressTypeRadio) {
-                        addressTypeRadio.checked = true;
-                    }
 
-                    const countryCode = countryCodeMap[address.country] || '+91';
-                    countryCode1.textContent = countryCode;
-                    countryCode2.textContent = countryCode;
-                } else {
-                    Swal.fire('Error', 'Address not found.', 'error');
-                    return;
-                }
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    console.log('hi')
+                    modal.classList.add('active');
+                    modalTitle.textContent = 'Edit Address';
+                    saveAddressBtn.textContent = 'Update Address';
+                    const id = button.dataset.id
+
+                    const addressData = JSON.parse (button.dataset.address)
+                    console.log('Address Data : ', addressData)
+                    console.log(typeof addressData)
+
+                    const address = addressData.filter(addr => addr._id == id); // Use loose equality since id may be string
+                    console.log('address : ',address)
+                    console.log(typeof address)
+
+                    if (address) {
+                        addressIdInput.value = address[0]._id;
+                        document.getElementById('name').value = address[0].name || '';
+                        document.getElementById('phone').value = address[0].phone || '';
+                        document.getElementById('country').value = address[0].country || '';
+                        document.getElementById('city').value = address[0].city || '';
+                        document.getElementById('streetAddress').value = address[0].streetAddress || '';
+                        document.getElementById('landMark').value = address[0].landMark || address[0].landMark || '';
+                        document.getElementById('state').value = address[0].state || '';
+                        document.getElementById('district').value = address[0].district || '';
+                        document.getElementById('email').value = address[0].email || '';
+                        document.getElementById('pincode').value = address[0].pincode || '';
+                        document.getElementById('altPhone').value = address[0].altPhone || address[0].phone || '';
+                        
+                        const addressTypeRadio = document.querySelector(`input[name="addressType"][value="${address[0].addressType || 'home'}"]`);
+                        if (addressTypeRadio) {
+                            addressTypeRadio.checked = true;
+                        }
+
+                        const countryCode = countryCodeMap[address[0].country] || '+91';
+                        countryCode1.textContent = countryCode;
+                        countryCode2.textContent = countryCode;
+                    } else {
+                        Swal.fire('Error', 'Address not found.', 'error');
+                        return;
+                    }
                 
-                modal.classList.add('active');
-            };
+                })
+            })
 
             window.deleteAddress = async function(id) {
                 const result = await Swal.fire({
@@ -666,16 +676,16 @@
                     errors.name = "Name can only contain letters and spaces!";
                 }
 
-                if (!data.phone1) {
-                    errors.phone1 = "Phone number 1 is required!";
-                } else if (!phonePattern.test(data.phone1)) {
-                    errors.phone1 = "Invalid phone number format!";
-                }
-
                 if (!data.phone) {
-                    errors.phone = "Phone number 2 is required!";
+                    errors.phone = "Phone number 1 is required!";
                 } else if (!phonePattern.test(data.phone)) {
                     errors.phone = "Invalid phone number format!";
+                }
+
+                if (!data.altPhone) {
+                    errors.altPhone = "Phone number 2 is required!";
+                } else if (!phonePattern.test(data.altPhone)) {
+                    errors.altPhone = "Invalid phone number format!";
                 }
 
                 if (!data.country) {
@@ -688,6 +698,10 @@
 
                 if (!data.streetAddress) {
                     errors.streetAddress = "Street address is required!";
+                }
+
+                if(!data.landMark){
+                    errors.landMark = "Appartment or LandMark is required!"
                 }
 
                 if (!data.state) {
@@ -708,5 +722,6 @@
             }
         });
     </script>
+
 </body>
 </html>

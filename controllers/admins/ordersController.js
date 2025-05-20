@@ -34,7 +34,36 @@ const loadOrders = async (req,res) => {
     }
 }
 
+const updateStatus = async (req,res) => {
+    try {
+        
+        // const {status , orderId} = req.body
+
+        // console.log(`Order Id : ${orderId}, New Status : ${status}`)
+
+        // const order = await Order.findOneAndUpdate({ _id : orderId},{$set : { status }})
+
+        // if(!order){
+        //     return res.status(401).json({ success : false , message : 'Status updating failed!!'})
+        // }
+
+        // console.log('Updating order : ',order)
+
+        // return res.satus(200).json({ success : true , message : 'Staus updated!!'})
+
+        const { orderId, status } = req.body;
+        await Order.findByIdAndUpdate(orderId, { status });
+
+        return res.json({ success: true });
+
+    } catch (error) {
+         console.error('Update status error:', error);
+        return res.json({ success: false, message: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
-    loadOrders
+    loadOrders,
+    updateStatus
 }

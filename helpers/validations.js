@@ -166,6 +166,9 @@ function validateAddress(data){
             if (!data.state) {
                 errors.state = "State is required.";
             }
+            if(!data.landMark){
+                errors.landMark = "LandMark or Apartmetn is required!"
+            }
             if (!data.district) {
                 errors.district = "District is required.";
             }

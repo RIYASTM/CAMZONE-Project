@@ -43,47 +43,47 @@ const orderSchema = new Schema ({
     address : {
         addressType : {
             type : String,
-            // required : true
+            required : true
         },
         name : {
             type : String,
-            // required : true
+            required : true
         },
         streetAddress : {
             type : String,
-            // required : true
+            required : true
         },
         landMark : {
             type : String,
-            // required : true
+            required : true
         },
         city : {
             type : String,
-            // required : true
+            required : true
         },
         state : {
             type : String,
-            // required : true
+            required : true
         },
         district : {
             type : String,
-            // required : true
+            required : true
         },
         country : {
             type : String,
-            // required : true
+            required : true
         },
         pincode : {
             type : Number,
-            // required : true
+            required : true
         },
         phone : {
             type : String,
-            // required : true
+            required : true
         },
         altPhone : {
             type : String,
-            // required :  true
+            required :  true
         }
     },
     invoiceDate : {

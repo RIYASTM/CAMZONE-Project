@@ -50,6 +50,8 @@ const addAddress = async (req, res) => {
 
         const data = req.body;
 
+        console.log('address Data :', data)
+
         let errors = validateAddress(data)
         
         if (errors) {
@@ -59,14 +61,14 @@ const addAddress = async (req, res) => {
         const newAddress = {
             name: data.name,
             streetAddress: data.streetAddress,
-            landMark: data.apartment || '',
+            landMark: data.landMark || '',
             city: data.city,
             state: data.state,
             district: data.district,
             country: data.country,
             pincode: data.pincode,
-            phone: data.phone1,
-            altPhone: data.phone,
+            phone: data.phone,
+            altPhone: data.altPhone,
             addressType: data.addressType || 'home',
             // id: Date.now() 
         };
@@ -96,6 +98,7 @@ const addAddress = async (req, res) => {
             success: true,
             message: 'Address saved successfully'
         });
+
     } catch (error) {
         console.error('Error adding address:', error);
         return res.status(500).json({

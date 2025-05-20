@@ -57,7 +57,7 @@
                 <% order.orderedItems.forEach(function(item) { %>
                   <div class="order-item">
                     <div class="item-image">
-                      <img src="<%= item.product.productImage ? item.product.productImage[0] : '/images/placeholder.jpg' %>" alt="<%= item.name %>">
+                      <img src='/uploads/products/<%= item.product.productImage[0]%>'  alt="<%= item.product.productName %>">
                     </div>
                     <div class="item-details">
                       <h3 class="item-name"><%= item.product.productName %></h3>

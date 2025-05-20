@@ -103,9 +103,9 @@
                                 <div class="invalid-feedback" id="streetAddress-error" role="alert"></div>
                             </div>
                             <div class="form-group">
-                                <label for="landmark">Apartment/Landmark</label>
-                                <input type="text" id="landmark" name="landmark" placeholder="Apartment or Landmark" aria-describedby="landmark-error">
-                                <div class="invalid-feedback" id="landmark-error" role="alert"></div>
+                                <label for="landMark">Apartment/Landmark</label>
+                                <input type="text" id="landMark" name="landMark" placeholder="Apartment or Landmark" aria-describedby="landMark-error">
+                                <div class="invalid-feedback" id="landMark-error" role="alert"></div>
                             </div>
                         </div>
                         
@@ -230,9 +230,9 @@
                                 <div class="invalid-feedback" id="editStreetAddress-error" role="alert"></div>
                             </div>
                             <div class="form-group">
-                                <label for="editLandmark">Apartment/Landmark</label>
-                                <input type="text" id="editLandmark" name="landmark" placeholder="Apartment or Landmark" aria-describedby="editLandmark-error">
-                                <div class="invalid-feedback" id="editLandmark-error" role="alert"></div>
+                                <label for="editLandMark">Apartment/Landmark</label>
+                                <input type="text" id="editLandMark" name="landMark" placeholder="Apartment or LandMark" aria-describedby="editLandMark-error">
+                                <div class="invalid-feedback" id="editLandMark-error" role="alert"></div>
                             </div>
                         </div>
                         
@@ -490,7 +490,7 @@
                 document.getElementById('editCountry').value = addressData.country || '';
                 document.getElementById('editCity').value = addressData.city || '';
                 document.getElementById('editStreetAddress').value = addressData.streetAddress || '';
-                document.getElementById('editLandmark').value = addressData.landmark || '';
+                document.getElementById('editLandMark').value = addressData.landMark || '';
                 document.getElementById('editState').value = addressData.state || '';
                 document.getElementById('editDistrict').value = addressData.district || '';
                 document.getElementById('editPincode').value = addressData.pincode || '';
@@ -514,6 +514,7 @@
             }
 
             const formData = Object.fromEntries(new FormData(addressForm));
+            console.log('Address data : ',formData )
             const mode = formData.formMode;
             delete formData.formMode;
 
@@ -525,17 +526,15 @@
 
             addAddressBtn.disabled = true;
             addAddressBtn.textContent = 'Adding...';
-            const URL = '/addAddress'
-            //  mode === 'edit' ? '/editAddress' : '/addAddress'
+            // const URL = '/addAddress'
+            
 
             try {
-                const response = await fetch(URL, {
+                const response = await fetch('/addAddress', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
-
-                console.log('hello')
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -549,7 +548,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Failed',
-                        text: data.message || `Failed to ${mode === 'edit' ? 'update' : 'add'} address.`
+                        text: data.message || `Failed to add address.`
                     });
                 }
             } catch (error) {
@@ -557,7 +556,7 @@
                     icon: 'error',
                     title: 'Error',
                     text: navigator.onLine
-                        ? `Error ${mode === 'edit' ? 'updating' : 'adding'} address: ${error.message}`
+                        ? `Error adding address: ${error.message}`
                         : 'No internet connection. Please check your network and try again.'
                 });
             } finally {
@@ -731,6 +730,10 @@
                 errors.country = "Country is required!";
             }
 
+            if(!formData.landMark){
+                errors.landMark = 'Apartment or LandMark is required!'
+            }
+
             if (!formData.city) {
                 errors.city = "Town/City is required!";
             }
@@ -757,9 +760,6 @@
                 errors.pincode = "Pincode format not supported for this country!";
             }
 
-            // Landmark is optional, so no validation required
-            // Removed: if (!formData.landMark) { errors.landMark = "Landmark is required!"; }
-
             return Object.keys(errors).length > 0 ? errors : null;
         }
 
@@ -783,6 +783,7 @@
             form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
             form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
         }
+    
     });
     </script>
 </body>

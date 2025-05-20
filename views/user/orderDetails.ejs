@@ -7,69 +7,87 @@
     <link rel="stylesheet" href="/stylesheet/user/orderDetails.css">
 </head>
 <body>
-    <% if(order){ %>
-    <nav class="top-nav">
-        <a href="/">Home</a> >
-        <a href="/account">My Account</a> >
-        <a href="/orders">My Orders</a> >
-        <a href="/productDetails/?id=<%= productItem.product._id %>"><%= productItem.product.productName %></a>
+    <div class="breadcrumb">
+        <a href="#">Home</a> &gt;
+        <a href="#">My Account</a> &gt;
+        <a href="#">My Orders</a> &gt;
+        <span><%= productItem.product.productName %></span>
+    </div>
 
-    </nav>
-    <div class="order-details-container">
+    <div class="card">
         <div class="product-section">
             <h2>Product</h2>
-            <div class="product-info">
-                <img src="/uploads/products/<%= productItem.product.productImage[0] %>" alt="<%= productItem.product.productName %>">
+            <div class="product-container" id="productContainer" data-id="<%= productItem.product._id %>">
+                <img src="/uploads/products/<%= productItem.product.productImage[0]%>" alt="<%= productItem.product.productName %>" class="product-image">
                 <div class="product-details">
                     <h3><%= productItem.product.productName %></h3>
                     <p class="price">₹ <%= productItem.price %></p>
-                    <p>Quantity: <%= productItem.quantity %></p>
+                    <p class="quantity">Quantity :  <%= productItem.quantity %></p>
                 </div>
             </div>
-        </div>        
-        <div class="delivery-section">
-            <h2>Delivery Address</h2>
-            <p><strong><%= order.address.name %></strong></p>
-            <p><%= order.address.landMark %><%= order.address.streetAddress%><%= order.address.city %><%= order.address.district %><%= order.address.state %> - <%= order.address.pincode %></p>
-            <!-- <p>KINFRA Techno Industrial Park, Bnotype, Kakkanchery, Chelambra, Kerala 673634 National Highway 66, near calicut University Chelambra - 673634, Kerala</p> -->
-            <p><strong>Phone number:</strong> <%= order.address.phone %></p>
-            <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-            <p><strong>Order number:</strong> <%= order._id %></p>
+
+            <div class="delivery-address">
+                <h3>Delivery Address :</h3>
+                <p class="customer-name"><%= order.address.name %></p>
+                <p class="address">
+                    <%= order.address.streetAddress%>, <%= order.address.landMark %><br>
+                    <%= order.address.city %> , <%= order.address.district %><br>
+                    <%= order.address.state %> - <%= order.address.pincode %><br>
+                    <!-- university Chelambra - 673634, Kerala -->
+                </p>
+                <p class="contact-row"><strong>Phone number</strong> :  <%= order.address.phone %></p>
+                <p class="contact-row"><strong>Payment Method</strong> : <%= order.paymentMethod %></p>
+                <p class="contact-row"><strong>Order number</strong> : <%= order.orderId %></p>
+            </div>
         </div>
 
-        <div class="tracking-section">
+        <div class="track-section">
             <h2>Track</h2>
-            <div class="tracking-status">
-                <div class="status-item completed">
-                    <span class="dot"></span>
-                    <div>
-                        <p><strong>Order Confirmed</strong> Thu, 20th Feb '25</p>
-                        <p>Your Order has been placed</p>
+            <div class="track-status">
+                <div class="track-item">
+                    <div class="status-indicator completed"></div>
+                    <div class="track-info">
+                        <p class="status-title">Order Confirmed<span class="status-date">Thu, 20th Feb '25</span></p>
+                        <p class="status-message">Your Order has been placed</p>
                     </div>
                 </div>
-                <div class="status-item completed">
-                    <span class="dot"></span>
-                    <div>
-                        <p><strong>Shipped</strong> Thu, 20th Feb '25</p>
-                        <p>Your Order has been shipped</p>
+
+                <div class="track-item">
+                    <div class="status-indicator completed"></div>
+                    <div class="track-info">
+                        <p class="status-title">Shipped<span class="status-date">Thu, 20th Feb '25</span></p>
+                        <p class="status-message">Your Order has been shipped</p>
                     </div>
                 </div>
-                <div class="status-item completed">
-                    <span class="dot"></span>
-                    <div>
-                        <p><strong>Out of Delivery</strong> Fri, 21st Feb '25</p>
-                        <p>Your item is out of delivery</p>
+
+                <div class="track-item">
+                    <div class="status-indicator completed"></div>
+                    <div class="track-info">
+                        <p class="status-title">Out of Delivery<span class="status-date">Fri, 21st Feb '25</span></p>
+                        <p class="status-message">Your item is out of delivery</p>
                     </div>
                 </div>
+
             </div>
-            
-            <div class="action-buttons">
-                <button class="schedule-btn">Schedule Order</button>
-                <button class="cancel-btn">Cancel</button>
+
+            <div class="actions">
+                <button class="btn btn-primary">Schedule Order</button>
+                <button class="btn btn-danger">CANCEL</button>
             </div>
         </div>
     </div>
-    
-    <%}%>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const productContainer = document.getElementById('productContainer')
+
+            productContainer.addEventListener('click', ()=> {
+                const productId = productContainer.dataset.id
+                window.location.href =  `/product?id=${productId}` 
+            })
+        })
+
+    </script>
 </body>
 </html>

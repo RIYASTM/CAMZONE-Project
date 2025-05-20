@@ -28,9 +28,15 @@ const loadHomePage = async (req, res) => {
 
         const user = await User.findOne({ email: usermail });
 
+        console.log('Session Data : ',req.session)
+
         const userId = req.session.user
 
-        const cart = userId ? await Cart.findOne({userId}) : 0
+        let cart =  0
+
+        if(userId){
+            cart = await Cart.findOne({userId})
+        }
 
         const brands = await Brands.find({ isDeleted: false, isBlocked: false });
         const categories = await Category.find({ isListed: true });
@@ -71,6 +77,7 @@ const loadHomePage = async (req, res) => {
         const findCategory = products.category
         const findBrand = products.brand
 
+        //Offers
         const categoryOffer = findCategory?.categoryOffer || 0
 
         if(categoryOffer){ console.log('Category offer : ', categoryOffer)}
@@ -79,13 +86,15 @@ const loadHomePage = async (req, res) => {
 
         if(brandOffer) {console.log('Brand offer : ', brandOffer)}
 
-        const productOffer = products.productOffer || 0
+        const productOffer = products.productOffer || 0 
 
         if(productOffer){console.log('Product offer : ', productOffer)}
 
         const totalOffer = categoryOffer + productOffer + brandOffer
 
-        // Log products for debugging
+        console.log( 'Total offer' ,totalOffer)
+
+
         // console.log('Home Page Products:', products);
 
         const newProducts = products
@@ -464,7 +473,7 @@ const signin = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'You`re Blocked',
-                errors: { email: 'Blocked User' }
+                errors: { email : 'Blocked User' }
             })
         }
 
@@ -487,7 +496,7 @@ const signin = async (req, res) => {
         console.log(email, password)
         console.log("=========================================");
 
-        req.session.usermail = email;
+        req.session.usermail = isUser.email;
         req.session.user = isUser._id;
 
         return res.status(200).json({
@@ -664,6 +673,7 @@ const verifyEmail = async (req, res) => {
 
             await saveUserData.save()
             req.session.user = saveUserData._id;
+            req.session.userData = saveUserData
             req.session.userOtp = null
 
             return res.status(200).json({

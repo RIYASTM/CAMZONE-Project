@@ -34,19 +34,6 @@ const signin = async (req,res) => {
         
         const {email,password} = req.body
 
-        // const admin = await User.findOne({email, isAdmin:true})
-
-        // if(admin){
-        //     const passwordMatch = await bcrypt.compare(password,admin.password)
-        //     console.log('password match : ',passwordMatch)
-        //     if(passwordMatch){
-        //         req.session.admin = true
-        //         req.session.user = true
-        //         return res.redirect('/admin/dashboard')
-        //     }else{
-        //         return res.redirect('/admin/')
-        //     }
-        // }
         const admin = await User.findOne({ email , isAdmin : true });
 
         if (!admin) {
@@ -61,7 +48,8 @@ const signin = async (req,res) => {
         }
 
         req.session.admin = true
-        req.session.user = true
+        req.session.adminId = admin._id;
+
         // return res.redirect('/admin/dashboard')
         return res.status(200).json({success : true , message : 'Signed in Successfully' , redirectUrl : '/admin/dashboard'})
 
