@@ -12,7 +12,6 @@
 </head>
 <body>
     <div class="container">
-
         <!-- Include Sidebar -->
         <%- include('../partials/admins/sidebar') %>
 
@@ -32,7 +31,7 @@
                 </div>
                 <div class="top-center" style="position: relative; display: inline-block;">
                     <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search %>">
-                    <% if(search){ %>
+                    <% if(search) { %>
                         <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
                     <% } %>
                 </div>
@@ -51,6 +50,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>Image</th>
                             <th>Category Name</th>
                             <th>Description</th>
                             <th>Created On</th>
@@ -61,8 +61,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% category.reverse().forEach((category, index) => { %>
+                        <% category.reverse().forEach((category) => { %>
                             <tr>
+                                <td>
+                                    <% if (category.categoryImage) { %>
+                                        <img src="/uploads/category/<%= category.categoryImage %>" alt="<%= category.name %>" style="width: 50px; height: 50px; object-fit: fill;">
+                                    <% } else { %>
+                                        <span>No Image</span>
+                                    <% } %>
+                                </td>
                                 <td><%= category.name %></td>
                                 <td><%= category.description %></td>
                                 <td><%= category.createdAt.toString().split(" ").slice(1, 4).join(" ") %></td>
@@ -73,10 +80,10 @@
                                         <button class="filter" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
                                     <% } %>
                                 </td>
-                                <td><%= category.categoryOffer ? category.categoryOffer+' %' : '-' %></td>
-                                <td><%= category.isListed === true ? 'Listed' : "Unlisted" %></td>
+                                <td><%= category.categoryOffer ? category.categoryOffer + ' %' : '-' %></td>
+                                <td><%= category.isListed ? 'Listed' : 'Unlisted' %></td>
                                 <td>
-                                    <a href="#" class="action-icon" onclick="showEditCategoryModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.categoryOffer %>', '<%= category.isListed %>')"><i class="fas fa-edit"></i></a>
+                                    <a href="#" class="action-icon" onclick="showEditCategoryModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.categoryOffer %>', '<%= category.isListed %>', '<%= category.categoryImage %>')"><i class="fas fa-edit"></i></a>
                                     <a href="#" class="action-icon" id="delete-category" onclick="deleteCategory('<%= category._id %>')"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -87,72 +94,91 @@
 
             <!-- Add Category -->
             <div class="category-modal" id="addCategoryModal">
-                <h2>Add New Category</h2>
-                <form action="/admin/add-category" method="POST" id="categoryForm">
-                    <div class="form-group">
-                        <label for="categoryName">Category Name <span class="required">*</span></label>
-                        <input type="text" id="addCategoryName" name="categoryName" placeholder="Category Name">
-                        <div class="invalid-feedback"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="categoryDescription">Category Description <span class="required">*</span></label>
-                        <textarea id="addCategoryDescription" name="categoryDescription" placeholder="Category Description"></textarea>
-                        <div class="invalid-feedback"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="offerPrice">Offer Price</label>
-                        <input type="number" id="addOfferPrice" name="offerPrice" step="0.01" min="0">
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <label> List Category : 
-                            <input type="checkbox" id="addCheckbox" name="listCategory">
-                        </label>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn add-btn" form="categoryForm">Add Category</button>
-                        <button type="button" class="btn cancel-btn" id="cancelButton">Cancel</button>
-                    </div>
-                </form>
+                <div class="modal-overlay"></div>
+                <div class="modal-content">
+                    <h2>Add New Category</h2>
+                    <form action="" method="POST" id="categoryForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="categoryName">Category Name <span class="required">*</span></label>
+                            <input type="text" id="addCategoryName" name="categoryName" placeholder="Category Name">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryDescription">Category Description <span class="required">*</span></label>
+                            <textarea id="addCategoryDescription" name="categoryDescription" placeholder="Category Description"></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="offerPrice">Offer Price</label>
+                            <input type="number" id="addOfferPrice" name="offerPrice" step="0.01" min="0">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>List Category:
+                                <input type="checkbox" id="addCheckbox" name="listCategory">
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryImage">Image</label>
+                            <input type="file" id="addCategoryImage" name="categoryImage" accept="image/*" class="categoryImage">
+                            <div id="addImagePreview" style="margin-top: 10px;"></div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn add-btn">Add Category</button>
+                            <button type="button" class="btn cancel-btn" id="cancelButton">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Edit Category -->
             <div class="category-modal" id="editCategoryModal">
-                <h2>Edit Category</h2>
-                <form class="category-form" id="EditCategoryForm">
-                    <input type="hidden" id="categoryId" name="id">
-                    <div class="form-group">
-                        <label for="categoryName">Category Name <span class="required">*</span></label>
-                        <input type="text" id="editCategoryName" name="categoryName">
-                    </div>
-                    <div class="form-group">
-                        <label for="offerPrice">Offer Price</label>
-                        <input type="number" id="editOfferPrice" name="offerPrice" step="0.01" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="categoryDescription">Category Description <span class="required">*</span></label>
-                        <textarea id="categoryDescription" name="editCategoryDescription"></textarea>
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <label> List Category : 
-                            <input type="checkbox" id="checkbox" name="listCategory">
-                        </label>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn save-btn">Save Changes</button>
-                        <button type="button" class="btn cancel-btn" id="cancelEditButton">Cancel</button>
-                    </div>
-                </form>
+                <div class="modal-overlay"></div>
+                <div class="modal-content">
+                    <h2>Edit Category</h2>
+                    <form class="category-form" id="EditCategoryForm" enctype="multipart/form-data">
+                        <input type="hidden" id="categoryId" name="id">
+                        <div class="form-group">
+                            <label for="categoryName">Category Name <span class="required">*</span></label>
+                            <input type="text" id="editCategoryName" name="categoryName">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="offerPrice">Offer Price</label>
+                            <input type="number" id="editOfferPrice" name="offerPrice" step="0.01" min="0">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryDescription">Category Description <span class="required">*</span></label>
+                            <textarea id="categoryDescription" name="categoryDescription"></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>List Category:
+                                <input type="checkbox" id="checkbox" name="listCategory">
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCategoryImage">Category Image</label>
+                            <input type="file" id="editCategoryImage" name="categoryImage" accept="image/*">
+                            <div id="currentImage" style="margin-top : 10px"></div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn save-btn">Save Changes</button>
+                            <button type="button" class="btn cancel-btn" id="cancelEditButton">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Pagination -->
-            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+            <%- include('../partials/admins/pagination', { currentPage: currentPages, totalPages }) %>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/javascript/admins/category.js"></script>
-    <script src="/javascript/partials/addCategory.js"></script>
-    <script src="/javascript/partials/editCategory.js"></script>
-
 </body>
 </html>

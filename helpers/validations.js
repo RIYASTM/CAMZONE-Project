@@ -1,4 +1,4 @@
-
+const sanitizeHtml = require('sanitize-html');
 
 function validateUser(data) {
     const namepattern = /^[A-Za-z\s]+$/;
@@ -54,22 +54,40 @@ function validateForm(email, password) {
     return Object.keys(error).length > 0 ? error : null
 }
 
-function validateCategoryForm(data){
+function validateCategoryForm(data) {
+    const namePattern = /^[a-zA-Z\s]+$/;
+    const digit = /^\d+$/;
+    let error = {};
 
-    const namePattern = /^[a-zA-Z\s]+$/
-    let error = {}
+    const nameField = data.categoryName || data.name;
+    const descriptionField = data.categoryDescription || data.description;
+    const offerField = (data.offerPrice || data.categoryOffer) ?? 0;
 
-    if(!data.name){
-        error.name = 'Please enter the categoryName'
-    }else if(!namePattern.test(data.name)){
-        error.name = 'Name includes only the alphabets'
+    if (!nameField) {
+        const fieldName = data.categoryName !== undefined ? 'categoryName' : 'name';
+        error[fieldName] = 'Please enter the category name';
+    } else if (!namePattern.test(nameField)) {
+        const fieldName = data.categoryName !== undefined ? 'categoryName' : 'name';
+        error[fieldName] = 'Name includes only alphabets';
     }
 
-    if(!data.description){
-        error.description = 'Please enter the Description'
+    if (!descriptionField) {
+        const fieldName = data.categoryDescription !== undefined ? 'categoryDescription' : 'description';
+        error[fieldName] = 'Please enter the description';
     }
-    return Object.keys(error).length > 0 ? error : null
 
+    if (offerField !== 0 && offerField !== '') {
+        const offerStr = offerField.toString();
+        if (!digit.test(offerStr)) {
+            const fieldName = data.offerPrice !== undefined ? 'offerPrice' : 'categoryOffer';
+            error[fieldName] = 'Offer must be a valid number';
+        } else if (parseFloat(offerField) >= 100) {
+            const fieldName = data.offerPrice !== undefined ? 'offerPrice' : 'categoryOffer';
+            error[fieldName] = 'Offer should be under 100';
+        }
+    }
+
+    return Object.keys(error).length > 0 ? error : null;
 }
 
 function validateProductForm (data) {

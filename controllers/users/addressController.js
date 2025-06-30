@@ -6,12 +6,16 @@ const {validateAddress} = require('../../helpers/validations')
 
 const loadAddress = async (req, res) => {
     try {
+        const search = req.query.search || ''
+
         const userId = req.session.user;
+        
         if (!userId) {
             return res.status(401).render('error', { message: 'User not authenticated.' });
         }
 
         const user = await User.findById(userId);
+        
         if (!user) {
             return res.status(404).render('error', { message: 'User not found.' });
         }
@@ -28,7 +32,7 @@ const loadAddress = async (req, res) => {
             user,
             cart,
             address: addresses,
-            search: req.query.search || ''
+            search
         });
     } catch (error) {
         console.error('Failed to load the Address Page:', error);

@@ -23,21 +23,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function showEditCategoryModal(id, name, description, offer, isListed) {
+function showEditCategoryModal(id, name, description, offer, isListed, image) {
     const editCategoryModal = document.getElementById('editCategoryModal');
     const categoryId = document.getElementById('categoryId');
     const categoryName = document.getElementById('editCategoryName');
     const categoryDescription = document.getElementById('categoryDescription');
     const categoryOffer = document.getElementById('editOfferPrice');
     const categoryList = document.getElementById('checkbox');
-
+    const currentImageDiv = document.getElementById('currentImage');
+    
     // Populate form fields
     categoryId.value = id;
     categoryName.value = name;
     categoryDescription.value = description;
     categoryOffer.value = offer || '';
     categoryList.checked = isListed === 'true';
-
+    if (image) {
+        currentImageDiv.innerHTML = `<img src="/uploads/category/${image}" alt="Current Image" style="width: 50px; height: 50px; object-fit: fill;">`;
+    } else {
+        currentImageDiv.innerHTML = 'No Image';
+    }
+    
     // Show the modal
     editCategoryModal.style.display = 'block';
 }
@@ -55,6 +61,7 @@ async function SaveChanges(event) {
     const categoryDescription = document.getElementById('categoryDescription');
     const categoryOffer = document.getElementById('editOfferPrice');
     const categoryList = document.getElementById('checkbox');
+    
 
     try {
         const response = await fetch('/admin/editCategory', {

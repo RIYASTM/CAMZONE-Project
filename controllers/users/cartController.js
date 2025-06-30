@@ -69,7 +69,7 @@ const loadCart = async (req,res) => {
             user,
             currentPage: 'cart',
             cartItems: cartItems, 
-            search: search,
+            search,
             subtotal: subTotal,
             total: total,
             cart

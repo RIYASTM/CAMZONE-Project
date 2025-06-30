@@ -2,10 +2,13 @@ const User = require("../../model/userModel")
 const Order = require('../../model/orderModel')
 const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
+const { search } = require("../../routes/userRouter")
 
 
 const loadOrderSuccess = async (req,res) => { 
     try {
+
+        const search = req.query.search || ''
 
         const userId = req.session.user
 
@@ -34,7 +37,9 @@ const loadOrderSuccess = async (req,res) => {
         console.log("Order ID from session:", orderId);
 
         return res.render('orderSuccess',{
-            order : userOrder
+            order : userOrder,
+            search,
+            currentPage : 'orderSuccess'
         })
 
     } catch (error) {
@@ -42,9 +47,10 @@ const loadOrderSuccess = async (req,res) => {
     }
 }
 
-
 const loadMyOrders = async (req,res) => {
     try {
+
+        const serch = req.query.search || ''
         
         const userId = req.session.user
 
@@ -53,7 +59,9 @@ const loadMyOrders = async (req,res) => {
         // console.log('User Orders : ', userOrders)
 
         return res.render('myOrders',{
-            orders : userOrders
+            orders : userOrders,
+            search,
+            currentPage : 'myOrders'
         })
 
     } catch (error) {
@@ -63,6 +71,8 @@ const loadMyOrders = async (req,res) => {
 
 const loadOrderDetails = async (req,res) => {
     try {
+
+        const search = req.query.search || ''
         
         const productId = req.query.id
 
@@ -101,7 +111,9 @@ const loadOrderDetails = async (req,res) => {
 
         return res.render('orderDetails',{
             order : currentOrder,
-            productItem : currentItem
+            productItem : currentItem,
+            search,
+            currentPage : 'orderDetails'
         })
 
 

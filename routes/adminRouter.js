@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const multer = require('multer')
 const adminAuth = require('../middleware/adminAuth')
-const {uploadBrand , uploadProduct} = require('../helpers/multer')
+const { uploadBrand, uploadProduct, uploadCategory, handleMulterError } = require('../helpers/multer');
 
 
 const adminController = require("../controllers/admins/adminController")
@@ -45,17 +45,20 @@ router.get('/unblockCustomer',adminAuth,customerController.unblockCustomer)
 
 //Category Mangement
 
-router.get('/category',adminAuth,categoryController.loadCategory)
+router.get('/category', adminAuth, categoryController.loadCategory);
 
-router.post('/addCategory',adminAuth,categoryController.addCategory)
+router.post('/addCategory', adminAuth, handleMulterError(uploadCategory), categoryController.addCategory);
 
-router.post('/editCategory',adminAuth,categoryController.editCategory)
+router.post('/editCategory', adminAuth, handleMulterError(uploadCategory), categoryController.editCategory);
 
-router.post('/deleteCategory',adminAuth,categoryController.deleteCategory)
+router.post('/deleteCategory', adminAuth, categoryController.deleteCategory);
 
-router.post('/addCategoryOffer',adminAuth,categoryController.addCategoryOffer)
+router.post('/addCategoryOffer', adminAuth, categoryController.addCategoryOffer);
 
-router.post('/removeCategoryOffer',adminAuth,categoryController.removeCategoryOffer)
+router.post('/removeCategoryOffer', adminAuth, categoryController.removeCategoryOffer);
+
+
+router.post('/add-category', (req, res) => res.redirect('/admin/addCategory'));
 
 
 //Brand Management

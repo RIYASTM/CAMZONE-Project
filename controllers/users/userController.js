@@ -753,13 +753,15 @@ const resendOtp = async (req, res) => {
 
 const loadforgotPass = async (req, res) => {
     try {
+        const search = req.query.search || ''
         const userId = req.session.user
 
         const cart = userId ? await Cart.findOne({userId}) : 0
 
         res.render('forgottPass', {
             currentPage: 'forgottPass',
-            cart
+            cart,
+            search
         })
 
     } catch (error) {
@@ -954,138 +956,6 @@ const loadCart = async (req,res) => {
     }
 }
 
-// const securePassword = async (password) => {
-//     try {
-//         const passwordHash = await bcrypt.hash(password, 10)
-//         return passwordHash
-//     } catch (error) {
-//         console.log('Failed to password hashing : ', error)
-//     }
-// }
-
-// async function sendOTP(email, otp) {
-//     try {
-//         const transporter = nodemailer.createTransport({
-//             service: 'gmail',
-//             port: 587,
-//             secure: false,
-//             require: true,
-//             auth: {
-//                 user: process.env.NODEMAILER_EMAIL,
-//                 pass: process.env.NODEMAILER_PASSWORD
-//             }
-//         })
-//         const info = await transporter.sendMail({
-//             from: process.env.NODEMAILER_EMAIL,
-//             to: email,
-//             subject: 'Verify your account',
-//             text: `Your OTP is : ${otp}`,
-//             html: ` <b> Your OTP : ${otp} </b>`
-//         })
-
-//         return info.accepted.length > 0
-
-//     } catch (error) {
-
-//         console.log('=================================');
-//         console.log('Error on sending email', error)
-//         console.log('=================================');
-
-//     }
-// }
-
-// async function sendOTPForgott(email, otp) {
-//     try {
-//         const transporter = nodemailer.createTransport({
-//             service: 'gmail',
-//             port: 587,
-//             secure: false,
-//             require: true,
-//             auth: {
-//                 user: process.env.NODEMAILER_EMAIL,
-//                 pass: process.env.NODEMAILER_PASSWORD
-//             }
-//         })
-//         const info = await transporter.sendMail({
-//             from: process.env.NODEMAILER_EMAIL,
-//             to: email,
-//             subject: 'OTP for Reset Password',
-//             text: `Your OTP is : ${otp}`,
-//             html: ` <b> Your OTP : ${otp} </b>`
-//         })
-
-//         return info.accepted.length > 0
-
-//     } catch (error) {
-
-//         console.log('=================================');
-//         console.log('Error on sending email', error)
-//         console.log('=================================');
-
-//     }
-// }
-
-
-
-
-
-// function generateOtp() {
-//     return Math.floor(100000 + Math.random() * 900000).toString()
-// }
-
-// function validateUser(data) {
-//     const namepattern = /^[A-Za-z\s]+$/;
-//     const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
-//     const alpha = /[a-zA-Z]/
-//     const digit = /\d/
-//     let error = {};
-
-//     if (!data.name) {
-//         error.name = "user name is required!!"
-//     } else if (!namepattern.test(data.name)) {
-//         error.name = "Name can only contain Alphabets and spaces!!"
-//     }
-
-//     if (!data.email) {
-//         error.email = "email is required";
-//     } else if (!emailpattern.test(data.email)) {
-//         error.email = "Invalid Format!!"
-//     }
-
-//     if (!data.password) {
-//         error.password = "password is required"
-//     } else if (data.password.length < 8) {
-//         error.password = "Enter minimum 8 charactors!!"
-//     } else if (!alpha.test(data.password) || !digit.test(data.password)) {
-//         error.password = "Should contain Numbers and Alphabets"
-//     }
-
-//     if (!data.confirmPassword) {
-//         error.confirmPassword = "confirmPassword is required!!"
-//     } else if (data.password !== data.confirmPassword) {
-//         error.confirmPassword = "Passwords don`t match!!"
-//     }
-
-//     return Object.keys(error).length > 0 ? error : null;
-
-// }
-
-// function validateForm(email, password) {
-//     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
-//     let error = {}
-
-//     if (!email) {
-//         error.email = 'Email is required!!'
-//     } else if (!emailPattern.test(email)) {
-//         error.email = 'Invalid Email'
-//     }
-
-//     if (!password) {
-//         error.password = "Password is required!!"
-//     }
-
-//     return Object.keys(error).length > 0 ? error : null
-// }
 
 
 

@@ -21,6 +21,10 @@ const categorySchema = new Schema ({
     createdAt : {
         type : Date,
         default : Date.now
+    },
+    categoryImage : {
+        type : String,
+        required : false
     }
 })
 

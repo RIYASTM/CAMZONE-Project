@@ -6,9 +6,11 @@ const ejs = require('ejs')
 const nocache = require('nocache')
 const session = require('express-session')
 const port = process.env.PORT || 3000
-
+const MongoStore = require('connect-mongo');
 const connectDB = require('./config/db')
 
+
+//Morgan
 const morgan = require('morgan')
 
 
@@ -33,6 +35,11 @@ app.use(session({
     secret : process.env.SESSION_SECRET,
     resave : false,
     saveUninitialized : true,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI, 
+        collectionName: 'sessions',
+        ttl: 72 * 60 * 60 
+  }),
     cookie : {
         secure : false,
         httpOnly :true,

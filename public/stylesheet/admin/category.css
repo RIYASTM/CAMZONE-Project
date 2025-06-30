@@ -358,3 +358,12 @@ body {
 #editCategoryModal.active {
     display: block;
 }
+
+.invalid-feedback {
+    color: red;
+    font-size: 0.8em;
+}
+
+.is-invalid {
+    border-color: red;
+}

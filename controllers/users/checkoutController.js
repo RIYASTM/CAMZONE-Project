@@ -14,6 +14,8 @@ const { default: mongoose } = require('mongoose')
 const loadCheckout = async (req,res) => {
     try {
 
+        const search = req.query.search || ''
+
         const userId = req.session.user
 
         if(!userId){
@@ -48,7 +50,8 @@ const loadCheckout = async (req,res) => {
             user,
             currentPage : 'checkout',
             address : addressess,
-            cart
+            cart,
+            search
         })
 
     } catch (error) {

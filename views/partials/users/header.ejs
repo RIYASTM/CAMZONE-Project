@@ -53,7 +53,10 @@
                         <%= user.name %>
                     </a>
                     <div class="dropdown">
-                        <a href="/myAccount"><img src="/images/icons/user.png" alt="Profile" class="icon"> Profile</a>
+                        <a href="/profile"><img src="/images/icons/user.png" alt="Profile" class="icon"> Profile</a>
+                        <a href="/myOrders"><img src="/images/icons/clipboard.png" alt="Orders" class="icon"> My Orders</a>
+                        <a href="#"><img src="/images/icons/wallet.png" alt="Wallet" class="icon"> My Wallet</a>
+                        <a href="#"><img src="/images/icons/rate.png" alt="Ratings" class="icon"> My Ratings</a>
                         <a href="/signout"><img src="/images/icons/signout.png" alt="signout" class="icon"> Sign Out</a>
                     </div>
                 </div>
@@ -68,9 +71,9 @@
         <div class="links">
             
             <a href="/" class="<%= currentPage === 'home' ? 'active' : '' %>">Home</a>
-            <a href="/shop">Shop</a>
-            <a href="/contact">Contact Us</a>
-            <a href="/about">About us</a>
+            <a href="/shop" class="<%= currentPage === 'shop' ? 'active' : '' %>">Shop</a>
+            <a href="/contact" class="<%= currentPage === 'contact' ? 'active' : '' %>">Contact Us</a>
+            <a href="/about" class="<%= currentPage === 'about' ? 'active' : '' %>">About us</a>
         </div>
         <div class="return-policy">30 Days Free Return</div>
     </div>

@@ -42,13 +42,19 @@
         ] %> -->
 
         <% category.forEach(category => { %>
-            <div class="category-card">
-                <div class="category-info">
-                    <h3><%= category.name %></h3>
-                    <p>(<%= category.length ?  category.length  : 0 %> items)</p>
-                </div>
+        <div class="category-card">
+            <div class="category-info">
+            <div class="name-image-row">
+                <h3><%= category.name %></h3>
+                <% if (category.categoryImage) { %>
+                <img src="/uploads/category/<%= category.categoryImage %>" alt="<%= category.name %>">
+                <% } %>
             </div>
+            <p>(<%= category.length ? category.length : 0 %> items)</p>
+            </div>
+        </div>
         <% }) %>
+
     </section>
 
     <section class="popular-products">
@@ -199,9 +205,13 @@
                     </div>
                     <h3><%= products[i].productName.slice(0,23) %></h3>
                     <div class="price">
+                        <% if(products[i].salePrice < products[i].regularPrice){ %> 
                         <span class="current">₹ <%= products[i].salePrice %></span>
                         <span class="original">₹ <%= products[i].regularPrice %></span>
-                        <span class="offer"><%=totalOffer ? totalOffer : 0 %> %</span>
+                        <% }else{ %>
+                            <span class="">₹ <%= products[i].regularPrice %></span>
+                        <% } %>
+                        <span class="offer"><%=totalOffer ? totalOffer + '%' : '' %> </span>
                     </div>
                     <div class="rating">
                         <%= '★'.repeat(products[i].rating ? products[i].rating : 1 ) %>

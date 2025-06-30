@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/stylesheet/user/myAccount.css">
 </head>
 <body>
+    <%- include('../partials/users/header',{search, cart}) %>
     <nav>
         <a href="/">Home</a> >
         <a href="/account">My Account</a>
@@ -22,5 +23,7 @@
             <a href=""><button>My Wallet</button></a>
         </div>
     </div>
+
+    <%- include('../partials/users/footer') %>
 </body>
 </html>

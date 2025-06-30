@@ -57,7 +57,7 @@ const addBrand = async (req,res) => {
         // const image = req.file.fileName
 
 
-        const existBrand = await Brand.findOne({brandName : brandName})
+        const existBrand = await Brand.findOne({brandName : { $regex: new RegExp(`^${brandName}$`, 'i') }})
 
         if(existBrand){
             return res.status(500).json({success : false , message : 'Brand is already exist with this name!!'})

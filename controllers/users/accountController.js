@@ -4,12 +4,16 @@ const Cart = require('../../model/cartModel')
 const loadMyAccount = async (req,res) => { 
     try {
 
+        const search = req.query.search || ''
+
         const userId = req.session.user
 
         const cart = await Cart.findOne({userId})
         
         return res.render('myAccount',{
-            cart
+            cart,
+            search,
+            currentPage : 'myAccount'
         })
 
 

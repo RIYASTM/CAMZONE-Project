@@ -5,7 +5,7 @@
 const loadDashboard = async (req,res) => {
     try {
 
-        if(req.session.user){
+        if(req.session.admin){
 
             return res.render('dashboard',{
                 currentPage : 'dashboard',
@@ -14,12 +14,12 @@ const loadDashboard = async (req,res) => {
             })
         }
 
-        res.redirect('/admin/')
+       return res.redirect('/admin/')
 
     } catch (error) {
 
         console.log('===========================================')
-        console.log('failed to load the page',error)
+        console.log('failed to load dashboard page',error)
         console.log('===========================================')
         res.status(500).send("server error")
         
