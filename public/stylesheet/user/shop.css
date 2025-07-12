@@ -174,34 +174,46 @@ nav a {
 /* Pagination */
 .pagination {
     display: flex;
+    justify-content: end;
+    align-items: center;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.pagination-controls {
+    display: flex;
+}
+
+.pagination-controls button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.pagination-controls button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pagination button {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 20px;
-}
-
-/* .pagination a {
-    padding: 8px 16px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    color: var(--text-color);
     background-color: #fff;
-    transition: background-color 0.3s;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-.pagination a:hover {
-    background-color: var(--light-gray);
+.pagination button:hover {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
 }
-
-.pagination a.active {
-    background-color: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
-}  */
 
 .banner-image{
-    /* height: 100vh;
-    background-image: url(/images/banners/Alpha-7RV-Main_Banner_Desktop.jpg);
-    background-size: 10vmax; */
     height: 76vh;
     background-image: url(/images/banners/Alpha-7RV-Main_Banner_Desktop.jpg);
     background-size: cover;
@@ -232,25 +244,4 @@ nav a {
     .product-grid {
         grid-template-columns: 1fr;
     }
-}
-
-
-
-.pagination {
-    display: flex;
-    /* justify-content: space-between; */
-    align-items: center;
-    padding: 10px;
-    font-size: 14px;
-}
-
-.pagination-controls button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-.pagination-controls button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
 }

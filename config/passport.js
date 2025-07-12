@@ -21,8 +21,11 @@ async (accessToken,refreshToken,profile,done) => {
         let user = await User.findOne({googleId:profile.id})
 
         if(user){
-        
-            return done(null,user)
+            if(!user.isBlocked){
+                return done(null,user)
+            }else{
+                return done(null,false,{message : 'User is blocked!!'})
+            }
         }else{
             user = new User({
                 name : profile.displayName,

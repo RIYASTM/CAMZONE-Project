@@ -10,7 +10,7 @@ const orderSchema = new Schema ({
     },
     orderId : {
         type : String,
-        required : true,
+        required : true, 
         unique : true
     },
     orderedItems : [{
@@ -26,6 +26,16 @@ const orderSchema = new Schema ({
         price : {
             type : Number,
             default : 0
+        },
+        itemStatus : {
+            type : String,
+            required : true,
+            default : 'Pending',
+            enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned']
+        },
+        reason : {
+            type : String,
+            required : false
         }
     }],
     totalPrice : {
@@ -93,7 +103,7 @@ const orderSchema = new Schema ({
     status : {
         type : String,
         required : true,
-        enum : ['Pending', 'Processing', ' Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned']
+        enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned']
     },
     createdOn : {
         type : Date,
@@ -106,6 +116,10 @@ const orderSchema = new Schema ({
     },
     paymentMethod : {
         type : String
+    },
+    cancelReason : {
+        type : String,
+        required : false
     }
 })
 

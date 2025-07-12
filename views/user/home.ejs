@@ -69,9 +69,9 @@
 
             <% newProducts.forEach(product=>{ %>
                 <div class="product-card">
-                    <a href="/product?id=<%=product._id%>"> 
+                    <div class="wishlist-btn" data-id="<%=product._id%>">❤</div>
+                    <a href="/product?id=<%=product._id%>">
                     <div class="product-card-img">
-                        <div class="wishlist-btn">❤</div>
                         <% if (product.productImage && product.productImage.length > 0) { %>
                             <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
                         <% } else { %>
@@ -133,15 +133,14 @@
                 </div>
             </div>
         </div>
-        <div class="featured-grid">
-            
 
+        <div class="featured-grid">
             <% products.slice(0, 3).forEach(product => { %>
                 <div class="product-card featured">
+                    <div class="wishlist-btn" data-id="<%=products._id%>">❤</div>
                     <a href="/product?id=<%= product._id %>">
                         <div class="product-card-featured-img-container">
                             <div class="product-badge"><%= product.badge ? product.badge : 'New' %></div>
-                            <div class="wishlist-btn">❤</div>
                             <% if (product.productImage && product.productImage.length > 0) { %>
                                 <img src="/Uploads/products/<%= product.productImage[0] %>" alt="<%= product.name %>">
                             <% } else { %>
@@ -158,7 +157,7 @@
                             <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
                         </div>
                     </a>
-                    <button class="add-to-cart">Add to Cart</button>
+                    <button class="add-to-cart" data-id="<%=product._id%>">Add to Cart</button>
                 </div>
             <% }) %>
         </div>
@@ -193,10 +192,10 @@
             <% if (products.length > 8) { %>
                 <% for (let i = 8; i < Math.min(16, products.length); i++) { %>
                 <div class="product-card">
+                    <div class="wishlist-btn" data-id="<%=products[i]._id%>" >❤</div>
                     <a href="/product?id=<%=products[i]._id%>">
                     <div class="product-card-img-container">
                         <div class="product-badge ">New</div>
-                        <div class="wishlist-btn ">❤</div>
                         <% if (products[i].productImage && products[i].productImage.length > 0) { %>
                             <img src="/uploads/products/<%= products[i].productImage[0] %>" alt="<%= products[i].name %>">
                         <% } else { %>
@@ -217,7 +216,7 @@
                         <%= '★'.repeat(products[i].rating ? products[i].rating : 1 ) %>
                     </div>
                     </a>
-                    <button class="add-to-cart">Add to Cart</button>
+                    <button class="add-to-cart" data-id="<%=products[i]._id%>">Add to Cart</button>
                 </div>
             <% } %>
         <% } else { %>
@@ -238,7 +237,7 @@
         </div>
     </section>
 
-    <section class="blog-posts">
+    <!-- <section class="blog-posts">
         <div class="section-header">
             <h2>Photography Tips & Tutorials</h2>
             <a href="#" class="view-all-link">View All Posts</a>
@@ -279,13 +278,14 @@
                 </div>
             <% }) %>
         </div>
-    </section>
+    </section> -->
+    
     <footer>
         
         <%- include('../partials/users/footer') %>
     
     </footer>
-
-    <!-- <script src="/javascript/users/home.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/users/home.js"></script>
 
 </html>

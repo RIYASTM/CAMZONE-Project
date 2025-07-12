@@ -1,0 +1,17 @@
+<!-- partials/users/ordersSidebar.ejs -->
+<aside class="orders-sidebar">
+    <h3>My Orders</h3>
+    <ul class="order-filters">
+        <%if(currentPage !== 'myOrders'){ %>
+            <li><a href="/orderDelivered" class="<%= activeFilter === 'delivered' ? 'active' : '' %>">Delivered</a></li>
+            <li><a href="/orderOnTheWay" class="<%= activeFilter === 'on-the-way' ? 'active' : '' %>">On The Way</a></li>
+            <li><a href="/orderCancelled" class="<%= activeFilter === 'cancelled' ? 'active' : '' %>">Cancelled</a></li>
+            <li><a href="/orderReturned" class="<%= activeFilter === 'returned' ? 'active' : '' %>">Returned</a></li>
+        <%} else {%>
+            <li><a href="/orderDelivered">Delivered</a></li>
+            <li><a href="/orderOnTheWay">On The Way</a></li>
+            <li><a href="/orderCancelled">Cancelled</a></li>
+            <li><a href="/orderReturned">Returned</a></li>
+         <%}%>
+    </ul>
+</aside>

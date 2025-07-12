@@ -23,6 +23,8 @@ const passwordController = require('../controllers/users/passwordController')
 const addressController = require('../controllers/users/addressController')
 const profileController = require('../controllers/users/profileController')
 const orderControlller = require('../controllers/users/orderController')
+const walletController = require('../controllers/users/walletController')
+const wishListController = require('../controllers/users/wishListController')
 
 
 //Routers
@@ -132,27 +134,51 @@ router.get('/orderSuccess',  orderControlller.loadOrderSuccess)
 
 router.get('/myOrders' , userAuth , orderControlller.loadMyOrders)
 
+// router.get('/orderDelivered' , userAuth , orderControlller.loadOrderDelivered)
+
+// router.get('/orderOnTheWay' , userAuth , orderControlller.loadOrderPending)
+
+// router.get('/orderCancelled' , userAuth , orderControlller.loadOrderCancelled)
+
+// router.get('/orderReturned' , userAuth , orderControlller.loadOrderReturned)
+
+router.post('/orderCancel' , userAuth , orderControlller.cancelOrder )
+
+router.post('/orderReturn', userAuth, orderControlller.returnOrder)
+
 //Order Details
 
-router.get('/productDetails', userAuth , orderControlller.loadOrderDetails)
+router.get('/orderDetails', userAuth , orderControlller.loadOrderDetails)
+
+//wallet Details
+
+router.get('/wallet', userAuth , walletController.loadWallet)
+
+
+//Wish List
+
+router.get('/wishList', userAuth , wishListController.loadWishList)
+
+router.post('/addtowishlist', userAuth , wishListController.addtoWishlist)
+
+router.post('/removeFromWishList', userAuth , wishListController.removeFromWishList)
 
 
 //Google Auth
 
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get("/auth/google/callback", 
-    passport.authenticate("google", {
-        failureRedirect: "/signin",
-        failureFlash: true
-    }),
-    (req, res) => {
-        req.session.usermail = req.user.email
-        console.log("the usermail is : ",req.session.usermail)
-       req.session.user = req.user._id;
-        res.redirect("/");
-    }
-);
+router.get('/auth/google/callback', (req, res, next) => {
+      passport.authenticate('google', (err, user, info) => {
+          console.log()
+      if (err || !user) {const message = info?.message || 'Authentication failed';
+           return res.redirect(`/signup?message=${encodeURIComponent(message)}`);}
+      req.logIn(user, (loginErr) => {if (loginErr) {
+           return res.redirect(`/signup?message=${encodeURIComponent('Login failed')}`);}
+      req.session.user = user._id;
+           return res.redirect('/home');
+      });
+    })(req, res, next);});
 
 
 

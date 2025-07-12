@@ -86,8 +86,8 @@
             <% } %>
         </main>
     </div>
-    <div class="banner-image"></div>
 
+    <!--Pagination -->
     <div class="pagination" data-total-pages="<%= totalPages %>">
         <span><%= currentPages %> of <%= totalPages %></span>
         <div class="pagination-controls">
@@ -110,6 +110,10 @@
                     title="Go to last page"><i class="fas fa-angle-double-right"></i></button>
         </div>
     </div>
+
+    <div class="banner-image"></div>
+
+    
 
     <footer>
         <%- include('../partials/users/footer') %>

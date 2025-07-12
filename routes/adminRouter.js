@@ -109,6 +109,10 @@ router.get('/orders',adminAuth,ordersController.loadOrders)
 
 router.post('/updateStatus', adminAuth , ordersController.updateStatus)
 
+router.post('/handleStatus', adminAuth , ordersController.returnRequest)
+
+router.post('/order', adminAuth , ordersController.currentOrder)
+
 
 //Offer Management
 

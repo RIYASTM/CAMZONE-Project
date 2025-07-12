@@ -102,6 +102,8 @@ const checkout = async (req, res) => {
         const seq = (count % 100).toString().padStart(2, '0');
         const orderId = `ORD${year}${month}${day}${seq}`;
 
+        
+
         const totalPrice = cartItems.reduce((total, item) => total + item.totalPrice, 0);
         const finalAmount = totalPrice;
 
@@ -124,8 +126,21 @@ const checkout = async (req, res) => {
 
         const saveResult = await order.save();
 
+
+
         if (!saveResult) {
             return res.status(500).json({ success: false, message: 'Your order failed to complete!' });
+        }
+
+        for (let item of cartItems){
+            const product = await Products.findById(item.productId._id)
+
+            if(product){
+                product.quantity -= item.quantity
+
+                if(product.quantity <= 0) product.quantity = 0
+                await product.save()
+            }
         }
 
         req.session.orderId = orderId
@@ -133,27 +148,6 @@ const checkout = async (req, res) => {
         await Cart.findOneAndUpdate({ userId }, { $set: { items: [], discount: 0 } });
 
         return res.status(200).json({success : true , message : 'Order confirmed!'})
-
-
-        // const orderDate = new Date().toLocaleDateString('en-US', {
-        //     year: 'numeric',
-        //     month: 'long',
-        //     day: 'numeric'
-        // });
-
-        // const products = cartItems.map(item => ({
-        //     name: item.productId.name, 
-        //     price: `$${item.price.toFixed(2)}`
-        // }));
-
-        // return res.render('orderSuccess', {
-        //     order,
-        //     orderId: order.orderId,
-        //     orderDate,
-        //     paymentMethod,
-        //     status: order.status,
-        //     products
-        // });
 
     } catch (error) {
         console.log('Failed to confirm the order: ', error);

@@ -4,6 +4,8 @@ const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
 const { search } = require("../../routes/userRouter")
 
+const {addToWallet} = require('../../helpers/user/wallet')
+
 
 const loadOrderSuccess = async (req,res) => { 
     try {
@@ -50,18 +52,36 @@ const loadOrderSuccess = async (req,res) => {
 const loadMyOrders = async (req,res) => {
     try {
 
-        const serch = req.query.search || ''
+        const search = req.query.search || ''
+
+        const page = parseInt(req.query.page) || 1
+        const limit = 6
+        const skip = (page -1) * limit
+        const totalOrders = await Order.find().countDocuments()
+        totalPages = Math.ceil(totalOrders / limit)
         
         const userId = req.session.user
+        const usermail = req.session.usermail;
+        
+        const user = await User.findOne({ email: usermail });
+        const cart = await Cart.findOne({userId})
 
-        const userOrders = await Order.find({userId}).populate("orderedItems.product")
+        const userOrders = await Order.find({userId})
+                                        .sort({createdOn : -1})
+                                        .skip(skip)
+                                        .limit(limit)
+                                        .populate("orderedItems.product")
 
         // console.log('User Orders : ', userOrders)
 
         return res.render('myOrders',{
             orders : userOrders,
             search,
-            currentPage : 'myOrders'
+            cart ,
+            user ,
+            currentPage : 'myOrders',
+            currentPages : page,
+            totalPages
         })
 
     } catch (error) {
@@ -70,49 +90,38 @@ const loadMyOrders = async (req,res) => {
 }
 
 const loadOrderDetails = async (req,res) => {
+
     try {
+
+        const userId = req.session.user
+        const usermail = req.session.usermail;
+        
+        const user = await User.findOne({ email: usermail });
+        const cart = await Cart.findOne({userId})
 
         const search = req.query.search || ''
         
-        const productId = req.query.id
-
-        console.log('Product Id : ', productId)
-
-        const userId = req.session.user
-
         if(!userId){
             return res.status(401).json({ success : false , message : 'User not authenticated!'})
         }
-
+        
         const userOrders = await Order.find({userId}).populate("orderedItems.product")
-
+        
         if(!userOrders){
             return res.status(401).json({ success : false , message : 'User Orders not found!!'})
         }
 
-        let currentOrder = null
-        let currentItem = null
+        const orderId = req.query.id
 
-        for (const order of userOrders) {
-            for (const item of order.orderedItems) {
-                if (item.product && item.product._id.toString() === productId) {
-                    currentOrder = order;
-                    currentItem = item;
-                    break;
-                }
-            }
-            if (currentItem) break;
-        }
-        
+        const order = await Order.findById(orderId).populate("orderedItems.product")
 
-        console.log('Current order : ', currentOrder)
-        console.log('Current item : ', currentItem)
-        
+        // console.log('selected order : ',order)
 
         return res.render('orderDetails',{
-            order : currentOrder,
-            productItem : currentItem,
+            order ,
             search,
+            user,
+            cart,
             currentPage : 'orderDetails'
         })
 
@@ -124,9 +133,159 @@ const loadOrderDetails = async (req,res) => {
     }
 }
 
+const loadOrderCancelled = async (req,res) => {}
+
+const loadOrderPending = async (req,res) => {}
+
+const loadOrderDelivered = async (req,res) => {}
+
+const loadOrderReturned = async (req,res) => {}
+
+const cancelOrder = async (req, res) => {
+    try {
+        const { reason, items, orderId } = req.body;
+        const userId = req.session.user;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found.' });
+        }
+
+        if (!['Pending', 'Processing', 'Shipped', 'Out of Delivery'].includes(order.status)) {
+            return res.status(400).json({ success: false, message: 'Order cannot be cancelled anymore.' });
+        }
+
+        const cancelItemIds = items.map(id => id.toString());
+        const orderedProductIds = order.orderedItems.map(item => String(item.product));
+
+        const cancelItems = order.orderedItems.filter(item =>
+            cancelItemIds.includes(String(item.product))
+        );
+
+        let refundAmount = 0;
+
+        const isFullCancellation =
+            orderedProductIds.length === cancelItemIds.length &&
+            cancelItemIds.every(id => orderedProductIds.includes(id));
+
+        const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled')
+
+        if (isFullCancellation && allCancelled) {
+            order.status = 'Cancelled';
+            order.cancelReason = reason;
+
+            order.orderedItems.forEach(item => {
+                item.itemStatus = 'Cancelled';
+                refundAmount += item.price * item.quantity;
+            });
+
+        } else {
+            cancelItems.forEach(item => {
+                item.itemStatus = 'Cancelled';
+                item.reason = reason;
+                refundAmount += item.price * item.quantity;
+            });
+        }
+
+
+        order.totalPrice -= refundAmount;
+        await order.save();
+
+        const refundReason = 'Refund for Cancelled Item(s)';
+
+        if (['Razorpay', 'Wallet'].includes(order.paymentMethod)) {
+            console.log('userID : ', userId)        
+            await addToWallet(userId, refundAmount, refundReason);
+        }
+
+        for (let item of cancelItems) {
+            const product = await Products.findById(item.product);
+            if (product) {
+                product.quantity += item.quantity;
+                await product.save();
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: isFullCancellation
+                ? 'Order successfully cancelled.'
+                : 'Selected item(s) cancelled successfully.'
+        });
+
+    } catch (error) {
+        console.error('Cancel Order Error:', error);
+        return res.status(500).json({ success: false, message: 'Server error during cancellation.' });
+    }
+};
+
+
+
+const returnOrder = async (req,res) => {
+    try {
+
+        const {orderId , reason , items} = req.body
+
+         const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found...' });
+        }
+
+        if (order.status !== 'Delivered') {
+            return res.status(400).json({ success: false, message: 'This order cannot be cancelled anymore.' });
+        }
+
+        const returnItemIds = items.map(id => id.toString());
+        const orderedProducts = order.orderedItems.map(item => item.product.toString());
+
+        const returnItems = order.orderedItems.filter(item =>
+            returnItemIds.includes(item.product.toString())
+        );
+
+        let refundAmount
+
+        const isFullReturn = 
+            orderedProducts.length === returnItemIds.length &&
+            returnItemIds.every(id => orderedProducts.includes(id));
+
+        if (isFullReturn) {
+            order.status = 'Return Request';
+            order.reason = reason
+            order.orderedItems.forEach(item => {
+                item.itemStatus = 'Return Request';
+            });
+        } else {
+            returnItems.forEach(item => {
+                item.itemStatus = 'Return Request';
+                item.reason = reason
+            });
+        }
+
+        await order.save();
+
+
+        return res.status(200).json({
+            success: true,
+            message: isFullReturn
+                ? 'Successfully requested for Return Order.'
+                : 'Successfully requested for Return Ordered Items.'
+        });
+
+        
+    } catch (error) {
+        console.error('Return Order Error:', error);
+        return res.status(500).json({ success: false, message: 'Server error during return request.' });
+    }
+}
 
 module.exports = {
     loadOrderSuccess,
     loadMyOrders,
-    loadOrderDetails
+    loadOrderDetails,
+    loadOrderCancelled,
+    loadOrderDelivered,
+    loadOrderPending,
+    loadOrderReturned,
+    cancelOrder,
+    returnOrder
 }

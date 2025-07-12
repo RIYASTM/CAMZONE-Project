@@ -31,8 +31,11 @@
                         <option value="status">Status</option>
                     </select>
                 </div>
-                <div class="top-center">
-                    <input type="text" class="search-bar" placeholder="Search">
+                <div class="top-center" style="position: relative; display: inline-block;">
+                    <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search%>">
+                    <%if(search){%>
+                    <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
+                    <%}%>
                 </div>
                 <div class="top-right">
                     <select class="filter">
@@ -50,102 +53,155 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Order Items</th>
                             <th>Order No</th>
                             <th>Customer</th>
                             <th>Order Date</th>
                             <th>Order Total</th>
                             <th>Payment Method</th>
                             <th>Status</th>
-                            <!-- <th>Actions</th> -->
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% orders.forEach(order => { %>
                             <tr>
-                                <% order.orderedItems.forEach(item => { %>
-                                <td><i class="fas fa-camera"></i> <%= item.product.productName %></td>
                                 <td><%= order.orderId %></td>
                                 <td><%= order.address.name %></td>
                                 <td><%= order.createdOn.toString().split(' ').splice(1,3).join(' ') %></td>
-                                <td><%= order.totalPrice %></td>
+                                <td>₹<%= order.totalPrice %></td>
                                 <td><%= order.paymentMethod %></td>
+                                <td><%= order.status %></td>
                                 <td>
-                                    <select class="status-dropdown filter" data-id="<%= order._id %>">
-                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Out of Delivery" <%= order.status === 'Out of Delivery' ? 'selected' : '' %>>Out of Delivery</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                        <option value="Return Request" <%= order.status === 'Return Request' ? 'selected' : '' %>>Return Request</option>
-                                        <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
-                                    </select>
+                                    <button class="filter order-details-btn" data-order-id="<%= order._id %>">
+                                        Order Details
+                                    </button>
                                 </td>
-                                <!-- <td><a href="#" class="action-link"><button class="filter">Update Status</button></a></td> -->
                             </tr>
-                            <% }) %>
                         <% }) %>
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
+            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
         </div>
     </div>
 
-    <script>
-        
-        document.addEventListener('DOMContentLoaded', () => {
+    <!-- Order Details Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Order Details
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="order-info-grid">
+                    <div class="order-section">
+                        <h3>Order Information</h3>
+                        <div class="order-detail">
+                            <label>Order ID:</label>
+                            <span id="modal-order-id">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>Order Date:</label>
+                            <span id="modal-order-date">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>Payment Method:</label>
+                            <span id="modal-payment-method">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>Order Status:</label>
+                            <select class="status-dropdown" id="modal-order-status">
+                                <option value="Pending">Pending</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Out of Delivery">Out of Delivery</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Return Request">Return Request</option>
+                                <option value="Returned">Returned</option>
+                            </select>
+                        </div>
+                        <div class="order-detail">
+                            <label>Phone:</label>
+                            <span id="modal-phone">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-section">
+                        <h3>Delivery Address</h3>
+                        <div class="order-detail">
+                            <label>Name:</label>
+                            <span id="modal-customer-name">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>Address:</label>
+                            <span id="modal-address">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>City:</label>
+                            <span id="modal-city">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>State:</label>
+                            <span id="modal-state">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <label>Pincode:</label>
+                            <span id="modal-pincode">-</span>
+                        </div>
+                    </div>
+                </div>
 
-            document.querySelectorAll('.status-dropdown').forEach(element => {
-                element.addEventListener('change', async(e) => {
-                    const newStatus = e.target.value
-                    const orderId = e.target.dataset.id
+                <div class="order-items-section">
+                    <h3>Order Items</h3>
+                    <table class="order-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-order-items">
+                        </tbody>
+                    </table>
+                </div>
 
-                    console.log(`Order Id : ${orderId}, New Status : ${newStatus}`)
+                <div class="payment-summary">
+                    <h3>Payment Summary</h3>
+                    <div class="payment-row">
+                        <label>Subtotal:</label>
+                        <span id="modal-subtotal">₹0</span>
+                    </div>
+                    <div class="payment-row">
+                        <label>Shipping:</label>
+                        <span id="modal-shipping">₹0</span>
+                    </div>
+                    <div class="payment-row">
+                        <label>Promotion/Discount:</label>
+                        <span id="modal-discount">₹0</span>
+                    </div>
+                    <div class="payment-row total">
+                        <label>Total:</label>
+                        <span id="modal-total">₹0</span>
+                    </div>
+                </div>
+            </div>
+            <div id="return-reminder" class="return-reminder" >
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="closeModal()">Close</button>
+                <button class="modal-btn primary" onclick="updateOrderStatus()">Update Status</button>
+                <button class="modal-btn" onclick="printOrder()">Print</button>
+            </div>
+        </div>
+    </div>
 
-                    try {
-                        const response = await fetch('/admin/updateStatus',{
-                            method : 'POST',
-                            body : JSON.stringify({status : newStatus, orderId}),
-                            headers : {
-                                'Content-Type' : 'application/json'
-                            }
-                        })
-
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-
-
-                        const data = await response.json();
-                        if (data.success) {
-                            // closeAddModal();
-                            window.location.reload();
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Failed',
-                                text: data.message || `Failed to update status!`
-                            });
-                        }
-                    } catch (error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: navigator.onLine
-                                ? `Error update status: ${error.message}`
-                                : 'No internet connection. Please check your network and try again.'
-                        });
-                    }
-                })
-            });
-
-
-        })
-
-    </script>
-           
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/admins/order.js"></script> 
 </body>
 </html>

@@ -3,93 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders</title>
-    <link rel="stylesheet" href="/stylesheet/user/orderTracking.css">
-    <!-- Include any font awesome or other icon library here -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>My Orders - CaveOne</title>
+    <link rel="stylesheet" href="/stylesheet/user/myOrders.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="/">Home</a>
-            <span class="separator">></span>
-            <a href="/my-account">My Account</a>
-            <span class="separator">></span>
-            <span class="current">My Orders</span>
-        </div>
+    <%- include('../partials/users/header',{search , cart}) %>
 
-        <div class="content">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <h3>My Orders</h3>
-                <ul>
-                    <li><a href="/my-orders/delivered">Delivered</a></li>
-                    <li><a href="/my-orders/on-the-way">On The Way</a></li>
-                    <li><a href="/my-orders/cancelled">Cancelled</a></li>
-                    <li><a href="/my-orders/returned">Returned</a></li>
-                </ul>
-            </div>
-
-            <!-- Order List -->
-            <div class="order-content">
-                <div class="order-header">
-                    <h2>My Orders</h2>
+        <main class="orders-page">
+            <div class="container">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb">
+                    <a href="/">Home</a>
+                    <span class="separator">></span>
+                    <a href="/my-account">My Account</a>
+                    <span class="separator">></span>
+                    <a href="/my-orders">My Orders</a>
+                    <span class="separator">></span>
+                    <span class="current">Cancelled Items</span>
                 </div>
 
-                <div class="filter-section">
-                    <button class="filter-button">
-                        <i class="fas fa-filter"></i> Filter
-                    </button>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search">
-                    </div>
-                </div>
-                <% if(orders && orders.length > 0) { %>
-                    <% orders.forEach(order => { %>
-                        <% order.orderedItems.forEach(item => { %>
-                            <div class="order-items">
-                                <a href="/productDetails/?id=<%= item.product._id %>">
+                <div class="orders-layout">
+                    <!-- Sidebar -->
+                    <%- include('../partials/users/ordersSidebar') %>
+
+                    <!-- Orders content -->
+                    <div class="orders-content">
+                        <div class="orders-header">
+                            <h2>My Orders</h2>
+                            <!-- <div class="orders-actions">
+                                <div class="search-orders">
+                                    <input type="text" placeholder="Search...">
+                                    <button class="filter-btn">Filter ⌄</button>
+                                </div>
+                            </div> -->
+                        </div>
+
+                        <!-- Orders list -->
+                        <div class="orders-list">
+                            <% if(orders && orders.length > 0) { %>
+                                <% orders.forEach(order => { %>
                                 <div class="order-item">
-                                    <div class="order-image">
-                                        <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
+                                    <div class="order-info">
+                                        <div class="order-id"><%= order.orderId %></div>
+                                        <% const firstProduct = order.orderedItems[0]; %>
+                                            <% if (order.orderedItems.length > 1) { %>
+                                                    <div class="order-product">
+                                                        <%= firstProduct.product.productName %> & <%= order.orderedItems.length - 1 %> More
+                                                    </div>
+                                                <% } else { %>
+                                                    <div class="order-product">
+                                                        <%= firstProduct.product.productName %>
+                                                    </div>
+                                                <% } %>
                                     </div>
                                     <div class="order-details">
-                                        <h3 class="order-name"><%= item.product.productName %></h3>
-                                        <div class="order-info"><%= order.createdOn.toDateString() %></div>
-                                        <div class="order-status">
-                                            <span class="status-label">Order Status: </span>
-                                            <span class="status-pending"><%= order.status %></span>
+                                        <div class="order-date">
+                                            <span class="label">Order placed on:</span>
+                                            <span class="value"><%= order.createdOn.toDateString() %></span>
                                         </div>
-                                        <div class="order-actions">
-                                            <button class="btn btn-secondary">Cancel</button>
-                                            <!-- <button class="btn btn-primary">Write a Review</button> -->
+                                        <div class="order-status">
+                                            <span class="label">Order Status:</span>
+                                            <span class="status <%= order.status %>"><%= order.status %></span>
                                         </div>
                                     </div>
+                                    <div class="order-actions">
+                                        <a class="btn btn-secondary" href="/orderDetails/?id=<%= order._id %>">Details</a>
+                                    </div>
                                 </div>
-                            </a>
+                                <% }); %>
+                            <% } %>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="pagination" data-total-pages="<%= totalPages %>">
+                            <span><%= currentPages %> of <%= totalPages %></span>
+                            <div class="pagination-controls">
+                                <button <%= currentPages === 1 ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=1'" 
+                                        title="Go to first page"><i class="fas fa-angle-double-left"></i></button>
+                                
+                                <button <%= currentPages === 1 ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=<%= currentPages - 1 %>'" 
+                                        title="Previous page"><i class="fas fa-angle-left"></i></button>
+                                
+                                <span> - </span>
+                                
+                                <button <%= currentPages === totalPages ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=<%= parseInt(currentPages) + 1 %>'" 
+                                        title="Next page"><i class="fas fa-angle-right"></i></button>
+                                
+                                <button <%= currentPages === totalPages ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=<%= totalPages %>'" 
+                                        title="Go to last page"><i class="fas fa-angle-double-right"></i></button>
                             </div>
-                        <% }) %>
-                    <% }) %>
-                    
-
-                <%} else {%>
-                    No Orders
-                    <% } %>
-
-                <!-- Pagination -->
-                <div class="pagination">
-                    <button><i class="fas fa-chevron-left"></i></button>
-                    <button class="active">1</button>
-                    <button>2</button>
-                    <button><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </main>
 
-    <script>
-        // You can add any JavaScript needed for the page functionality here
-    </script>
+        <%- include('../partials/users/footer') %>
+
 </body>
 </html>

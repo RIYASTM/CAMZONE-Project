@@ -38,7 +38,6 @@ async function sendOTP(email, otp) {
     }
 }
 
-
 async function sendOTPForgott(email, otp) {
     try {
         const transporter = nodemailer.createTransport({

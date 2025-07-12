@@ -4,6 +4,7 @@ const Brands = require('../../model/brandModel')
 const Products = require('../../model/productModel')
 const Category = require('../../model/categoryModel')
 const Cart = require('../../model/cartModel')
+const Wishlist = require('../../model/wishlistModel')
 
 const nodemailer = require('nodemailer')
 const env = require('dotenv').config()
@@ -37,6 +38,8 @@ const loadHomePage = async (req, res) => {
         if(userId){
             cart = await Cart.findOne({userId})
         }
+
+        const wishList = await Wishlist.findById(userId).populate('items.product')
 
         const brands = await Brands.find({ isDeleted: false, isBlocked: false });
         const categories = await Category.find({ isListed: true });
@@ -114,7 +117,8 @@ const loadHomePage = async (req, res) => {
                 newProducts,
                 products,
                 totalOffer,
-                currentPage: 'home'
+                currentPage: 'home',
+                wishList
             });
         }
 
@@ -126,7 +130,8 @@ const loadHomePage = async (req, res) => {
             category: categories,
             newProducts,
             totalOffer,
-            products
+            products,
+            wishList
         });
 
     } catch (error) {

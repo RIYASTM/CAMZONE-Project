@@ -1,0 +1,24 @@
+<!-- Sidebar -->
+<aside class="sidebar">
+    <h3>Account</h3>
+    <ul>
+        <li class="<%= currentPage === 'profile' ? 'active' : '' %>">
+            <a href="/profile">Profile</a>
+        </li>
+        <li class="<%= currentPage === 'orders' ? 'active' : '' %>">
+            <a href="/orders">Orders</a>
+        </li>
+        <li class="<%= currentPage === 'wallet' ? 'active' : '' %>">
+            <a href="/wallet">My Wallet</a>
+        </li>
+        <li class="<%= currentPage === 'address' ? 'active' : '' %>">
+            <a href="/address">Address Book</a>
+        </li>
+        <li class="<%= currentPage === 'security' ? 'active' : '' %>">
+            <a href="/security">Security</a>
+        </li>
+        <li class="<%= currentPage === 'preferences' ? 'active' : '' %>">
+            <a href="/preferences">Preferences</a>
+        </li>
+    </ul>
+</aside>

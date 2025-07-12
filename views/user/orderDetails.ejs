@@ -1,93 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details - Canon Mark II</title>
-    <link rel="stylesheet" href="/stylesheet/user/orderDetails.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Details - CAMAZONE</title>
+  <link rel="stylesheet" href="/stylesheet/user/orderDetails.css">
 </head>
 <body>
-    <div class="breadcrumb">
-        <a href="#">Home</a> &gt;
-        <a href="#">My Account</a> &gt;
-        <a href="#">My Orders</a> &gt;
-        <span><%= productItem.product.productName %></span>
-    </div>
+  <%- include('../partials/users/header',{ search, cart }) %>
 
-    <div class="card">
-        <div class="product-section">
-            <h2>Product</h2>
-            <div class="product-container" id="productContainer" data-id="<%= productItem.product._id %>">
-                <img src="/uploads/products/<%= productItem.product.productImage[0]%>" alt="<%= productItem.product.productName %>" class="product-image">
-                <div class="product-details">
-                    <h3><%= productItem.product.productName %></h3>
-                    <p class="price">₹ <%= productItem.price %></p>
-                    <p class="quantity">Quantity :  <%= productItem.quantity %></p>
+    <main class="order-details-page">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="separator">></span>
+        <a href="/my-account">My Account</a>
+        <span class="separator">></span>
+        <a href="/my-orders">My Orders</a>
+        <span class="separator">></span>
+        <span class="current">Order Details</span>
+        </div>
+    <div class="container">
+
+        <div class="order-details-container">
+            <!-- Order Header -->
+            <div class="order-header">
+                <h1>Order Details</h1>
+                <div class="order-info">
+                    <span class="order-id">Order ID: <%= order.orderId %></span>
+                    <span class="order-date">Placed on <%= order.createdOn.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
                 </div>
             </div>
 
+            <!-- Order Tracking -->
+            <div class="order-tracking">
+                <h2>Order Tracking</h2>
+                <div class="tracking-progress">
+                    <div class="tracking-step <%= ['Pending','Processing','Shipped','Out for Delivery','Delivered'].includes(order.status) ? 'completed' : '' %>">
+                        <div class="step-icon"><i class="icon-order"></i></div>
+                        <div class="step-content">
+                            <h3>Order Placed</h3>
+                            <p><%= order.createdOn.toLocaleDateString('en-IN') %></p>
+                        </div>
+                    </div>
+
+                    <div class="tracking-step <%= ['Shipped','Out for Delivery','Delivered'].includes(order.status) ? 'completed' : '' %>">
+                        <div class="step-icon"><i class="icon-shipped"></i></div>
+                        <div class="step-content">
+                            <h3>Shipped</h3>
+                            <p><%= order.status === 'Shipped' ? 'Shipped' : order.status === 'Cancelled' ? 'Cancelled' : 'Pending' %></p>
+                        </div>
+                    </div>
+
+                    <div class="tracking-step <%= ['Out for Delivery','Delivered'].includes(order.status) ? 'completed' : '' %>">
+                        <div class="step-icon"><i class="icon-delivery"></i></div>
+                        <div class="step-content">
+                            <h3>Out of Delivery</h3>
+                            <p><%= order.status === 'Out of Delivery' ? 'Out of Delivery' : order.status === 'Cancelled' ? 'Cancelled' : 'Pending' %></p>
+                        </div>
+                    </div>
+
+                    <div class="tracking-step <%= order.status === 'Delivered' ? 'completed' : '' %>">
+                        <div class="step-icon"><i class="icon-delivered"></i></div>
+                        <div class="step-content">
+                            <h3>Delivered</h3>
+                            <p><%= order.status === 'Delivered' ? 'Delivered' : order.status === 'Cancelled' ? 'Cancelled' : 'Pending' %></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ordered Items -->
+            <div class="ordered-items">
+                <h2>Ordered Items</h2>
+                <div class="items-list">
+                    <% if (order.orderedItems.length === 0) { %>
+                    <p class="no-items">No items found in this order.</p>
+                    <% } %>
+
+                    <% order.orderedItems.forEach(item => { %>
+                    <div class="item-card">
+                        <% if (item.product) { %>
+                        <div class="item-image">
+                            <% if (item.product.productImage && item.product.productImage.length > 0) { %>
+                                <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
+                            <% } else { %>
+                                <img src="" alt="No Image">
+                            <% } %>
+                        </div>
+                        <div class="item-details">
+                            <h3 class="item-name"><%= item.product.productName %></h3>
+                            <p class="item-description"><%= item.product.description %></p>
+                            <div class="item-specs">
+                                <span class="quantity">Quantity: <%= item.quantity %></span>
+                                <span class="unit-price">Unit Price: ₹<%= item.price.toFixed(2) %></span>
+                                <%if(item.itemStatus === 'Cancelled' || item.itemStatus === 'Returned' || item.itemStatus === 'Return Request') { %>
+                                  <span class="item-status"><%= item.itemStatus === 'Cancelled' ? 'Cancelled' : item.itemStatus === 'Returned' ? 'Returned' : 'Return Request' %></span>
+                                <% }%>
+                            </div>
+                        </div>
+                        <div class="item-total">
+                            <span class="total-price"><%= item.itemStatus === 'Cancelled' || item.itemStatus === 'Returned' ?  '' : '₹' + (item.price * item.quantity).toFixed(2) %></span>
+                        </div>
+                        <% } else { %>
+                        <div class="item-details">
+                            <h3 class="item-name">[Product Deleted]</h3>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="summary-table">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Subtotal</td>
+                                <td>₹<%= (order.totalPrice - (order.gst || 0) + (order.offerDiscount || 0)).toFixed(2) %></td>
+                            </tr>
+                            <tr>
+                                <td>GST (18%)</td>
+                                <td>₹<%= (order.gst || 0).toFixed(2) %></td>
+                            </tr>
+                            <tr>
+                                <td>Offer Discount</td>
+                                <td class="discount">-₹<%= (order.offerDiscount || 0).toFixed(2) %></td>
+                            </tr>
+                            <tr>
+                                <td>Shipping</td>
+                                <td><%= !order.shippingCharge || order.shippingCharge === 0 ? 'Free' : '₹' + order.shippingCharge.toFixed(2) %></td>
+                            </tr>
+                            <tr class="total-row">
+                                <td><strong>Total Amount</strong></td>
+                                <td><strong>₹<%= order.totalPrice.toFixed(2) %></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Delivery Address -->
             <div class="delivery-address">
-                <h3>Delivery Address :</h3>
-                <p class="customer-name"><%= order.address.name %></p>
-                <p class="address">
-                    <%= order.address.streetAddress%>, <%= order.address.landMark %><br>
-                    <%= order.address.city %> , <%= order.address.district %><br>
-                    <%= order.address.state %> - <%= order.address.pincode %><br>
-                    <!-- university Chelambra - 673634, Kerala -->
-                </p>
-                <p class="contact-row"><strong>Phone number</strong> :  <%= order.address.phone %></p>
-                <p class="contact-row"><strong>Payment Method</strong> : <%= order.paymentMethod %></p>
-                <p class="contact-row"><strong>Order number</strong> : <%= order.orderId %></p>
-            </div>
-        </div>
-
-        <div class="track-section">
-            <h2>Track</h2>
-            <div class="track-status">
-                <div class="track-item">
-                    <div class="status-indicator completed"></div>
-                    <div class="track-info">
-                        <p class="status-title">Order Confirmed<span class="status-date">Thu, 20th Feb '25</span></p>
-                        <p class="status-message">Your Order has been placed</p>
+                <h2>Delivery Address</h2>
+                <div class="address-card">
+                    <div class="customer-info">
+                    <h3><%= order.address.name || 'N/A' %></h3>
+                    <p class="phone"><%= order.address.phone || '' %></p>
+                    </div>
+                    <div class="address-details">
+                    <p><%= order.address.streetAddress || '' %></p>
+                    <p><%= order.address.city || '' %>, <%= order.address.state || '' %></p>
+                    <p><%= order.address.district || '' %> - <%= order.address.pincode || '' %></p>
                     </div>
                 </div>
-
-                <div class="track-item">
-                    <div class="status-indicator completed"></div>
-                    <div class="track-info">
-                        <p class="status-title">Shipped<span class="status-date">Thu, 20th Feb '25</span></p>
-                        <p class="status-message">Your Order has been shipped</p>
-                    </div>
-                </div>
-
-                <div class="track-item">
-                    <div class="status-indicator completed"></div>
-                    <div class="track-info">
-                        <p class="status-title">Out of Delivery<span class="status-date">Fri, 21st Feb '25</span></p>
-                        <p class="status-message">Your item is out of delivery</p>
-                    </div>
-                </div>
-
             </div>
 
-            <div class="actions">
-                <button class="btn btn-primary">Schedule Order</button>
-                <button class="btn btn-danger">CANCEL</button>
+            <!-- Action Buttons -->
+            <div class="order-actions">
+                <% if(['Pending','Processing','Shipped','Out of Delivery'].includes(order.status)) { %>
+                    <button class="btn btn-danger" onclick="openModal('cancel', '<%= order._id %>')">Cancel Order</button>
+                <% } %>
+                <% if(order.status === 'Delivered') { %>
+                    <button class="btn btn-warning" onclick="openModal('return', '<%= order._id %>')">Return Order</button>
+                <% } %>
+                <button class="btn btn-primary" onclick="downloadInvoice('<%= order._id %>')">Download Invoice</button>
+                <a href="/myOrders" class="btn btn-secondary">Back to Orders</a>
             </div>
         </div>
     </div>
+  </main>
 
-    <script>
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-subtitle" id="modalSubtitle"></p>
+        <button class="close-btn" onclick="closeModal()">x</button>
+      </div>
+      
+      <div class="modal-body">
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        
+        <div class="reason-section">
+          <h3 class="section-title">Select Reason</h3>
+          <select class="reason-select" id="reasonSelect">
+            <option value="">Choose a reason...</option>
+          </select>
+        </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const productContainer = document.getElementById('productContainer')
+        <div class="items-section">
+          <h3 class="section-title">Select Items</h3>
+          
+          <div class="select-all-container">
+            <div class="select-all-item" onclick="toggleSelectAll()">
+              <div class="custom-checkbox">
+                 <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                <span class="checkmark"></span>
+              </div>
+              <span class="select-all-text">Select All Items</span>
+            </div>
+          </div>
 
-            productContainer.addEventListener('click', ()=> {
-                const productId = productContainer.dataset.id
-                window.location.href =  `/product?id=${productId}` 
-            })
-        })
+          <div id="itemsList">
+            <% if (order.orderedItems && order.orderedItems.length > 0) { %>
+              <% order.orderedItems.forEach((item, index) => { %>
+                <% if (item.product && !['Cancelled', 'Returned'].includes(item.itemStatus)) { %>
+                  <div class="item-card" onclick="toggleItem(this, 'item<%= item.product._id %>')">
+                    <div class="item-content">
+                      <div class="custom-checkbox">
+                        <input type="checkbox" id="item<%= item.product._id %>">
+                        <span class="checkmark"></span>
+                      </div>
+                      <div class="item-image">
+                        <% if (item.product.productImage && item.product.productImage.length > 0) { %>
+                          <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
+                        <% } else { %>
+                          <img src="https://via.placeholder.com/60x60/ff6b6b/white?text=P<%= index + 1 %>" alt="No Image">
+                        <% } %>
+                      </div>
+                      <div class="item-details">
+                        <div class="item-name"><%= item.product.productName %></div>
+                        <div class="item-specs">
+                          Quantity: <%= item.quantity %> 
+                        </div>
+                      </div>
+                      <div class="item-price"><%= item.itemStatus === 'Cancelled' || item.itemStatus === 'Returned' ?  '' : '₹' + (item.price * item.quantity).toFixed(2) %></div>
+                    </div>
+                  </div>
+                <% } %>
+              <% }); %>
+            <% } else { %>
+              <p>No items available.</p>
+            <% } %>
+          </div>
+        </div>
 
-    </script>
+        <div class="description-section">
+          <h3 class="section-title">Additional Comments (Optional)</h3>
+          <textarea class="description-textarea" id="descriptionText" placeholder="Please provide any additional details about your request..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-confirm" onclick="confirmAction()">Confirm Request</button>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/users/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/javascript/users/order.js"></script>
+  <!-- <script>
+    let currentOrderId = null;
+    let modalType = null;
+
+    function openModal(type, orderId) {
+      currentOrderId = orderId;
+      modalType = type;
+      const modalTitle = document.getElementById('modalTitle');
+      const modalSubtitle = document.getElementById('modalSubtitle');
+      const reasonSelect = document.getElementById('reasonSelect');
+
+      // Set modal title and subtitle based on type
+      modalTitle.textContent = type === 'return' ? 'Return Order' : 'Cancel Order';
+      modalSubtitle.textContent = type === 'return' ? 'Please select items and provide a reason for return' : 'Please select items and provide a reason for cancellation';
+
+      // Populate reason options based on type
+      reasonSelect.innerHTML = '<option value="">Choose a reason...</option>';
+      const reasons = type === 'cancel' ? [
+        'changed_mind', 'wrong_item', 'found_better_price', 'financial_reason', 'delivery_delay', 'other'
+      ] : [
+        'defective_item', 'wrong_size', 'not_as_described', 'damaged_packaging', 'quality_issues', 'missing_parts', 'other'
+      ];
+      reasons.forEach(reason => {
+        const option = document.createElement('option');
+        option.value = reason;
+        option.textContent = reason.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ').replace('Other', 'Other (Please Specify)');
+        reasonSelect.appendChild(option);
+      });
+
+      // Reset form
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.getElementById('descriptionText').value = '';
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    function toggleSelectAll() {
+      const selectAll = document.getElementById('selectAll');
+      const checkboxes = document.querySelectorAll('#itemsList input[type="checkbox"]');
+      console.log(selectAll)
+      selectAll.checked = !selectAll.checked;
+      checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    }
+
+    function toggleItem(element, id) {
+      const checkbox = document.getElementById(id);
+      checkbox.checked = !checkbox.checked;
+      element.classList.toggle('selected');
+    }
+
+    function confirmAction() {
+      const reason = document.getElementById('reasonSelect').value;
+      const description = document.getElementById('descriptionText').value;
+      const selectedItems = Array.from(document.querySelectorAll('#itemsList input[type="checkbox"]:checked')).map(cb => cb.id.replace('item', ''));
+      console.log(selectedItems)
+
+      if (!reason) {
+        document.getElementById('errorMessage').textContent = 'Please select a reason.';
+        document.getElementById('errorMessage').style.display = 'block';
+        return;
+      }
+
+      if (selectedItems.length === 0) {
+        document.getElementById('errorMessage').textContent = 'Please select at least one item.';
+        document.getElementById('errorMessage').style.display = 'block';
+        return;
+      }
+
+      const url = modalType === 'cancel' ? `/orderCancel` : `/orderReturn`;
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason, description, items: selectedItems , orderId : currentOrderId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`${modalType === 'cancel' ? 'Order cancelled' : 'Return request'} submitted successfully!`);
+          location.reload();
+        } else {
+          document.getElementById('errorMessage').textContent = data.message || 'Failed to process request.';
+          document.getElementById('errorMessage').style.display = 'block';
+        }
+      });
+    }
+
+    function downloadInvoice(orderId) {
+      window.open(`/download-invoice/${orderId}`, '_blank');
+    }
+  </script>  -->
 </body>
 </html>
