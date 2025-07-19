@@ -40,7 +40,7 @@ const loadCheckout = async (req,res) => {
 
 
 
-        const cart = await Cart.findOne({userId})
+        const cart = await Cart.findOne({userId}) 
 
         cartItems = cart.items.filter(item => !item.isDeleted && item.productId !== null)
         const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);

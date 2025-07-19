@@ -53,7 +53,7 @@ const loadCart = async (req, res) => {
 
 
             cartItems = cartItems.filter(item => item.productId !== null);
-            cart.totalAmount = cartItems.reduce((total, item) => total + item.price, 0);
+            cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
             console.log('cart Items : ', cartItems)
             
             await cart.save();
@@ -160,10 +160,10 @@ const addToCart = async (req, res) => {
         if (existingItem) {
 
             existingItem.quantity += parsedQuantity;
-            existingItem.totalPrice = existingItem.quantity * product.salePrice;
             existingItem.discount = totalOffer;
-            existingItem.price = product.salePrice;
             existingItem.itemPrice = product.regularPrice;
+            existingItem.price = discountedPrice;
+            existingItem.totalPrice = discountedPrice * parsedQuantity;
 
 
         } else {
