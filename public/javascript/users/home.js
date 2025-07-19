@@ -1,20 +1,4 @@
 
- function addtoWishlist(productId){
-    fetch('/addtowishlist', {
-        method : 'POST',
-        body : JSON.stringify({productId}),
-        headers : {
-            'Content-Type': 'application/json'
-        }
-    }).then(response => response.json())
-        .then(data => {
-            if(data.success){
-                window.location.reload()
-            }else{
-                Swal.fire('error', data.message || 'Product adding to wish list is failed', 'error')
-            }
-        })
-    }
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -27,55 +11,90 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 
     function addToCart(productId) {
-            const quantity = 1
+        const quantity = 1;
 
-            if (quantity>0) {
-                console.log(quantity)               
-                     fetch('/addtocart', {
-                        method: "POST",
-                        body: JSON.stringify({ productId, quantity }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    }).then(response=> response.json())
-                    .then(data=>{
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        Swal.fire('error', data.message || 'Product adding to cart is failed', 'error');
-                        // window.location.reload();
-                    }
-                })
-                
-                    
-                
-            }
-    }
+        if (quantity > 0) {
+            console.log(quantity);
 
-    document.querySelectorAll('.wishlist-btn').forEach(button => {
-        button.addEventListener('click', ()=> {
-            const productId = button.dataset.id
-            console.log("THIS IS THE WISHLISH BUTTON")
-            addtoWishlist(productId)
-        })
-    })
-
-   
-
-    function deleteFromWishList(productId){
-        fetch('/removeFromWishList', {
-            method : 'POST',
-            body : JSON.stringify({productId}),
-            headers : {
-                'Content-Type': 'application/json'
-            }
-        }).then(response => response.json())
-            .then(data => {
-                if(data.success){
-                    window.location.reload
-                }else{
-                    Swal.fire('error', data.message || 'Product removing from wish list is failed', 'error')
+            fetch('/addtocart', {
+                method: "POST",
+                body: JSON.stringify({ productId, quantity }),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        text: 'This item has been successfully added to your cart.',
+                        position: 'center',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        timer: 2000,
+                        timerProgressBar: true,
+                        
+                        // willClose: () => {
+                        //     window.location.reload();
+                        // }
+                    });
+                } else {
+                    Swal.fire('Oops', data.message || 'Product adding to cart failed', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Oops', 'Product adding to cart failed', 'error');
+            });
         }
+    }
+
+
+     document.querySelectorAll(".wishlist-btn").forEach(button => {
+        button.addEventListener("click", function (e) {
+            e.stopPropagation(); // Prevents clicking the surrounding card
+            const productId = this.getAttribute("data-id");
+            addtoWishlist(productId);
+        });
+    });
+
 })
+
+
+function addtoWishlist(productId) {
+    fetch('/addtowishlist', {
+        method: 'POST',
+        body: JSON.stringify({ productId }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+
+            // Swal.fire({
+            //     icon: 'success',
+            //     title: data.done,
+            //     text: data.message,
+            //     timer: 1500,
+            //     showConfirmButton: false
+            // });
+
+            const icon = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
+
+            if(icon){
+                if(data.done === 'Added'){
+                    icon.classList.add('active');
+                }else if (data.done === 'Removed'){
+                    icon.classList.remove('active')
+                }
+            }
+
+        } else {
+            Swal.fire('Oops', data.message || 'Something went wrong', 'error');
+        }
+    }).catch(() => {
+        Swal.fire('Oops', 'Request failed', 'error');
+    });
+}

@@ -46,7 +46,7 @@
                         <option value="active">Active</option>
                         <option value="deleted">Blocked</option>
                     </select>
-                </div>
+                </div> 
             </div>
             
             <!-- Customers Table -->
@@ -69,26 +69,33 @@
                                 <td><%= data[i].phone %></td>
                                 <td><%= data[i].createdOn.toString().split(' ').slice(1,4).join(' ') %> </td>
                                 <td>
-                                    <% if(data[i].isBlocked === false) {%>
-                                    <!-- <button class="filter"><a href="/admin/blockCustomer?id=<%=data[i]._id%>" onclick="blockCustomer('<%=data[i]._id%>')">BLock</a></button> -->
-                                    <button class="filter" onclick="blockUser()">BLock</button>
-                                    <% }else{ %>
-                                        <button class="filter"><a href="/admin/unblockCustomer?id=<%=data[i]._id%>">Unblock</a></button>
-                                    <% } %>
-                                    </td>
-                                    
-
+                                    <button class="blockCustomer filter" data-id="<%= data[i]._id %>" data-name="<%= data[i].name %>" data-page="<%= currentPages %>" data-blocked="<%= data[i].isBlocked %>" ><%= data[i].isBlocked ? 'Unblock' : 'Block' %></button>
+                                </td>
                             </tr>
-                            <% } %>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
             
+            <!-- Delete Product Modal -->
+           <div class="modal product-modal" id="blockCustomerModal">
+               <div class="modal-content">
+                   <h2>Confirm Block</h2>
+                   <p id="blockCustomerMessage"></p>
+                   <div class="form-actions">
+                       <button type="button" class="btn block-btn" id="confirmBlockButton">Block</button>
+                       <button type="button" class="btn cancel-btn" id="cancelBlockButton">Cancel</button>
+                   </div>
+               </div>
+           </div>
+
             <!-- Pagination -->
             <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
         </div>
     </div> 
+    
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/javascript/admins/customers.js"></script>
 </body>

@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const rejectBtn = wrapper.querySelector('.reject-btn');
 
                         acceptBtn.onclick = () => handleReturnDecision(order._id, item.product._id, 'Returned', reason);
-                        rejectBtn.onclick = () => handleReturnDecision(order._id, item.product._id, item.itemStatus, null);
+                        rejectBtn.onclick = () => handleReturnDecision(order._id, item.product._id, 'Return Request Rejected', null);
                     });
 
                 } else {
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const rejectBtn = wrapper.querySelector('.reject-btn');
 
                     acceptBtn.onclick = () => handleReturnDecision(order._id, null, 'Returned', reason);
-                    rejectBtn.onclick = () => handleReturnDecision(order._id, null, order.status, null);
+                    rejectBtn.onclick = () => handleReturnDecision(order._id, null, 'Return Request Rejected', null);
                 }
 
 
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('/admin/handleStatus', {
                     method: 'POST',
-                    body: JSON.stringify({ orderId, productId, status: newStatus, reason }),
+                    body: JSON.stringify({ orderId, productId, newStatus, reason }),
                     headers: {
                         'Content-Type': 'application/json'
                     }

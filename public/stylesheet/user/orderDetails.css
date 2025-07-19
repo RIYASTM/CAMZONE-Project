@@ -208,6 +208,10 @@ body {
     font-size: 0.9rem;
 }
 
+.item-status{
+    color: rgb(253, 182, 27) ;
+}
+
 .item-specs {
     display: flex;
     gap: 1rem;

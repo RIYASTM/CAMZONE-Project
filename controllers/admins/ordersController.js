@@ -1,7 +1,9 @@
 const { options } = require("sanitize-html");
 const Order = require("../../model/orderModel");
 const Product = require('../../model/productModel')
-const {addToWallet} = require('../../helpers/user/wallet')
+
+const {returnItem,orderReturn} = require('../../helpers/orderReturn')
+const {addToWallet} = require('../../helpers/wallet')
 
 
 
@@ -103,9 +105,9 @@ const currentOrder = async (req,res) => {
     }
 }
 
-const returnRequest = async (req, res) => {
-    try {
-        const { orderId, productId, status, reason } = req.body;
+const returnOrder = async (req, res) => {
+    try { 
+        const { orderId, productId, newStatus, reason } = req.body;
 
         const order = await Order.findById(orderId);
 
@@ -113,60 +115,57 @@ const returnRequest = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found...' });
         }
 
+        console.log('order found ')
+
         const productIds = Array.isArray(productId) ? productId.map(id => id.toString()) : [productId.toString()];
+        console.log('productIds found')
         const products = order.orderedItems.map(item => item.product.toString());
+        console.log('products found')
 
         const returnItems = order.orderedItems.filter(item =>
             productIds.includes(item.product.toString())
         );
+        console.log('returnItems found')
 
         const isFullReturn = products.length === productIds.length &&
             productIds.every(id => products.includes(id));
 
-        const isFullRetured = order.orderedItems.every(item => item.itemStatus === 'Returned')
-
-        let refundAmount = 0
-
+        console.log('isFullReturn found', isFullReturn)
+            
+            
         if (returnItems && returnItems.length > 0) {
-            if (isFullReturn || isFullRetured) {
-                order.status = status;
-                order.reason = reason;
-                order.orderedItems.forEach(item => {
-                    item.itemStatus = status;
-                    item.reason = reason;
-                    order.totalPrice -= item.price * item.quantity;
-                    refundAmount += item.price * item.quantity
-                });
-            } else {
-                returnItems.forEach(item => {
-                    item.itemStatus = status;
-                    item.reason = reason;
-                    order.totalPrice -= item.price * item.quantity;
-                    refundAmount += item.price * item.quantity
-                });
-            }
+                
+            let { refundAmount, refundReason } = returnItem(returnItems, reason, newStatus)
+
+            const isFullReturned = order.orderedItems.every(item => item.itemStatus === 'Returned')
+
+            console.log('isFullReturned', isFullReturned)
+            
+            if (isFullReturn || isFullReturned) {
+                ({ refundAmount, refundReason } = orderReturn(order, reason, newStatus))
+            } 
 
             for (let item of returnItems) {
                 const product = await Product.findById(item.product);
                 if (product) {
                     product.quantity += item.quantity;
+                    console.log('quantity changed')
                     await product.save();
                 }
             }
 
             await order.save();
+            console.log('order saved')
 
-            const refundReason = 'Refund for Returned Item(s)';
-
-            const userId = order.userId
-            console.log('userId : ', userId)
-
-            if (status === 'Returned' && refundAmount > 0) {
-                console.log('hi')
+            
+            if (newStatus === 'Returned' && refundAmount > 0) {
+                const userId = order.userId
+                console.log('userId : ', userId)
                 await addToWallet(userId, refundAmount, refundReason);
+                console.log('added to wallet')
             }
 
-            const message = status !== 'Returned'
+            const message = newStatus !== 'Returned'
                 ? 'Return request rejected.'
                 : isFullReturn
                     ? 'Order returned successfully.'
@@ -175,14 +174,14 @@ const returnRequest = async (req, res) => {
             return res.status(200).json({ success: true, message });
 
         } else {
-            order.status = status;
+            order.status = newStatus;
             order.reason = reason;
             order.orderedItems.forEach(item => {
-                item.itemStatus = status;
+                item.itemStatus = newStatus;
                 item.reason = reason;
             });
 
-            // await order.save();
+            await order.save();
 
             return res.status(200).json({ success: true, message: 'Order updated with return status.' });
         }
@@ -198,5 +197,5 @@ module.exports = {
     loadOrders,
     currentOrder,
     updateStatus,
-    returnRequest
+    returnOrder
 }

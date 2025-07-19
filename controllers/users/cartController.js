@@ -3,6 +3,7 @@ const Products = require('../../model/productModel')
 const Brands = require('../../model/brandModel')
 const Category = require('../../model/categoryModel')
 const Cart = require('../../model/cartModel')
+const WishList = require('../../model/wishlistModel')
 
 
 
@@ -16,25 +17,50 @@ const loadCart = async (req, res) => {
         let cartItems = [];
         let subTotal = 0;
 
+        let totalOfferPrice = 0
+        let totalOfferedPrice = 0
+
         if (cart && cart.items.length > 0) {
             cartItems = cart.items.filter(item => !item.isDeleted);
 
             for (let item of cartItems) {
-                const product = await Products.findOne({ _id: item.productId, isBlocked: false });
+                const product = await Products.findOne({ _id: item.productId, isBlocked: false }).populate('category').populate('brand');
 
                 if (product && !product.isBlocked) {
-                    item.product = product;
-                    item.price = product.salePrice;
-                    item.totalPrice = product.salePrice * item.quantity;
+                    item.productId = product;
+
+                    const productOffer = product.productOffer || 0;
+                    const categoryOffer = product.category?.categoryOffer || 0;
+                    console.log('category Offer : ', categoryOffer)
+                    const brandOffer = product.brand?.brandOffer || 0;
+                    console.log('brand Offer : ',brandOffer)
+
+                    const totalOffer = productOffer + categoryOffer + brandOffer;
+                    console.log('totalOffer : ', totalOffer)
+
+                    const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
+                    console.log('discounted Price : ', discountedPrice)
+
+                    item.itemPrice = product.regularPrice;
+                    item.discount = totalOffer;
+                    item.price = discountedPrice
+                    item.totalPrice = discountedPrice * item.quantity;
                     subTotal += item.totalPrice;
                 } else {
-                    item.product = null;
+                    item.productId = null;
                 }
             }
 
-            cartItems = cartItems.filter(item => item.product !== null);
-            cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
+
+            cartItems = cartItems.filter(item => item.productId !== null);
+            cart.totalAmount = cartItems.reduce((total, item) => total + item.price, 0);
+            console.log('cart Items : ', cartItems)
+            
             await cart.save();
+            
+            totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
+            totalOfferedPrice = totalOfferPrice - cart.totalAmount  || 0;
+            
         }
 
         const total = subTotal;
@@ -46,7 +72,8 @@ const loadCart = async (req, res) => {
             search,
             subtotal: subTotal,
             total,
-            cart
+            cart,
+            totalOfferedPrice
         });
     } catch (error) {
         console.log('Failed to load the cart page:', error);
@@ -69,15 +96,51 @@ const addToCart = async (req, res) => {
         }
 
         const { productId, quantity } = req.body;
+        
+        const wishList = await WishList.findOne({user : userId}).populate('items.product')
+        
+        const wishlistItem = wishList.items.find(item => item.product._id.toString() === productId.toString())
 
-        const product = await Products.findOne({ _id: productId, isDeleted: false, isBlocked: false });
+        if(wishlistItem){
+            await WishList.updateOne({user : userId} , {$pull : {items : {product : productId}}})
+        }
+
+        const product = await Products.findOne({ _id: productId, isDeleted: false, isBlocked: false }).populate('category').populate('brand');
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found!!' });
         }
 
+        
+        // Offer Section
+        const productOffer = product.productOffer || 0
+        const categoryOffer = product.category.categoryOffer || 0
+        const brandOffer = product.brand.brandOffer || 0
+
+        
+        
+        const offer = categoryOffer + brandOffer
+        const totalOffer = productOffer + offer
+        console.log('total Offer : ', totalOffer)
+
+
         const stock = product.quantity;
         console.log('product stock : ', product.quantity)
         const parsedQuantity = parseInt(quantity);
+
+        const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
+
+        console.log('discounted Price : ', discountedPrice)
+
+        const newCartItem = {
+            productId: product._id,
+            quantity: parsedQuantity,
+            discount: totalOffer,
+            itemPrice: product.regularPrice,
+            price: discountedPrice,
+            totalPrice: discountedPrice * parsedQuantity,
+            status: product.status
+        };
+
 
         
         let cartDoc = await Cart.findOne({ userId });
@@ -98,26 +161,25 @@ const addToCart = async (req, res) => {
 
             existingItem.quantity += parsedQuantity;
             existingItem.totalPrice = existingItem.quantity * product.salePrice;
+            existingItem.discount = totalOffer;
+            existingItem.price = product.salePrice;
+            existingItem.itemPrice = product.regularPrice;
+
 
         } else {
-            const newCartItem = {
-                productId: product._id,
-                quantity: parsedQuantity,
-                price: product.regularPrice,
-                totalPrice: product.salePrice * parsedQuantity,
-                status: product.status
-            };
             cartDoc.items.push(newCartItem);
         }
-    
 
+        
+        
         cartDoc.totalAmount = cartDoc.items.reduce((sum, item) => sum + item.totalPrice, 0);
-
+        
         const savedCart = await cartDoc.save();
-
+        
         if (!savedCart) {
             return res.status(401).json({ success: false, message: 'Product adding failed' });
         }
+        console.log('cart doc : ', cartDoc)
 
         return res.status(200).json({
             success: true,
@@ -252,5 +314,5 @@ module.exports = {
     loadCart,
     addToCart,
     cartUpdate,
-    removeItem
+    removeItem,
 }

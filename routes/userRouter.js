@@ -144,7 +144,7 @@ router.get('/myOrders' , userAuth , orderControlller.loadMyOrders)
 
 router.post('/orderCancel' , userAuth , orderControlller.cancelOrder )
 
-router.post('/orderReturn', userAuth, orderControlller.returnOrder)
+router.post('/orderReturn', userAuth, orderControlller.returnRequest)
 
 //Order Details
 

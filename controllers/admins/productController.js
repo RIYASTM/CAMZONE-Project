@@ -46,7 +46,6 @@ const loadProducts = async (req,res) => {
 
         const totalPages = Math.ceil((totalProducts >=2 ? totalProducts : 1 ) / limit )
 
-
         const category = await Category.find({isListed:true})
         // console.log('Categories : ',category)
         
@@ -61,6 +60,18 @@ const loadProducts = async (req,res) => {
         .limit(limit)
         .skip(skip)
         .exec();
+
+       for (let product of products) {
+        let newStatus = 'Available';
+
+        if (product.isBlocked === true || product.isBlocked === "true") {
+            newStatus = 'Discontinued';
+        } else if (product.quantity <= 0) {
+            newStatus = 'Out of Stock';
+        }
+
+        await Products.updateMany({ _id: product._id }, { $set: { status: newStatus } });
+    }
 
         return res.render('products',{
             search,
@@ -112,33 +123,17 @@ const addProduct = async (req, res) => {
             return res.status(400).json({ success: false, message: 'At least one product image is required!' });
         }
 
-        const findCategory = data.category
-        const findBrand = data.brand
-
-        const categoryOffer = findCategory ?.categoryOffer || 0
-
-        console.log('Category offer : ',categoryOffer)
-
-        const brandOffer = findBrand ?.brandOffer || 0
-
-        console.log('Brand offer : ',brandOffer)
-
-        const productOffer = data.productOffer ? data.productOffer : 0
-
-        console.log('Product offer : ',productOffer)
-
-        const totalOffer = categoryOffer + productOffer + brandOffer
-
-
         const regularPrice = parseFloat(data.regularPrice)
         let salePrice = parseFloat(data.salePrice)
+        
+        const productOffer = parseFloat(data.productOffer) || 0;
+        console.log('Product offer : ',productOffer)
 
-        // console.log(data.productOffer)
-
-        // if(productOffer){
-        //     salePrice = regularPrice - (regularPrice * totalOffer / 100)
-        // }
-
+        if(productOffer){
+            salePrice = Math.round(regularPrice - (regularPrice * productOffer / 100))
+        }else{
+            salePrice = regularPrice
+        }
 
         const newProduct = new Products({
             productName: data.productName,
@@ -147,11 +142,13 @@ const addProduct = async (req, res) => {
             category: data.category,
             regularPrice,
             salePrice,
-            productOffer : totalOffer,
+            productOffer,
             quantity: parseInt(data.stock),
             productImage: productImages,
             isBlocked: data.isBlocked === 'on'
         });
+
+        
 
         await newProduct.save();
 
@@ -173,8 +170,10 @@ const editProduct = async (req, res) => {
     try {
         const data = req.body;
         const productId = data.id;
+        const page = data.currentPages
 
-        console.log('data : ',data)
+        // console.log('page  : ', page)
+        // console.log('data : ',data)
 
 
         const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } });
@@ -183,7 +182,7 @@ const editProduct = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Product already exists with this name!' });
         }
 
-        const errors = validateProductForm(data);
+        const errors = validateProductForm(data); 
 
         if (errors) {
             console.log('Validation error from backend: ', errors);
@@ -193,23 +192,14 @@ const editProduct = async (req, res) => {
         // Handle multiple image uploads
         const productImages = req.files ? req.files.map(file => file.filename) : [];
 
+        console.log('Product Image : ', productImages )
 
-        const findCategory = data.category
-        const findBrand = data.brand
 
-        const categoryOffer = findCategory ?.categoryOffer || 0
+        // Offer Section
 
-        console.log('Category offer : ',categoryOffer)
-
-        const brandOffer = findBrand ?.brandOffer || 0
-
-        console.log('Brand offer : ',brandOffer)
-
-        const productOffer = data.productOffer ? data.productOffer : 0
+        const productOffer = parseFloat(data.productOffer) || 0;
 
         console.log('Product offer : ',productOffer)
-
-        const totalOffer = categoryOffer + productOffer + brandOffer
 
         const regularPrice = parseFloat(data.regularPrice)
         let salePrice = parseFloat(data.salePrice)
@@ -217,9 +207,11 @@ const editProduct = async (req, res) => {
 
         console.log(data.productOffer)
 
-        // if(productOffer){
-        //     salePrice = regularPrice - (regularPrice * productOffer / 100)
-        // }
+        if(productOffer){
+            salePrice = Math.round(regularPrice - (regularPrice * productOffer / 100))
+        }else{
+            salePrice = regularPrice
+        }
 
 
         const updateData = {
@@ -229,7 +221,7 @@ const editProduct = async (req, res) => {
             category: data.category,
             regularPrice,
             salePrice,
-            productOffer : totalOffer,
+            productOffer ,
             quantity: parseInt(data.stock),
             isBlocked: data.isBlocked === 'on'
         };
@@ -240,14 +232,27 @@ const editProduct = async (req, res) => {
 
         const updatedProduct = await Products.findByIdAndUpdate(productId, updateData, { new: true });
 
+        
+
         if (!updatedProduct) {
             return res.status(404).json({ success: false, message: 'Product not found!' });
         }
 
+        const products = await Products.find()
+        products.forEach(product => {
+            if(product.isBlocked){
+                product.status = 'Discontinued'
+            }else if(product.quantity <= 0){
+                product.status = 'Out of Stock'
+            }else{
+                product.status = 'Available'
+            }
+        })
+
         return res.status(200).json({
             success: true,
             message: 'Product updated successfully',
-            redirectUrl: '/admin/products'
+            redirectUrl: `/admin/products?page=${page}`
         });
     } catch (error) {
         console.error('Product editing error: ', error);

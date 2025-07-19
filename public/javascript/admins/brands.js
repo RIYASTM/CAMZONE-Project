@@ -46,9 +46,10 @@ document.addEventListener('DOMContentLoaded',()=>{
             const name = button.dataset.name
             const description = button.dataset.description
             const image = button.dataset.image
+            const brandOffer = button.dataset.brandoffer;
             const isBlocked = button.dataset.isblocked == 'true' 
 
-            showEditBrandModal(id, name, description, image, isBlocked)
+            showEditBrandModal(id, name, description, image, isBlocked, brandOffer)
         })
     })
 
@@ -173,12 +174,13 @@ function hideEditBrandModal(){
         editBrandModal.style.display = 'none'
     }
 
-function showEditBrandModal(id, name, description, image, isBlocked){
+function showEditBrandModal(id, name, description, image, isBlocked , brandOffer){
         const editBrandModal = document.getElementById('editBrandModal');
         document.getElementById('brandId').value = id;
         document.getElementById('editBrandName').value = name;
         document.getElementById('editBrandDescription').value = description;
         document.getElementById('editCheckbox').checked = isBlocked == true ;
+        document.getElementById('editBrandOffer').value = brandOffer ? brandOffer : '';
         const currentImageDiv = document.getElementById('currentImage');
         if (image) {
             currentImageDiv.innerHTML = `<img src="/uploads/brands/${image}" alt="Current Image" style="width: 50px; height: 50px; object-fit: fill;">`;

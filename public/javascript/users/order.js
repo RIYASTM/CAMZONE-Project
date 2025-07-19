@@ -15,14 +15,14 @@ let currentOrderId = null;
       // Populate reason options based on type
       reasonSelect.innerHTML = '<option value="">Choose a reason...</option>';
       const reasons = type === 'cancel' ? [
-        'changed_mind', 'wrong_item', 'found_better_price', 'financial_reason', 'delivery_delay', 'other'
+        'Changed Mind' , 'Wrong Item' , 'Found Better Price' , 'Financial Reason' , 'Delivery Delay' , 'Other'
       ] : [
-        'defective_item', 'wrong_size', 'not_as_described', 'damaged_packaging', 'quality_issues', 'missing_parts', 'other'
+        'Defective Item', 'Wrong Size', 'Not As Described', 'Damaged Packaging', 'Quality Issues', 'Missing Parts', 'Other'
       ];
       reasons.forEach(reason => {
         const option = document.createElement('option');
         option.value = reason;
-        option.textContent = reason.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ').replace('Other', 'Other (Please Specify)');
+        option.textContent = reason.replace('Other', 'Other (Please Spicify)')
         reasonSelect.appendChild(option);
       });
 
@@ -39,7 +39,7 @@ let currentOrderId = null;
 
     function toggleSelectAll() {
       const selectAll = document.getElementById('selectAll');
-      const checkboxes = document.querySelectorAll('#itemsList input[type="checkbox"]');
+      const checkboxes = document.querySelectorAll('#itemsList input[type="checkbox"]')
       console.log(selectAll)
       selectAll.checked = !selectAll.checked;
       checkboxes.forEach(cb => cb.checked = selectAll.checked);
@@ -49,6 +49,10 @@ let currentOrderId = null;
       const checkbox = document.getElementById(id);
       checkbox.checked = !checkbox.checked;
       element.classList.toggle('selected');
+      const selectAll = document.getElementById('selectAll')
+      const checkboxes = Array.from(document.querySelectorAll('#itemsList input[type="checkbox"]'))
+      let allSelected =  checkboxes.every(cb => cb.checked)
+      selectAll.checked = allSelected
     }
 
     function confirmAction() {
@@ -85,6 +89,10 @@ let currentOrderId = null;
           document.getElementById('errorMessage').style.display = 'block';
         }
       });
+    }
+
+    function details(productId){
+      window.location.href =`/product?id=${productId}`
     }
 
     function downloadInvoice(orderId) {

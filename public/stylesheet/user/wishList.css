@@ -211,6 +211,7 @@ a {
     padding: 20px;
     box-shadow: var(--shadow);
     height: fit-content;
+    min-height: 600px;
 }
 
 .sidebar h3 {

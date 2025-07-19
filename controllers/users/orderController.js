@@ -4,7 +4,8 @@ const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
 const { search } = require("../../routes/userRouter")
 
-const {addToWallet} = require('../../helpers/user/wallet')
+const {addToWallet} = require('../../helpers/wallet')
+const {cancelItem,orderCancel} = require('../../helpers/orderCancelling')
 
 
 const loadOrderSuccess = async (req,res) => { 
@@ -162,39 +163,28 @@ const cancelOrder = async (req, res) => {
             cancelItemIds.includes(String(item.product))
         );
 
-        let refundAmount = 0;
-
         const isFullCancellation =
             orderedProductIds.length === cancelItemIds.length &&
             cancelItemIds.every(id => orderedProductIds.includes(id));
 
-        const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled')
+        let {refundAmount , refundReason} =  cancelItem(cancelItems , reason)
 
-        if (isFullCancellation && allCancelled) {
-            order.status = 'Cancelled';
-            order.cancelReason = reason;
 
-            order.orderedItems.forEach(item => {
-                item.itemStatus = 'Cancelled';
-                refundAmount += item.price * item.quantity;
-            });
+        const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled');
+        
+       
 
-        } else {
-            cancelItems.forEach(item => {
-                item.itemStatus = 'Cancelled';
-                item.reason = reason;
-                refundAmount += item.price * item.quantity;
-            });
+        if (isFullCancellation || allCancelled) {   
+            ({refundAmount,refundReason} = orderCancel(order, reason))
         }
 
-
-        order.totalPrice -= refundAmount;
+        order.totalPrice -= refundAmount
+        
         await order.save();
 
-        const refundReason = 'Refund for Cancelled Item(s)';
-
+        
         if (['Razorpay', 'Wallet'].includes(order.paymentMethod)) {
-            console.log('userID : ', userId)        
+            console.log('userID : ', userId)
             await addToWallet(userId, refundAmount, refundReason);
         }
 
@@ -205,6 +195,8 @@ const cancelOrder = async (req, res) => {
                 await product.save();
             }
         }
+
+        
 
         return res.status(200).json({
             success: true,
@@ -221,7 +213,7 @@ const cancelOrder = async (req, res) => {
 
 
 
-const returnOrder = async (req,res) => {
+const returnRequest = async (req,res) => {
     try {
 
         const {orderId , reason , items} = req.body
@@ -287,5 +279,5 @@ module.exports = {
     loadOrderPending,
     loadOrderReturned,
     cancelOrder,
-    returnOrder
+    returnRequest
 }

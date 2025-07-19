@@ -42,6 +42,10 @@ const loadCheckout = async (req,res) => {
 
         const cart = await Cart.findOne({userId})
 
+        cartItems = cart.items.filter(item => !item.isDeleted && item.productId !== null)
+        const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
+        const totalOfferedPrice = totalOfferPrice - cart.totalAmount  || 0;
+
 
 
         console.log('Cart total : ', cart.totalAmount)
@@ -51,7 +55,8 @@ const loadCheckout = async (req,res) => {
             currentPage : 'checkout',
             address : addressess,
             cart,
-            search
+            search,
+            totalOfferedPrice
         })
 
     } catch (error) {
@@ -88,6 +93,13 @@ const checkout = async (req, res) => {
 
         const cartItems = cartDoc.items;
 
+        for (let item of cartItems){
+            const product = await Products.findById(item.productId._id)
+            if(item.quantity > product.quantity){
+                return res.status(400).json({success : false , message : 'Not Availabe in this Qauntity!!'})
+            }
+        }
+
         const date = new Date();
         const year = date.getFullYear().toString().slice(-2);
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -102,6 +114,40 @@ const checkout = async (req, res) => {
         const seq = (count % 100).toString().padStart(2, '0');
         const orderId = `ORD${year}${month}${day}${seq}`;
 
+        // const productsWithOffers = product.map( product => {
+        //     const productOffer = product.productOffer || 0;
+        //     const brandOffer = product.brand?.brandOffer || 0;
+        //     const categoryOffer = product.category?.categoryOffer || 0;
+
+        //     const totalOffer = productOffer + brandOffer + categoryOffer;
+
+        //     offer = totalOffer
+
+        //     product.salePrice = Math.round(product.salePrice - product.regularPrice / 100 * offer)
+
+        //     return {
+        //         ...product._doc,
+        //         productOffer,
+        //         brandOffer,
+        //         categoryOffer,
+        //         totalOffer
+        //     };
+        // });
+
+        // Offer Section
+
+        let productOffer = 0
+        let brandOffer = 0
+        let categoryOffer = 0
+        const totalOffer = productOffer + brandOffer + categoryOffer
+
+        const findOffer = cartItems.map(item => {
+            productOffer = item.productId.productOffer || 0
+            brandOffer = item.productId.brand?.brandOffer || 0
+            categoryOffer = item.productId.category?.categoryOffer || 0
+
+
+        })
         
 
         const totalPrice = cartItems.reduce((total, item) => total + item.totalPrice, 0);
@@ -113,7 +159,7 @@ const checkout = async (req, res) => {
             orderedItems: cartItems.map(item => ({
                 product: item.productId._id,
                 quantity: item.quantity,
-                price: item.price,
+                price: item.productId.salePrice * item.quantity,
             })),
             totalPrice,
             finalAmount,

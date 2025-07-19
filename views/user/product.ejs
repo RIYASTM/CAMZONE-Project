@@ -6,6 +6,11 @@
     <title>Product Detail</title>
     <link rel="stylesheet" href="/stylesheet/user/product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .stock.active{
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -48,7 +53,14 @@
                     <span class="original">₹ <%= product.regularPrice %></span>
                     <span class="current offer"><%= totalOffer ? totalOffer + ' %' : '' %></span>
                 </div>
-                <p class="rating">★★★★★ <span class="stock"><%= product.quantity === 0 ? 'Out of Stock' : 'Available' %></span></p>
+                <p class="rating">★★★★★ 
+                    <% if(product.status !== 'Available'){%>
+                        <span class="stock active"><%= product.status %></span></p>
+                    <%}else{%>
+                        <span class="stock"><%= product.status %></span>
+                    <%}%>
+                </p>
+                    
                 <p class="description">
                     <%= product.description %>
                 </p>
@@ -61,11 +73,15 @@
                     </div>
                 </div>
                 <div class="buttons">
-                    <button class="add-to-cart" id="addtoCart" data-id="<%=product._id%>">Add to Cart</button>
-                    <button class="buy-now">Buy Now</button>
-                    <button class="wishlist-btn" data-wishlisted="false">
-                        <i class="fa-regular fa-heart"></i>
-                    </button>
+                    <% if(product.status !== 'Available'){%>
+                        <span class="stock active">Available Soon</span>
+                    <%}else{%>
+                        <button class="add-to-cart" id="addtoCart" data-id="<%=product._id%>">Add to Cart</button>
+                        <button class="buy-now">Buy Now</button>
+                    <%}%>
+                    <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" onclick="addtoWishlist('<%= product._id %>')">
+                        <i class="fa fa-heart"></i>
+                    </div>
                 </div>
             </div>
         </div>
@@ -253,6 +269,43 @@
                     
                 
             }
+        }
+
+        function addtoWishlist(productId) {
+            fetch('/addtowishlist', {
+                method: 'POST',
+                body: JSON.stringify({ productId }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+
+                    // Swal.fire({
+                    //     icon: 'success',
+                    //     title: data.done,
+                    //     text: data.message,
+                    //     timer: 1500,
+                    //     showConfirmButton: false
+                    // });
+
+                    const icon = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
+
+                    if(icon){
+                        if(data.done === 'Added'){
+                            icon.classList.add('active');
+                        }else if (data.done === 'Removed'){
+                            icon.classList.remove('active')
+                        }
+                    }
+
+                } else {
+                    Swal.fire('Oops', data.message || 'Something went wrong', 'error');
+                }
+            }).catch(() => {
+                Swal.fire('Oops', 'Request failed', 'error');
+            });
         }
     </script>
 </body>

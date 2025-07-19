@@ -59,46 +59,40 @@ function validateCategoryForm(data) {
     const digit = /^\d+$/;
     let error = {};
 
-    const nameField = data.categoryName || data.name;
-    const descriptionField = data.categoryDescription || data.description;
-    const offerField = (data.offerPrice || data.categoryOffer) ?? 0;
 
-    if (!nameField) {
+    if (!data.categoryName) {
         const fieldName = data.categoryName !== undefined ? 'categoryName' : 'name';
-        error[fieldName] = 'Please enter the category name';
-    } else if (!namePattern.test(nameField)) {
+        error.categoryName = 'Please enter the category name';
+    } else if (!namePattern.test(data.categoryName)) {
         const fieldName = data.categoryName !== undefined ? 'categoryName' : 'name';
-        error[fieldName] = 'Name includes only alphabets';
+        error.categoryName = 'Name includes only alphabets';
     }
 
-    if (!descriptionField) {
+    if (!data.categoryDescription) {
         const fieldName = data.categoryDescription !== undefined ? 'categoryDescription' : 'description';
-        error[fieldName] = 'Please enter the description';
+        error.categoryDescription = 'Please enter the description';
     }
 
-    if (offerField !== 0 && offerField !== '') {
-        const offerStr = offerField.toString();
-        if (!digit.test(offerStr)) {
+    if (data.offerPrice !== 0 && data.offerPrice !== '') {
+        if (!digit.test(data.offerPrice)) {
             const fieldName = data.offerPrice !== undefined ? 'offerPrice' : 'categoryOffer';
-            error[fieldName] = 'Offer must be a valid number';
-        } else if (parseFloat(offerField) >= 100) {
+            error.offerPrice = 'Offer must be a valid number';
+        } else if (parseFloat(data.offerPrice) >= 100) {
             const fieldName = data.offerPrice !== undefined ? 'offerPrice' : 'categoryOffer';
-            error[fieldName] = 'Offer should be under 100';
+            error.offerPrice = 'Offer should be under 100';
         }
     }
 
     return Object.keys(error).length > 0 ? error : null;
 }
 
-function validateProductForm (data) {
-
-    const salePrice = Number(data.salePrice)
-    const regularPrice = Number(data.regularPrice)
-    const productOffer = Number(data.productOffer)
-    const stock = Number(data.stock)
+function validateProductForm(data) {
+    const salePrice = Number(data.salePrice);
+    const regularPrice = Number(data.regularPrice);
+    const productOffer = Number(data.productOffer);
+    const stock = Number(data.stock);
 
     const errors = {};
-    const digit = /\d/;
 
     if (!data.productName) {
         errors.productName = 'Name is required!';
@@ -116,38 +110,65 @@ function validateProductForm (data) {
         errors.brand = 'Please select a Brand!';
     }
 
-    if (!regularPrice) {
+    if (!data.regularPrice) {
         errors.regularPrice = 'Regular Price is required!';
-    } else if (!digit.test(regularPrice)) {
+    } else if (isNaN(regularPrice)) {
         errors.regularPrice = 'Regular Price should be numeric!';
     }
 
-    if (!salePrice) {
+    if (!data.salePrice) {
         errors.salePrice = 'Sale Price is required!';
-    } else if (!digit.test(salePrice)) {
+    } else if (isNaN(salePrice)) {
         errors.salePrice = 'Sale Price should be numeric!';
-    } else if(salePrice > regularPrice){
-        errors.salePrice = 'Sale Price should be lessthan Regultar Price'
+    } else if (salePrice > regularPrice) {
+        errors.salePrice = 'Sale Price should be less than Regular Price';
     }
 
-    if (!stock) {
+    if (!data.stock) {
         errors.stock = 'Stock is required!';
-    } else if (!digit.test(stock)) {
+    } else if (isNaN(stock)) {
         errors.stock = 'Stock should be numeric!';
     }
 
-    if (productOffer) {
-        if (productOffer >= 100) {
+    if (data.productOffer) {
+        if (isNaN(productOffer)) {
+            errors.productOffer = 'Offer should be numeric!';
+        } else if (productOffer >= 100) {
             errors.productOffer = 'Offer should be under 100!';
         } else if (productOffer < 0) {
             errors.productOffer = 'Negative value not acceptable!';
-        } else if (!digit.test(productOffer)) {
-            errors.productOffer = 'Offer should be numeric!';
         }
     }
 
     return Object.keys(errors).length > 0 ? errors : null;
-};
+}
+
+function ValidateBrand(data){
+    const namePattern = /^[a-zA-Z\s]+$/
+    const digit = /^\d+$/;
+    const error= {}
+
+    if(!data.brandName){
+        error.brandName = 'Brand name is required!!'
+    }else if(!namePattern.test(data.brandName)){
+        error.brandName = 'Brand name only included with Alphabets'
+    }
+
+    if(!data.description){
+        error.description = 'Brand description is required!!'
+    }
+
+    if(data.brandOffer){
+        if(!digit.test(data.brandOffer)){
+            error.brandOffer = 'Offer should be a number!!'
+        }else if(data.brandOffer >= 99){
+            error.brandOffer = 'Offer should be under 100 %!!'
+        }
+    }
+
+
+    return Object.keys(error).length > 0 ? error : null
+}
 
 function validateProfile(data) {
 
@@ -241,5 +262,6 @@ module.exports = {
     validateProductForm,
     validateProfile,
     validateAddress,
-    validatePassword
+    validatePassword,
+    ValidateBrand
 }

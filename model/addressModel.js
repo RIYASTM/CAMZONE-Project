@@ -55,6 +55,10 @@ const addressSchema = new Schema({
         isDeleted : {
             type : Boolean,
             default : false
+        },
+        isDefault : {
+            type : Boolean,
+            required : false
         }
     }]
 })

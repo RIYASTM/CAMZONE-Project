@@ -305,9 +305,10 @@
         <!-- Order Summary Section -->
         <section class="order-summary" aria-labelledby="order-summary-heading">
             <h3 id="order-summary-heading">Order Summary</h3>
-            <div class="summary-details">
+            <div class="summary-details"> 
                 <p>Subtotal: <span>₹<%= cart.totalAmount.toFixed(2) %></span></p>
                 <p>Shipping: <span>₹<%= (cart.shippingCost || 0).toFixed(2) %></span></p>
+                <p>Saved : <span>-₹<%= totalOfferedPrice %> </span></p>
                 <p>Coupon Offer: <span>₹<%= (cart.couponDiscount || 0).toFixed(2) %></span></p>
                 <p>GST (18%): <span>₹<%= ((cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0)) * 0.18).toFixed(2) %></span></p>
                 <h4>Total: <span>₹<%= (cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0) + (cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0)) * 0.18).toFixed(2) %></span></h4>

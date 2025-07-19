@@ -25,6 +25,11 @@ const brandSchema = new Schema ({
     isDeleted : {
         type : Boolean,
         default : false
+    },
+    brandOffer : {
+        type : Number,
+        required : false,
+        default : 0
     }
 })
 

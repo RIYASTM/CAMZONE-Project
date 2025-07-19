@@ -1,21 +1,9 @@
-const Wallet = require('../../model/walletModal');
+const Wallet = require('../model/walletModal');
 
 async function addToWallet(userId, amount, reason){
     try {
 
-        console.log('addto wallet userId : ', userId)
-        console.log('addto wallet amount : ', amount)
-        console.log('addto wallet reason : ', reason)
-        
-        // const userId = req.session.user
-
-        let wallet = await Wallet.findById(userId)
-
-        if(!wallet){
-            wallet = await Wallet.findOne({userId})
-            console.log('wallet not found')
-        }
-        console.log('user in wallet ')
+        const wallet = await Wallet.findOne({userId})
 
         const date = new Date();
         const year = date.getFullYear().toString().slice(-2);

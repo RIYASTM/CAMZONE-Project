@@ -59,15 +59,37 @@ const customerBlocked = async (req,res) => {
 
     try {
         
-        let id = req.query.id
+        const {id, currentPages} = req.body
 
-        await User.updateOne({_id:id},{$set:{isBlocked : true}})
+        console.log(id)
+        console.log(currentPages)
 
-        res.redirect('/admin/customers')
+        const user = await User.findById(id)
+        console.log(user)
+
+        let activity = ''
+
+        if(user.isBlocked){
+            activity = await User.updateOne({_id:id},{$set:{isBlocked : false}})
+
+            return res.status(200).json({success : true , message : 'Customer is Unblocked!!' , redirectURL : `/admin/customers?page=${currentPages}` , done : 'Unblocked'})
+        }
+
+
+        activity = await User.updateOne({_id:id},{$set:{isBlocked : true}})
+
+        if(!activity){
+            return res.status(400).json({success : false, message : 'Failed to block customer!!', redirectURL : `/admin/customers?page=${currentPages}` })
+        }
+
+        return res.status(200).json({success : true , message : 'Customer is blocked!!' , redirectURL : `/admin/customers?page=${currentPages}`, done : 'Blocked'})
+
+        // res.redirect('/admin/customers')
 
     } catch (error) {
 
-        res.redirect('/page404')
+        return console.log('Something went wrong while editing customer : ', error.message)
+        // res.redirect('/page404')
         
     }
 }

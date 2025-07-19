@@ -38,7 +38,7 @@ router.get('/page404',adminController.loadpage404)
 
 router.get('/customers',adminAuth,customerController.loadCustomers)
 
-router.get('/blockCustomer',adminAuth,customerController.customerBlocked)
+router.post('/blockCustomer',adminAuth,customerController.customerBlocked)
 
 router.get('/unblockCustomer',adminAuth,customerController.unblockCustomer)
 
@@ -109,7 +109,7 @@ router.get('/orders',adminAuth,ordersController.loadOrders)
 
 router.post('/updateStatus', adminAuth , ordersController.updateStatus)
 
-router.post('/handleStatus', adminAuth , ordersController.returnRequest)
+router.post('/handleStatus', adminAuth , ordersController.returnOrder)
 
 router.post('/order', adminAuth , ordersController.currentOrder)
 

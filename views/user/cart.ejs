@@ -23,6 +23,8 @@
                 <div class="cart-header">
                     <span>Product</span>
                     <span>Quantity</span>
+                    <span>Price</span>
+                    <span>Discount</span>
                     <span>Subtotal</span>
                 </div>
 
@@ -30,17 +32,23 @@
                     <% cartItems.forEach(item => { %>
                         <div class="cart-item">
                             <div class="cart-product">
-                                <img src="/Uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
-                                <span><%= item.product.productName %></span>
+                                <img src="/Uploads/products/<%= item.productId.productImage[0] %>" alt="<%= item.productId.productName %>">
+                                <span><%= item.productId.productName.toString().split(' ').splice(0,4).join(' ') %></span>
                             </div>
                             <div class="cart-quantity">
-                                <button class="quantity-btn minus" data-id="<%= item.product._id %>" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
-                                <input type="text" class="quantity-input" data-product-id="<%= item.product._id %>" value="<%= item.quantity >= item.product.quantity ? item.product.quantity : item.quantity %>" readonly>
-                                <button class="quantity-btn plus" data-id="<%= item.product._id %>" data-stock="<%= item.product.quantity %>" <%= item.quantity >= item.product.quantity ? 'disabled' : '' %>>+</button>
+                                <button class="quantity-btn minus" data-id="<%= item.productId._id %>" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
+                                <input type="text" class="quantity-input" data-product-id="<%= item.productId._id %>" value="<%= item.quantity >= item.productId.quantity ? item.productId.quantity : item.quantity %>" readonly>
+                                <button class="quantity-btn plus" data-id="<%= item.productId._id %>" data-stock="<%= item.productId.quantity %>" <%= item.quantity >= item.productId.quantity ? 'disabled' : '' %>>+</button>
+                            </div>
+                            <div class="cart-itemPrice">
+                                ₹ <%= item.itemPrice.toLocaleString('en-IN') %>
+                            </div>
+                            <div class="cart-itemOffer">
+                                <%= item.discount ? item.discount + '%' : '-' %>
                             </div>
                             <div class="cart-subtotal">
                                 ₹ <%= (item.totalPrice).toLocaleString('en-IN') %>
-                                <button class="remove-item" data-id="<%= item.product._id %>">
+                                <button class="remove-item" data-id="<%= item.productId._id %>">
                                     <i class="fas fa-circle-xmark"></i>
                                 </button>
                             </div>
@@ -90,6 +98,11 @@
                     <span>-₹ <%= appliedCoupon.discount.toLocaleString('en-IN') %></span>
                 </div>
                 <% } %>
+
+                <div class="total-row discount-offer" style="border-bottom: none;">
+                    <span>Saved</span>
+                    <span>-₹<%= totalOfferedPrice %> </span>
+                </div>
                 
                 <div class="total-row grand-total">
                     <span>Total Amount</span>

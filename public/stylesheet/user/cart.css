@@ -1,6 +1,6 @@
 /* General Cart Page Styling */
 .cart-page {
-    max-width: 1200px;
+    /* max-width: 1200px; */
     margin: 0 auto;
     padding: 20px;
 }
@@ -62,7 +62,7 @@ a{
 
 .cart-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     padding: 10px 0;
     font-weight: bold;
     border-bottom: 1px solid #ddd;
@@ -70,7 +70,7 @@ a{
 
 .cart-item {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     align-items: center;
     padding: 15px 0;
     border-bottom: 1px solid #ddd;
@@ -373,4 +373,13 @@ a{
     .cart-product span {
         font-size: 14px;
     }
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+}
+.offer-price {
+    font-weight: bold;
+    color: green;
 }

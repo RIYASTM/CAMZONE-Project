@@ -1,10 +1,12 @@
 const { render } = require('ejs');
 const Category = require('../../model/categoryModel');
 const Products = require('../../model/productModel');
-const { validateCategoryForm } = require('../../helpers/validations');
 const fs = require('fs').promises;
 const path = require('path');
 const sanitizeHtml = require('sanitize-html');
+
+const { validateCategoryForm } = require('../../helpers/validations');
+
 
 const loadCategory = async (req, res) => {
     try {

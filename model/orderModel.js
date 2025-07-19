@@ -31,7 +31,7 @@ const orderSchema = new Schema ({
             type : String,
             required : true,
             default : 'Pending',
-            enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned']
+            enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Return Request Rejected']
         },
         reason : {
             type : String,
@@ -103,7 +103,7 @@ const orderSchema = new Schema ({
     status : {
         type : String,
         required : true,
-        enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned']
+        enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Return Request Rejected']
     },
     createdOn : {
         type : Date,
@@ -117,7 +117,7 @@ const orderSchema = new Schema ({
     paymentMethod : {
         type : String
     },
-    cancelReason : {
+    reason : {
         type : String,
         required : false
     }

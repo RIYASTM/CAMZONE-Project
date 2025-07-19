@@ -6,6 +6,22 @@
     <title>CAMZONE</title>
     <link rel="stylesheet" href="/stylesheet/user/home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .wishlist-btn i {
+            color: #ccc; 
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .wishlist-btn.active i {
+            color: red;
+        }
+        .wishlist-btn:hover i {
+            color: rgb(255, 90, 90);
+        }
+    </style>
 </head>
 <body>
 
@@ -69,7 +85,9 @@
 
             <% newProducts.forEach(product=>{ %>
                 <div class="product-card">
-                    <div class="wishlist-btn" data-id="<%=product._id%>">❤</div>
+                    <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" data-id="<%= product._id %>">
+                        <i class="fa fa-heart"></i>
+                    </div>
                     <a href="/product?id=<%=product._id%>">
                     <div class="product-card-img">
                         <% if (product.productImage && product.productImage.length > 0) { %>
@@ -80,9 +98,14 @@
                     </div>
                     <h3><%= product.productName.slice(0,23) %></h3>
                     <div class="price">
-                        <span class="current">₹ <%= product.salePrice %></span>
-                        <span class="original">₹ <%= product.regularPrice %></span>
-                        <span class="offer"><%=totalOffer ? totalOffer : 0 %> %</span>
+                        <% if ( product.salePrice < product.regularPrice || product.totalOffer) { %>
+                            <span class="current">₹ <%= product.salePrice %></span>
+                            <span class="original">₹ <%= product.regularPrice %></span>
+                        <% } else { %>
+                            <span class="current">₹ <%= product.regularPrice %></span>
+
+                        <% } %>
+                        <span class="offer"><%= product.totalOffer ? product.totalOffer + '%' : '' %></span>
                     </div>
                     <div class="rating">
                         <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
@@ -137,7 +160,9 @@
         <div class="featured-grid">
             <% products.slice(0, 3).forEach(product => { %>
                 <div class="product-card featured">
-                    <div class="wishlist-btn" data-id="<%=products._id%>">❤</div>
+                    <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" data-id="<%= product._id %>">
+                        <i class="fa fa-heart"></i>
+                    </div>
                     <a href="/product?id=<%= product._id %>">
                         <div class="product-card-featured-img-container">
                             <div class="product-badge"><%= product.badge ? product.badge : 'New' %></div>
@@ -149,9 +174,14 @@
                         </div>
                         <h3><%= product.productName.slice(0,23) %></h3>
                         <div class="price">
-                            <span class="current">₹ <%= product.salePrice %></span> 
-                            <span class="original">₹ <%= product.regularPrice %></span>
-                            <span class="offer"><%= totalOffer ? totalOffer : 0 %> %</span>
+                            <% if ( product.salePrice < product.regularPrice || product.totalOffer) { %>
+                                <span class="current">₹ <%= product.salePrice %></span>
+                                <span class="original">₹ <%= product.regularPrice %></span>
+                            <% } else { %>
+                                <span class="current">₹ <%= product.regularPrice %></span>
+
+                            <% } %>
+                            <span class="offer"><%= product.totalOffer ? product.totalOffer + '%' : '' %> </span>
                         </div>
                         <div class="rating">
                             <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
@@ -192,7 +222,9 @@
             <% if (products.length > 8) { %>
                 <% for (let i = 8; i < Math.min(16, products.length); i++) { %>
                 <div class="product-card">
-                    <div class="wishlist-btn" data-id="<%=products[i]._id%>" >❤</div>
+                    <div class="wishlist-btn <%= wishlistItems.includes(products[i]._id.toString()) ? 'active' : '' %>" data-id="<%= products[i]._id %>">
+                        <i class="fa fa-heart"></i>
+                    </div>
                     <a href="/product?id=<%=products[i]._id%>">
                     <div class="product-card-img-container">
                         <div class="product-badge ">New</div>
@@ -204,13 +236,13 @@
                     </div>
                     <h3><%= products[i].productName.slice(0,23) %></h3>
                     <div class="price">
-                        <% if(products[i].salePrice < products[i].regularPrice){ %> 
-                        <span class="current">₹ <%= products[i].salePrice %></span>
-                        <span class="original">₹ <%= products[i].regularPrice %></span>
+                        <% if(products[i].salePrice < products[i].regularPrice || products[i].totalOffer){ %> 
+                            <span class="current">₹ <%= products[i].salePrice %></span>
+                            <span class="original">₹ <%= products[i].regularPrice %></span>
                         <% }else{ %>
-                            <span class="">₹ <%= products[i].regularPrice %></span>
+                            <span class="current">₹ <%= products[i].regularPrice %></span>
                         <% } %>
-                        <span class="offer"><%=totalOffer ? totalOffer + '%' : '' %> </span>
+                        <span class="offer"><%= products[i].totalOffer ? products[i].totalOffer + '%' : '' %> </span>
                     </div>
                     <div class="rating">
                         <%= '★'.repeat(products[i].rating ? products[i].rating : 1 ) %>

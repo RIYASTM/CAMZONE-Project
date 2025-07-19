@@ -48,7 +48,6 @@ const loadWallet = async (req,res) => {
 async function addToWallet(userId, amount, reason){
     try {
         
-        // const userId = req.session.user
         const wallet = await Wallet.findById(userId)
 
         const date = new Date();

@@ -2,6 +2,8 @@
 const Brand = require('../../model/brandModel')
 const Product = require('../../model/productModel')
 
+const {ValidateBrand} = require('../../helpers/validations')
+
 
 const loadBrands = async (req,res) => {
 
@@ -53,7 +55,7 @@ const addBrand = async (req,res) => {
         
         console.log('From back : ', req.body)
         console.log(" adding image : ",req.file || req?.files)
-        const {brandName, description }  = req.body
+        const {brandName, description , brandOffer }  = req.body
         // const image = req.file.fileName
 
 
@@ -63,9 +65,9 @@ const addBrand = async (req,res) => {
             return res.status(500).json({success : false , message : 'Brand is already exist with this name!!'})
         }
 
-        const brandData = {brandName , description}
+        const brandData = {brandName , description , brandOffer}
 
-        const errors = ValidateForm(brandData)
+        const errors = ValidateBrand(brandData)
 
         if(errors){
             console.log('Validattion error from Backend : ', errors)
@@ -107,7 +109,16 @@ const editBrand = async (req,res) => {
         console.log('editing image : ', req.file ? req.file.filename : 'No image uploaded');
 
 
-        const {id , brandName , description , isBlocked } = req.body
+        const {id , brandName , description , isBlocked , brandOffer } = req.body
+
+        const brandData = {brandName , description , brandOffer}
+
+        const errors = ValidateBrand(brandData)
+
+        if(errors){
+            console.log('Validattion error from Backend : ', errors)
+            return res.status(400).json({success : false, errors})
+        }
 
         const brand = await Brand.findById(id)
 
@@ -126,21 +137,14 @@ const editBrand = async (req,res) => {
                 message : 'Brand already exist with this name'
             })
         }
-
-        // let updateImage;
-
-        // if (req.file && req.file.filename) {
-        //     updateImage = req.file.filename;
-        // } else {
-        //     updateImage = brand.brandImage;
-        // }
         
         const updateImage = req.file?.filename || brand.brandImage;
 
         const updateData = {
             brandName: brandName ? brandName.trim() : brand.brandName,
             description: description ? description.trim() : brand.description,
-            isBlocked: isBlocked === 'on' || isBlocked === true, // Checkbox sends 'on' or undefined
+            isBlocked: isBlocked === 'on' || isBlocked === true, 
+            brandOffer,
             brandImage: updateImage
         }
 
@@ -171,23 +175,29 @@ const editBrand = async (req,res) => {
     }
 }
 
-function ValidateForm(data){
-    const namePattern = /^[a-zA-Z\s]+$/
-    const error= {}
+// function ValidateForm(data){
+//     const namePattern = /^[a-zA-Z\s]+$/
+//     const error= {}
 
-    if(!data.brandName){
-        error.brandName = 'Brand name is required!!'
-    }else if(!namePattern.test(data.brandName)){
-        error.brandName = 'Brand name only included with Alphabets'
-    }
+//     if(!data.brandName){
+//         error.brandName = 'Brand name is required!!'
+//     }else if(!namePattern.test(data.brandName)){
+//         error.brandName = 'Brand name only included with Alphabets'
+//     }
 
-    if(!data.description){
-        error.description = 'Brand description is required!!'
-    }
+//     if(!data.description){
+//         error.description = 'Brand description is required!!'
+//     }
+
+//     if(data.brandOffer){
+//         if(data.brandOffer >= 99){
+//             error.brandOffer = 'Offer should be under 100 %'
+//         }
+//     }
 
 
-    return Object.keys(error).length > 0 ? error : null
-}
+//     return Object.keys(error).length > 0 ? error : null
+// }
 
 const deleteBrand = async (req,res) => {
 

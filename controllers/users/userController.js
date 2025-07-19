@@ -26,20 +26,13 @@ const loadHomePage = async (req, res) => {
 
         const search = req.query.search || ''
         const usermail = req.session.usermail;
-
-        const user = await User.findOne({ email: usermail });
-
-        console.log('Session Data : ',req.session)
-
         const userId = req.session.user
 
-        let cart =  0
+        // console.log('Session Data : ',req.session)
 
-        if(userId){
-            cart = await Cart.findOne({userId})
-        }
+        const user = await User.findById(userId)
 
-        const wishList = await Wishlist.findById(userId).populate('items.product')
+        const cart = userId ? await Cart.findOne({ userId }) : 0;
 
         const brands = await Brands.find({ isDeleted: false, isBlocked: false });
         const categories = await Category.find({ isListed: true });
@@ -75,38 +68,41 @@ const loadHomePage = async (req, res) => {
             .populate('brand')
             .populate('category')
             .exec();
-            
 
-        const findCategory = products.category
-        const findBrand = products.brand
+        const productsWithOffers = products.map( product => {
+            const productOffer = product.productOffer || 0;
+            const brandOffer = product.brand?.brandOffer || 0;
+            const categoryOffer = product.category?.categoryOffer || 0;
 
-        //Offers
-        const categoryOffer = findCategory?.categoryOffer || 0
+            const totalOffer = productOffer + brandOffer + categoryOffer;
 
-        if(categoryOffer){ console.log('Category offer : ', categoryOffer)}
+            product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
 
-        const brandOffer = findBrand?.brandOffer || 0
+            return {
+                ...product._doc,
+                productOffer,
+                brandOffer,
+                categoryOffer,
+                totalOffer
+            };
+        });
 
-        if(brandOffer) {console.log('Brand offer : ', brandOffer)}
+        const wishList = await Wishlist.findOne({user : userId}).populate('items.product')
 
-        const productOffer = products.productOffer || 0 
+        let wishlistItems = []
 
-        if(productOffer){console.log('Product offer : ', productOffer)}
+        if(wishList){
 
-        const totalOffer = categoryOffer + productOffer + brandOffer
+            wishlistItems = wishList.items.map(item => item.product._id.toString())
 
-        console.log( 'Total offer' ,totalOffer)
+            // console.log('wishlist Items : ', wishlistItems)
+        }
 
-
-        // console.log('Home Page Products:', products);
-
-        const newProducts = products
+        const newProducts = productsWithOffers
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 8);
 
         if (user) {
-            // console.log("User mail: ", usermail);    
-            // console.log('User: ', user);
 
             return res.render('home', {
                 search,
@@ -115,10 +111,9 @@ const loadHomePage = async (req, res) => {
                 brands,
                 category: categories,
                 newProducts,
-                products,
-                totalOffer,
+                products : productsWithOffers ,
                 currentPage: 'home',
-                wishList
+                wishlistItems
             });
         }
 
@@ -129,9 +124,8 @@ const loadHomePage = async (req, res) => {
             brands,
             category: categories,
             newProducts,
-            totalOffer,
-            products,
-            wishList
+            products : productsWithOffers,
+            wishlistItems
         });
 
     } catch (error) {
@@ -372,6 +366,16 @@ const loadProduct = async (req, res) => {
             return res.status(400).json({success : false, message : 'This products is blocked or unavailable'})
         }
 
+        const wishList = await Wishlist.findOne({user : userId}).populate('items.product')
+
+        let wishlistItems = []
+
+        if(wishList){
+
+            wishlistItems = wishList.items.map(item => item.product._id.toString())
+
+        }
+
         const findCategory = product.category
 
         const findBrand = product.brand
@@ -388,7 +392,11 @@ const loadProduct = async (req, res) => {
 
         console.log('Product offer : ', productOffer)
 
-        const totalOffer = categoryOffer + productOffer + brandOffer
+        const offer = categoryOffer + brandOffer
+
+        const totalOffer =  productOffer + offer
+
+        product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
 
         const relatedProducts = await Products.find({ category: findCategory })
 
@@ -407,7 +415,8 @@ const loadProduct = async (req, res) => {
                 product,
                 totalOffer,
                 relatedProducts,
-                currentPage: 'product'
+                currentPage: 'product',
+                wishlistItems
             })
 
         }
@@ -424,7 +433,8 @@ const loadProduct = async (req, res) => {
             product,
             totalOffer,
             relatedProducts,
-            currentPage: 'product'
+            currentPage: 'product',
+            wishlistItems
         })
 
     } catch (error) {
