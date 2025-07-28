@@ -123,6 +123,14 @@ router.get('/offers',adminAuth,offersController.loadOffers)
 
 router.get('/coupons',adminAuth,couponsController.loadCoupons)
 
+router.get('/coupon/:id', couponsController.getCoupon);
+
+router.post('/addCoupon', adminAuth , couponsController.addCoupon)
+
+router.post('/editCoupon', adminAuth , couponsController.updateCoupon)
+
+router.post('/deleteCoupon/:id', adminAuth , couponsController.deleteCoupon)
+
 
 
 

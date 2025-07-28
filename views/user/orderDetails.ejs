@@ -99,7 +99,7 @@
                             </div>
                         </div>
                         <div class="item-total">
-                            <span class="total-price"><%= item.itemStatus !== 'Cancelled' ? '₹' + item.price .toFixed(2) : '' %></span>
+                            <span class="total-price"><%= item.itemStatus !== 'Cancelled' ? '₹' + item.product.salePrice .toFixed(2) : '' %></span>
                         </div>
                         <% } else { %>
                         <div class="item-details">
@@ -119,23 +119,23 @@
                         <tbody>
                             <tr>
                                 <td>Subtotal</td>
-                                <td>₹<%= (order.totalPrice - (order.gst || 0) + (order.offerDiscount || 0)).toFixed(2) %></td>
+                                <td>₹<%= (order.totalPrice + (order.offerDiscount || 0)).toFixed(2) %></td>
+                            </tr>
+                            <tr>
+                              <td>Offer Discount</td>
+                              <td class="discount">-₹<%= (order.offerDiscount || 0).toFixed(2) %></td>
+                            </tr>
+                            <tr>
+                              <td>Shipping</td>
+                              <td><%= !order.shippingCharge || order.shippingCharge === 0 ? 'Free' : '₹' + order.shippingCharge.toFixed(2) %></td>
                             </tr>
                             <tr>
                                 <td>GST (18%)</td>
-                                <td>₹<%= (order.gst || 0).toFixed(2) %></td>
-                            </tr>
-                            <tr>
-                                <td>Offer Discount</td>
-                                <td class="discount">-₹<%= (order.offerDiscount || 0).toFixed(2) %></td>
-                            </tr>
-                            <tr>
-                                <td>Shipping</td>
-                                <td><%= !order.shippingCharge || order.shippingCharge === 0 ? 'Free' : '₹' + order.shippingCharge.toFixed(2) %></td>
+                                <td>₹<%= (order.GST || 0).toFixed(2) %></td>
                             </tr>
                             <tr class="total-row">
                                 <td><strong>Total Amount</strong></td>
-                                <td><strong>₹<%= order.totalPrice.toFixed(2) %></strong></td>
+                                <td><strong>₹<%= order.finalAmount.toFixed(2) %></strong></td>
                             </tr>
                         </tbody>
                     </table>

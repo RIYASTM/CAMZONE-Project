@@ -93,32 +93,35 @@ const addtoWishlist = async (req, res) => {
 
 const removeFromWishList = async (req, res) => {
     try {
-        const userId = req.session.user;
         const { productId } = req.body;
+        const userId = req.session.user;
 
         const user = await User.findById(userId);
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found.' });
         }
 
-        const wishlist = await Wishlist.findOne({ userId });
+        const wishlist = await Wishlist.findOne({ user: userId }); 
+
         if (!wishlist) {
             return res.status(404).json({ success: false, message: 'Wishlist not found.' });
         }
 
         const initialLength = wishlist.items.length;
 
-        wishlist.items = wishlist.items.filter(
-            item => item.product._Id.toString() !== productId
+        const result = await Wishlist.updateOne(
+            { user: userId },
+            { $pull: { items: { product: productId } } } 
         );
 
-        if (wishlist.items.length === initialLength) {
+        if (result.modifiedCount === 0) {
             return res.status(400).json({ success: false, message: 'Product not found in wishlist.' });
         }
 
-        await wishlist.save();
-
-        return res.status(200).json({ success: true, message: 'Product removed from wishlist.' });
+        res.status(200).json({
+            success: true,
+            message: 'Product successfully removed from the Wish List.',
+        });
 
     } catch (error) {
         console.log('Error while removing from wishlist:', error);

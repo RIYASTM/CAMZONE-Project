@@ -89,28 +89,28 @@
                         <i class="fa fa-heart"></i>
                     </div>
                     <a href="/product?id=<%=product._id%>">
-                    <div class="product-card-img">
-                        <% if (product.productImage && product.productImage.length > 0) { %>
-                            <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
-                        <% } else { %>
-                            <span>No Image</span>
-                        <% } %>
-                    </div>
-                    <h3><%= product.productName.slice(0,23) %></h3>
-                    <div class="price">
-                        <% if ( product.salePrice < product.regularPrice || product.totalOffer) { %>
-                            <span class="current">₹ <%= product.salePrice %></span>
-                            <span class="original">₹ <%= product.regularPrice %></span>
-                        <% } else { %>
-                            <span class="current">₹ <%= product.regularPrice %></span>
+                        <div class="product-card-img">
+                            <% if (product.productImage && product.productImage.length > 0) { %>
+                                <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                            <% } else { %>
+                                <span>No Image</span>
+                            <% } %>
+                        </div>
+                        <h3><%= product.productName.slice(0,23) %></h3>
+                        <div class="price">
+                            <% if ( product.salePrice < product.regularPrice || product.totalOffer) { %>
+                                <span class="current">₹ <%= product.salePrice %></span>
+                                <span class="original">₹ <%= product.regularPrice %></span>
+                            <% } else { %>
+                                <span class="current">₹ <%= product.regularPrice %></span>
 
-                        <% } %>
-                        <span class="offer"><%= product.totalOffer ? product.totalOffer + '%' : '' %></span>
-                    </div>
-                    <div class="rating">
-                        <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
-                    </div>
-                </a>
+                            <% } %>
+                            <span class="offer"><%= product.totalOffer ? product.totalOffer + '%' : '' %></span>
+                        </div>
+                        <div class="rating">
+                            <%= '★'.repeat(product.rating ? product.rating : 1 ) %>
+                        </div>
+                    </a>
                 <!-- <button class="add-to-cart">Add to Cart</button> -->
                 </div>
             <% }) %>

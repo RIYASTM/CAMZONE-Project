@@ -3,13 +3,19 @@
     <h3>Account</h3>
     <ul>
         <li class="<%= currentPage === 'profile' ? 'active' : '' %>">
-            <a href="/profile">Profile</a>
+            <a href="/profile">My Profile</a>
         </li>
-        <li class="<%= currentPage === 'orders' ? 'active' : '' %>">
-            <a href="/myOrders">Orders</a>
+        <li class="<%= currentPage === 'address' ? 'active' : '' %>">
+            <a href="/address">My Address</a>
+        </li>
+        <li class="<%= currentPage === 'My Orders' ? 'active' : '' %>">
+            <a href="/myOrders">My Orders</a>
         </li>
         <li class="<%= currentPage === 'wallet' ? 'active' : '' %>">
             <a href="/wallet">My Wallet</a>
+        </li>
+        <li class="<%= currentPage === 'wishList' ? 'active' : '' %>">
+            <a href="/wishList">My Wishlist</a>
         </li>
         <li class="<%= currentPage === 'rating' ? 'active' : '' %>">
             <a href="#">My Ratings</a>

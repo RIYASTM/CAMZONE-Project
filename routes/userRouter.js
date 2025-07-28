@@ -77,7 +77,7 @@ router.post('/resetPassword',userController.resetPassword)
 
 //Password changing
 
-router.get('/passwordManage', userAuth, passwordController.loadPassword)
+// router.get('/passwordManage', userAuth, passwordController.loadPassword)
 
 router.post('/checkPassword', userAuth , passwordController.checkPassword)
 
@@ -101,6 +101,10 @@ router.patch('/deleteAddress/:id', userAuth, addressController.deleteAddress)
 router.get('/profile', userAuth,profileController.loadProfile)
 
 router.post('/editProfile', uploadProfile, userAuth, profileController.editProfile)
+
+router.post('/sendOtp', userAuth , profileController.otpSend)
+
+router.post('/verifyOTP', userAuth , profileController.verifyOTP)
 
 
 //Cart

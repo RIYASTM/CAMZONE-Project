@@ -120,6 +120,10 @@ const orderSchema = new Schema ({
     reason : {
         type : String,
         required : false
+    },
+    GST : {
+        type : Number,
+        required : false
     }
 })
 

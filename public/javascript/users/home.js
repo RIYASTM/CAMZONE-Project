@@ -3,12 +3,19 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    const cartCount = document.querySelector('.cart-count');
+
     document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', () => {
-            const productId = button.dataset.id
-            addToCart(productId)
-        })
-    })
+        
+        button.removeEventListener('click', handleAddToCart); 
+        button.addEventListener('click', handleAddToCart);
+    });
+
+    function handleAddToCart(event) {
+        const productId = event.currentTarget.dataset.id;
+        addToCart(productId);
+    }
+
 
     function addToCart(productId) {
         const quantity = 1;
@@ -35,11 +42,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         confirmButtonText: 'OK',
                         timer: 2000,
                         timerProgressBar: true,
-                        
-                        // willClose: () => {
-                        //     window.location.reload();
-                        // }
                     });
+
+                    cartCount.textContent = data.cartCount
+
                 } else {
                     Swal.fire('Oops', data.message || 'Product adding to cart failed', 'error');
                 }

@@ -37,7 +37,7 @@
 
         <!-- Main Content -->
         <div class="content">
-            <%- include('../partials/users/wishlistSideBar') %>
+            <%- include('../partials/users/sideBar', {currentPage : 'wishList'}) %>
             
             <!-- Wishlist Content -->
             <div class="profile-form">
@@ -56,13 +56,14 @@
                         <% if (wishlistItems && wishlistItems.length > 0) { %>
                             <% wishlistItems.forEach(function(item) { %>
                                 <div class="product-card">
+                                    <a href="/product?id=<%=item.product._id%>">
                                     <div class="product-image">
                                         <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
                                             <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
-                                        <% } else { %>
-                                            <span>No Image</span>
-                                        <% } %>
-                                        <button class="wishlist-btn active" data-product-id="<%= item.product._id %>"><i class="fa fa-heart"></i></button>
+                                            <% } else { %>
+                                                <span>No Image</span>
+                                                <% } %>
+                                            <button class="wishlist-btn active" data-product-id="<%= item.product._id %>"><i class="fa fa-heart"></i></button>
                                     </div>
                                     <div class="product-info">
                                         <h4><%= item.product.productName %></h4>
@@ -74,6 +75,7 @@
                                             <% } %>
                                         </div>
                                     </div>
+                                    </a>
                                 </div>
                             <% }); %>
                         <% } else { %>
@@ -103,7 +105,6 @@
     <script>
         // Wishlist functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Handle wishlist button clicks
             const wishlistButtons = document.querySelectorAll('.wishlist-btn');
             
             wishlistButtons.forEach(button => {
@@ -112,44 +113,14 @@
                     const productId = this.dataset.productId;
                     const isActive = this.classList.contains('active');
                     
-                    if (isActive) {
-                        removeFromWishlist(productId, this);
-                    } else {
-                        addToWishlist(productId, this);
-                    }
+                    removeFromWishlist(productId, this);
                 });
             });
             
-            // Add to wishlist function
-            function addToWishlist(productId, button) {
-                // Make AJAX request to add to wishlist
-                fetch('/api/wishlist/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ productId: productId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        button.classList.add('active');
-                        showNotification('Product added to wishlist!', 'success');
-                    } else {
-                        showNotification(data.message || 'Failed to add to wishlist', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Something went wrong', 'error');
-                });
-            }
             
             // Remove from wishlist function
             function removeFromWishlist(productId, button) {
-                // Make AJAX request to remove from wishlist
-                fetch('/api/wishlist/remove', {
+                fetch('/removeFromWishList', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -161,8 +132,7 @@
                 .then(data => {
                     if (data.success) {
                         button.classList.remove('active');
-                        // If we're on the wishlist page, remove the entire product card
-                        if (window.location.pathname === '/my-wishlist') {
+                        if (window.location.pathname === '/wishlist') {
                             const productCard = button.closest('.product-card');
                             if (productCard) {
                                 productCard.remove();
@@ -190,7 +160,7 @@
                     productGrid.innerHTML = `
                         <div class="empty-wishlist">
                             <p>Your wishlist is empty</p>
-                            <a href="/catalog" class="btn-primary">Browse Products</a>
+                            <a href="/shop" class="btn-primary">Browse Products</a>
                         </div>
                     `;
                 }
@@ -271,7 +241,7 @@
                     e.preventDefault();
                     const searchTerm = searchInput.value.trim();
                     if (searchTerm) {
-                        window.location.href = `/catalog?search=${encodeURIComponent(searchTerm)}`;
+                        window.location.href = `/shop?search=${encodeURIComponent(searchTerm)}`;
                     }
                 });
                 
@@ -280,7 +250,7 @@
                         e.preventDefault();
                         const searchTerm = this.value.trim();
                         if (searchTerm) {
-                            window.location.href = `/catalog?search=${encodeURIComponent(searchTerm)}`;
+                            window.location.href = `/shop?search=${encodeURIComponent(searchTerm)}`;
                         }
                     }
                 });

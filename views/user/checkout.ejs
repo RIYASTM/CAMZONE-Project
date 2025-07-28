@@ -306,12 +306,12 @@
         <section class="order-summary" aria-labelledby="order-summary-heading">
             <h3 id="order-summary-heading">Order Summary</h3>
             <div class="summary-details"> 
-                <p>Subtotal: <span>₹<%= cart.totalAmount.toFixed(2) %></span></p> 
-                <p>Shipping: <span>₹<%= (cart.shippingCost || 0).toFixed(2) %></span></p>
-                <p>Saved : <span>-₹<%= totalOfferedPrice %> </span></p>
-                <p>Coupon Offer: <span>₹<%= (cart.couponDiscount || 0).toFixed(2) %></span></p>
-                <p>GST (18%): <span>₹<%= ((cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0)) * 0.18).toFixed(2) %></span></p>
-                <h4>Total: <span>₹<%= (cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0) + (cart.totalAmount - (cart.couponDiscount || 0) + (cart.shippingCost || 0)) * 0.18).toFixed(2) %></span></h4>
+                <p>Subtotal: <span>₹<%= cart.totalAmount.toLocaleString('en-IN') %></span></p> 
+                <p>Shipping: <span>₹<%= (cart.shippingCost || 0).toLocaleString('en-IN') %></span></p>
+                <p>Saved : <span>-₹<%= totalOfferedPrice.toLocaleString('en-IN') %> </span></p>
+                <p>Coupon Offer: <span>₹<%= (cart.couponDiscount || 0).toLocaleString('en-IN') %></span></p>
+                <p>GST (18%): <span id="gst">₹<%= cart.GST.toLocaleString('en-IN') %></span></p>
+                <h4>Total: <span>₹<%= Math.floor(cart.totalAmount).toLocaleString('en-IN') %></span></h4>
             </div>
 
             <!-- Divider -->
@@ -649,6 +649,8 @@
 
             const addressData = { addressId: selectedAddress.value };
             const paymentData = { method: paymentMethod.value };
+            const gst = document.getElementById('gst').textContent
+            console.log('gst : ', gst)
 
             placeOrderBtn.disabled = true;
             placeOrderBtn.textContent = 'Processing...';
@@ -657,15 +659,12 @@
                 const response = await fetch('/checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ addressId: addressData, payment: paymentData })
+                    body: JSON.stringify({ addressId: addressData, payment: paymentData , gst})
                 });
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
                 const data = await response.json();
-                if (data.success) {
+
+                if (response.ok && data.success) {
                     window.location.href = data.redirectUrl || '/orderSuccess';
                 } else {
                     Swal.fire({
@@ -686,6 +685,7 @@
                 placeOrderBtn.disabled = false;
                 placeOrderBtn.textContent = 'Place Order';
             }
+
         });
 
         // Validation Functions

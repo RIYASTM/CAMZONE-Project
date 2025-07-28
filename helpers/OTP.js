@@ -27,6 +27,8 @@ async function sendOTP(email, otp) {
             html: ` <b> Your OTP : ${otp} </b>`
         })
 
+        console.log(`OTP send in to the Mail '${email}' : ${otp}`)
+
         return info.accepted.length > 0
 
     } catch (error) {

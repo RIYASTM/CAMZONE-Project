@@ -8,26 +8,26 @@ const securePassword = require('../../helpers/hashPass')
 
 
 
-const loadPassword = async (req,res) => {
-    try {
-        const search = req.query.search || ''
-        const user = await User.findById(req.session.user)
+// const loadPassword = async (req,res) => {
+//     try {
+//         const search = req.query.search || ''
+//         const user = await User.findById(req.session.user)
         
-        const userId = req.session.user
+//         const userId = req.session.user
 
-        const cart = userId ? await Cart.findOne({userId}) : 0
+//         const cart = userId ? await Cart.findOne({userId}) : 0
 
-        return res.render('password',{
-            currentPage : 'password',
-            search,
-            user,
-            cart
-        })
+//         return res.render('password',{
+//             currentPage : 'password',
+//             search,
+//             user,
+//             cart
+//         })
 
-    } catch (error) {
-        console.log('Failed to load the password Page : ', error)
-    }
-}
+//     } catch (error) {
+//         console.log('Failed to load the password Page : ', error)
+//     }
+// }
 
 const checkPassword = async (req,res) => {
     try {
@@ -170,7 +170,7 @@ const changePassword = async (req,res) => {
 
 
 module.exports = {
-    loadPassword,
+    // loadPassword,
     checkPassword,
     confirmOTP,
     changePassword

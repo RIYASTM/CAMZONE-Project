@@ -449,7 +449,7 @@
                 const data = await response.json();
                 if (response.ok && data.success) {
                     Swal.fire('Product Removed', 'The product has been removed', 'success').then(() => {
-                        location.reload();
+                        // location.reload();
                     });
                 } else {
                     Swal.fire('Failed', data.message || 'Product removal failed', 'error');

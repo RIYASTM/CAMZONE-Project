@@ -250,6 +250,49 @@ function validatePassword(data) {
 
 }
 
+const validateCoupon = (data) => {
+    const errors = {};
+
+    if (!data.couponName || typeof data.couponName !== 'string' || !/^[a-zA-Z\s]+$/.test(data.couponName.trim())) {
+        errors.couponName = 'Coupon name is required and must contain only letters and spaces';
+    }
+    if (!data.description || typeof data.description !== 'string' || !data.description.trim()) {
+        errors.description = 'Description is required';
+    }
+    if (!data.discountType || !['percentage', 'fixed'].includes(data.discountType)) {
+        errors.discountType = 'Discount type must be either "percentage" or "fixed"';
+    }
+    const discount = parseFloat(data.discount);
+    if (isNaN(discount) || discount <= 0) {
+        errors.discount = 'Discount is required and must be a positive number';
+    } else if (data.discountType === 'percentage' && (discount <= 0 || discount > 100)) {
+        errors.discount = 'Percentage discount must be between 1 and 100';
+    }
+    const minOrder = parseFloat(data.minOrder);
+    if (isNaN(minOrder) || minOrder <= 0) {
+        errors.minOrder = 'Minimum order amount is required and must be positive';
+    }
+    const validFrom = new Date(data.validFrom);
+    const validUpto = new Date(data.validUpto);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (isNaN(validFrom.getTime())) {
+        errors.validFrom = 'Valid from date is required and must be a valid date';
+    } else if (validFrom < today) {
+        errors.validFrom = `Valid from date shouldn't be earlier than today`;
+    }
+    if (isNaN(validUpto.getTime())) {
+        errors.validUpto = 'Valid upto date is required and must be a valid date';
+    } else if (validUpto <= validFrom) {
+        errors.validUpto = 'Valid upto date must be after valid from date';
+    }
+    if (data.couponLimit && (isNaN(parseInt(data.couponLimit)) || parseInt(data.couponLimit) < 0)) {
+        errors.couponLimit = 'Usage limit must be a non-negative number';
+    }
+
+    return Object.keys(errors).length > 0 ? errors : null;
+};
+
 
 
 
@@ -263,5 +306,6 @@ module.exports = {
     validateProfile,
     validateAddress,
     validatePassword,
-    ValidateBrand
+    ValidateBrand,
+    validateCoupon
 }

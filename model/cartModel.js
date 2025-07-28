@@ -40,14 +40,23 @@ const cartSchema = new Schema ({
         cancellationReason : {
             type : String,
             default : "None"
-        },isDeleted : {
+        },
+        isDeleted : {
             type : Boolean,
             default : false
+        },
+        productGst : {
+            type : Number,
+            required : false
         }
     }],
     totalAmount : {
         type : Number,
         default : 0
+    },
+    GST : {
+        type : Number,
+        required : false
     }
 })
 

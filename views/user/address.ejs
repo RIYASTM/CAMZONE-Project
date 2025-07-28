@@ -269,14 +269,7 @@
         <!-- Main Content -->
         <div class="content">
             <!-- Sidebar Navigation -->
-            <div class="sidebar">
-                <h3>My Details</h3>
-                <ul>
-                    <li><a href="/profile">My Profile</a></li>
-                    <li><a href="/passwordManage">Change Password</a></li>
-                    <li class="active"><a href="/address">My Address</a></li>
-                </ul>
-            </div>
+            <%- include('../partials/users/sideBar', {currentPage : 'My Orders'}) %>
 
             <!-- Address List -->
             <div class="profile-form">
@@ -301,14 +294,6 @@
                                     </td>
                                 </tr>
                             <% }) %>
-                        <% } else { %>
-                            <!-- <tr>
-                                <td>Jaswant Raj Desai, Kottayam Medical College Bypass Rd, Gandhi Nagar, Arpookkara, 686008</td>
-                                <td class="action-buttons">
-                                    <button class="btn-icon edit-btn" title="Edit" onclick="openEditModal('1')">✏️</button>
-                                    <button class="btn-icon delete-btn" title="Delete" onclick="deleteAddress('1')">🗑️</button>
-                                </td>
-                            </tr> -->
                         <% } %>
                         </tbody>
                     </table>
@@ -387,9 +372,9 @@
                             <div class="select-wrapper">
                                 <select id="state" name="state" >
                                     <option value="">Select your State</option>
-                                    <option value="Kerala">Kerala</option>
+                                    <!-- <option value="Kerala">Kerala</option>
                                     <option value="Karnataka">Karnataka</option>
-                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="Tamil Nadu">Tamil Nadu</option> -->
                                 </select>
                                 <div class="invalid-feedback"></div>
                             </div>
@@ -465,6 +450,13 @@
             "UK": "+44"
         };
 
+        const countryStateMap = {
+            "India": ["Kerala", "Tamil Nadu", "Karnataka", "Maharashtra", "Delhi"],
+            "USA": ["California", "Texas", "Florida", "New York", "Illinois"],
+            "UK": ["England", "Scotland", "Wales", "Northern Ireland"]
+        };
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('addressModal');
             const closeModal = document.getElementById('closeModal');
@@ -473,14 +465,28 @@
             const addressForm = document.getElementById('addressForm');
             const addressIdInput = document.getElementById('addressId');
             const countrySelect = document.getElementById('country');
+            const stateSelect = document.getElementById('state');
             const countryCode1 = document.getElementById('countryCode1');
             const countryCode2 = document.getElementById('countryCode2');
 
             // Update country code based on selected country
             countrySelect.addEventListener('change', (e) => {
-                const code = countryCodeMap[e.target.value] || "+91";
+                const selectCountry = e.target.value
+
+                const code = countryCodeMap[selectCountry] || "+91";
                 countryCode1.textContent = code;
                 countryCode2.textContent = code;
+
+                const states = countryStateMap[selectCountry] || []
+
+                stateSelect.innerHTML = `<option value="">Select your State</option>`;
+                states.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state
+                    option.textContent = state
+                    stateSelect.appendChild(option)
+                })
+
             });
 
             // Close modal
@@ -581,7 +587,6 @@
                 modal.classList.add('active');
             };
 
-
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     console.log('hi')
@@ -606,11 +611,22 @@
                         document.getElementById('city').value = address[0].city || '';
                         document.getElementById('streetAddress').value = address[0].streetAddress || '';
                         document.getElementById('landMark').value = address[0].landMark || address[0].landMark || '';
-                        document.getElementById('state').value = address[0].state || '';
                         document.getElementById('district').value = address[0].district || '';
                         document.getElementById('email').value = address[0].email || '';
                         document.getElementById('pincode').value = address[0].pincode || '';
                         document.getElementById('altPhone').value = address[0].altPhone || address[0].phone || '';
+
+                        const country = address[0].country || 'India';
+                        const states = countryStateMap[country] || [];
+                        stateSelect.innerHTML = '<option value="">Select your State</option>';
+                        states.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state;
+                            option.textContent = state;
+                            stateSelect.appendChild(option);
+                        });
+                        stateSelect.value = address[0].state || '';
+
                         
                         const addressTypeRadio = document.querySelector(`input[name="addressType"][value="${address[0].addressType || 'home'}"]`);
                         if (addressTypeRadio) {

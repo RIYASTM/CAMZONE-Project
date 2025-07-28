@@ -63,7 +63,7 @@
                       <h3 class="item-name"><%= item.product.productName %></h3>
                       <div class="item-quantity-price">
                         <span class="item-quantity">Qty: <%= item.quantity %></span>
-                        <span class="item-price"><%= typeof item.price === 'number' ? item.price.toFixed(2) : '0.00' %></span>
+                        <span class="item-price"><%= typeof item.product.salePrice === 'number' ? item.product.salePrice.toFixed(2) : '0.00' %></span>
                       </div>
                     </div>
                   </div>
@@ -86,6 +86,10 @@
             <div class="summary-row discount">
               <span>Discount</span>
               <span>-<%= typeof order.discount !== 'undefined' ? order.discount.toFixed(2) : '0.00' %></span>
+            </div>
+            <div class="summary-row gst">
+              <span>GST % </span>
+              <span><%= typeof order.GST !== 'undefined' ? order.GST.toFixed(2) : '0.00' %></span>
             </div>
             <div class="summary-row total">
               <span>Total</span>

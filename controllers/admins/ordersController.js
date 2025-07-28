@@ -73,7 +73,9 @@ const updateStatus = async (req, res) => {
     order.status = status;
 
     order.orderedItems.forEach(item => {
-      item.itemStatus = status;
+        if (!['Cancelled', 'Return Request', 'Returned'].includes(item.itemStatus)) {
+            item.itemStatus = status;
+        }
     });
 
     await order.save();

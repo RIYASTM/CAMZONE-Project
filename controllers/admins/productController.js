@@ -124,6 +124,7 @@ const addProduct = async (req, res) => {
         }
 
         const regularPrice = parseFloat(data.regularPrice)
+        const gst = (regularPrice * 18 ) / 118
         let salePrice = parseFloat(data.salePrice)
         
         const productOffer = parseFloat(data.productOffer) || 0;
@@ -145,6 +146,7 @@ const addProduct = async (req, res) => {
             productOffer,
             quantity: parseInt(data.stock),
             productImage: productImages,
+            gst,
             isBlocked: data.isBlocked === 'on'
         });
 
@@ -202,6 +204,7 @@ const editProduct = async (req, res) => {
         console.log('Product offer : ',productOffer)
 
         const regularPrice = parseFloat(data.regularPrice)
+        const gst = (regularPrice * 18) / 118
         let salePrice = parseFloat(data.salePrice)
         console.log('saleprice: ',salePrice)
 
@@ -222,6 +225,7 @@ const editProduct = async (req, res) => {
             regularPrice,
             salePrice,
             productOffer ,
+            gst,
             quantity: parseInt(data.stock),
             isBlocked: data.isBlocked === 'on'
         };

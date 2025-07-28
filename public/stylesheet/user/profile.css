@@ -137,7 +137,7 @@ a{
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 33px;
 }
 
 .form-group label {
@@ -261,7 +261,7 @@ a{
 
 /* Profile Picture Section */
 .profile-picture-section {
-    width: 200px;
+    width: 250px;
 }
 
 .profile-picture-section label {
@@ -272,8 +272,8 @@ a{
 }
 
 .profile-picture-container {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
     background-color: #fff;
     border: 1px solid var(--border-color);
     border-radius: 5px;
@@ -422,6 +422,7 @@ a{
     font-size: 16px;
     font-weight: 500;
     transition: background-color 0.3s;
+    margin: 3px;
 }
 
 .btn-edit:hover, .btn-save:hover {
@@ -439,10 +440,16 @@ a{
     top: 30px;
     right: 30px;
     line-height: 24px;
+    display: none;
+    font-size: 40px;
 }
 
 .btn-cancel:hover {
     color: var(--accent-color);
+}
+
+.modal{
+    display: none;
 }
 
 /* Responsive Design */
