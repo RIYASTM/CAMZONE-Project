@@ -151,7 +151,7 @@ const checkout = async (req, res) => {
                 price: item.totalPrice,
                 productPrice : item.price
             })),
-            totalPrice: priceWithoutGST,
+            totalPrice: priceWithoutGST + totalOfferedPrice,
             finalAmount: finalAmount,
             discount: totalOfferedPrice || 0,
             address: orderAddress,

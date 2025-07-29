@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function printOrder() {
+        function printOrder() { 
             const printContent = document.querySelector('.modal-content').innerHTML;
             const printWindow = window.open('', '', 'width=800,height=600');
             printWindow.document.write(`

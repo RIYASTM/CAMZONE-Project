@@ -98,7 +98,7 @@ let currentOrderId = null;
     function downloadInvoice(orderId) {
       Swal.fire({
         title: 'Generating Invoice...',
-        allowOutsideClick: false,
+        allowOutsideClick: false, 
         didOpen: () => {
           Swal.showLoading();
         },
