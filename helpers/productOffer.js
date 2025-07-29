@@ -5,11 +5,9 @@ function calculateDiscountedPrice(product) {
     const categoryOffer = product.category?.categoryOffer || 0;
     const brandOffer = product.brand?.brandOffer || 0;
 
-    const offer = categoryOffer + brandOffer
-    const discountedPrice = Math.round(product.regularPrice * (1 - offer / 100));
-    
     const totalOffer = productOffer + categoryOffer + brandOffer;
-
+    const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
+    
     return { discountedPrice, totalOffer };
 }
 

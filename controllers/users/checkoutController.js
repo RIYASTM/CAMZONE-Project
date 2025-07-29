@@ -29,6 +29,7 @@ const loadCheckout = async (req, res) => {
         const addresses = addressDoc ? addressDoc.address.filter(add => !add.isDeleted) : [];
 
         const cart = await Cart.findOne({ userId }).populate('items.productId');
+        console.log('cart Discount : ', cart.discount)
         if (!cart || !cart.items.length) {
             return res.render('checkout', {
                 user,
@@ -43,12 +44,11 @@ const loadCheckout = async (req, res) => {
 
         let cartItems = cart.items.filter(item => !item.isDeleted && item.productId !== null);
 
-        // Calculate totals
         const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
         const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
         const totalOfferedPrice = totalOfferPrice - subtotal || 0;
         const gst = cart.GST || 0;
-        const finalTotal = subtotal; // or subtotal + gst if you want to show GST separately
+        const finalTotal = subtotal; 
 
         return res.render('checkout', {
             user,
@@ -98,7 +98,6 @@ const checkout = async (req, res) => {
 
         const cartItems = cartDoc.items;
 
-        // Check stock availability
         for (let item of cartItems) {
             const product = await Products.findById(item.productId._id);
             if (item.quantity > product.quantity) {
@@ -106,7 +105,7 @@ const checkout = async (req, res) => {
             }
         }
 
-        // Order ID Generation
+        //Order ID
         const date = new Date();
         const year = date.getFullYear().toString().slice(-2);
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -118,22 +117,30 @@ const checkout = async (req, res) => {
         const seq = (count % 100).toString().padStart(2, '0');
         const orderId = `ORD${year}${month}${day}${seq}`;
 
-        // Calculate final amounts
         let totalAmount = 0;
         let totalGST = 0;
 
+        for (let item of cartItems){
+            console.log('total Price : ', item.totalPrice)
+        }
+
         for (let item of cartItems) {
             const product = item.productId;
-            const price = product.salePrice || product.regularPrice;
-            item.totalPrice = price * item.quantity;
             item.itemGST = (product.gst || 0) * item.quantity;
-
             totalAmount += item.totalPrice;
             totalGST += item.itemGST;
         }
 
         const finalAmount = Math.floor(totalAmount);
         const priceWithoutGST = Math.floor(finalAmount - totalGST);
+        console.log('cart : ', cartDoc)
+
+        const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
+        console.log('sub total : ', subtotal)
+        const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
+        console.log('total offer price : ', totalOfferPrice)
+        const totalOfferedPrice = totalOfferPrice - subtotal || 0
+        console.log('total offered price : ', totalOfferedPrice)
 
         const order = new Order({
             userId,
@@ -141,11 +148,12 @@ const checkout = async (req, res) => {
             orderedItems: cartItems.map(item => ({
                 product: item.productId._id,
                 quantity: item.quantity,
-                price: item.totalPrice
+                price: item.totalPrice,
+                productPrice : item.price
             })),
             totalPrice: priceWithoutGST,
             finalAmount: finalAmount,
-            discount: cartDoc.discount || 0,
+            discount: totalOfferedPrice || 0,
             address: orderAddress,
             status: 'Pending',
             paymentMethod,

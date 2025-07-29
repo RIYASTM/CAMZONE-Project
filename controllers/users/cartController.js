@@ -34,11 +34,14 @@ const loadCart = async (req, res) => {
                     item.productId = product;
 
                     const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
+                    console.log('total offer : ', totalOffer)
+                    console.log('item price : ',discountedPrice)
 
                     item.itemPrice = product.regularPrice;
                     item.discount = totalOffer;
                     item.price = discountedPrice;
                     item.totalPrice = discountedPrice * item.quantity;
+                    console.log('totalPrice : ',item.totalPrice)
 
                     item.productGst = product.gst || Math.round(product.regularPrice * 0.18);
                     subTotal += item.totalPrice;
@@ -121,9 +124,10 @@ const addToCart = async (req, res) => {
         const totalOffer = productOffer + categoryOffer + brandOffer;
 
         const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
+
         const gstValue = +(product.gst * parsedQuantity).toFixed(2);
 
-        const newCartItem = {
+        const newCartItem = { 
             productId: product._id,
             quantity: parsedQuantity,
             discount: totalOffer,
@@ -156,7 +160,11 @@ const addToCart = async (req, res) => {
             existingItem.totalPrice = discountedPrice * existingItem.quantity;
             existingItem.productGst = +(product.gst * existingItem.quantity).toFixed(2);
         } else {
-            cartDoc.items.push(newCartItem);
+            if(cartDoc.items.length < 6){
+                cartDoc.items.push(newCartItem);
+            }else{
+                return res.status(401).json({ success : false , message : 'You can save 6 items in your cart!!'})
+            }
         }
 
         cartDoc.totalAmount = cartDoc.items.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -210,8 +218,8 @@ const cartUpdate = async (req, res) => {
         const stock = product.quantity;
         if (parsedQuantity > stock) {
             return res.status(401).json({ success: false, message: `Quantity exceeded available stock of ${product.productName}` });
-        } else if (parsedQuantity > 4) {
-            return res.status(401).json({ success: false, message: 'Maximum quantity is 4!!' });
+        } else if (parsedQuantity > 15) {
+            return res.status(401).json({ success: false, message: 'Maximum quantity is 15!!' });
         }
 
         let cartDoc = await Cart.findOne({ userId }).populate('items.productId');

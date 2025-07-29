@@ -29,9 +29,7 @@ const loadOrderSuccess = async (req,res) => {
 
         const userOrder = await Order.findOne({orderId})
              .populate("orderedItems.product")
-
-
-        console.log('Order : ', userOrder)
+        // console.log('Order : ', userOrder)
 
         if(!userOrder){
             return res.status(401).json({ success : false , message : 'Order not found!'})
@@ -64,7 +62,7 @@ const loadMyOrders = async (req,res) => {
         const userId = req.session.user
         const usermail = req.session.usermail;
         
-        const user = await User.findOne({ email: usermail });
+        const user = await User.findById(userId)
         const cart = await Cart.findOne({userId})
 
         const userOrders = await Order.find({userId})
@@ -97,7 +95,7 @@ const loadOrderDetails = async (req,res) => {
         const userId = req.session.user
         const usermail = req.session.usermail;
         
-        const user = await User.findOne({ email: usermail });
+        const user = await User.findById(userId);
         const cart = await Cart.findOne({userId})
 
         const search = req.query.search || ''

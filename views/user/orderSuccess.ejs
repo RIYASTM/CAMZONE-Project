@@ -9,17 +9,6 @@
 <body>
 
     <div class="order-success-container">
-
-        <!-- <div class="breadcrumb">
-          <a href="/">Home</a>
-          <span class="separator">></span>
-          <a href="/cart">Cart</a>
-          <span class="separator">></span>
-          <a href="/checkout">Check Out</a>
-          <span class="separator">></span>
-          <span class="current-page">Order Success</span>
-        </div> -->
-      
         <div class="order-success-card">
           <div class="success-icon">
             <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Order Success Checkmark">
@@ -63,7 +52,7 @@
                       <h3 class="item-name"><%= item.product.productName %></h3>
                       <div class="item-quantity-price">
                         <span class="item-quantity">Qty: <%= item.quantity %></span>
-                        <span class="item-price"><%= typeof item.product.salePrice === 'number' ? item.product.salePrice.toFixed(2) : '0.00' %></span>
+                        <span class="item-price"><%= item.price.toFixed(2) %></span>
                       </div>
                     </div>
                   </div>
@@ -85,7 +74,7 @@
             </div>
             <div class="summary-row discount">
               <span>Discount</span>
-              <span>-<%= typeof order.discount !== 'undefined' ? order.discount.toFixed(2) : '0.00' %></span>
+              <span>-<%= order.discount ? order.discount.toFixed(2) : '0.00' %></span>
             </div>
             <div class="summary-row gst">
               <span>GST % </span>

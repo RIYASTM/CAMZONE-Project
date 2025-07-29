@@ -136,6 +136,7 @@ body{
   
   .item-details {
     flex: 1;
+    padding-top: 20px;
   }
   
   .item-name {

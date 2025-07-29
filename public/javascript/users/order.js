@@ -96,5 +96,34 @@ let currentOrderId = null;
     }
 
     function downloadInvoice(orderId) {
-      window.open(`/download-invoice/${orderId}`, '_blank');
+      Swal.fire({
+        title: 'Generating Invoice...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      })
+      fetch(`/downloadInvoice/${orderId}`, {
+        method: 'GET',
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to download invoice');
+          }
+          return response.blob();
+        })
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `invoice-${orderId}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          Swal.fire('Success', 'Invoice downloaded successfully!', 'success');
+        })
+        .catch((error) => {
+          Swal.fire('Error', 'Failed to download invoice. Please try again.', 'error');
+        });
     }

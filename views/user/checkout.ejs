@@ -310,7 +310,7 @@
                 <p>Shipping: <span>₹<%= (cart.shippingCost || 0).toLocaleString('en-IN') %></span></p>
                 <p>Saved : <span>-₹<%= totalOfferedPrice.toLocaleString('en-IN') %> </span></p>
                 <p>Coupon Offer: <span>₹<%= (cart.couponDiscount || 0).toLocaleString('en-IN') %></span></p>
-                <p>GST (18%): <span id="gst">₹<%= cart.GST.toLocaleString('en-IN') %></span></p>
+                <p>GST (18%): <span id="gst">₹<%= Number(Math.floor(cart.GST.toFixed(2))).toLocaleString('en-IN') %></span></p>
                 <h4>Total: <span>₹<%= Math.floor(cart.totalAmount).toLocaleString('en-IN') %></span></h4>
             </div>
 

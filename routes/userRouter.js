@@ -25,6 +25,7 @@ const profileController = require('../controllers/users/profileController')
 const orderControlller = require('../controllers/users/orderController')
 const walletController = require('../controllers/users/walletController')
 const wishListController = require('../controllers/users/wishListController')
+const invoiceController = require('../controllers/users/invoiceController')
 
 
 //Routers
@@ -167,6 +168,10 @@ router.post('/addtowishlist', userAuth , wishListController.addtoWishlist)
 
 router.post('/removeFromWishList', userAuth , wishListController.removeFromWishList)
 
+
+//Invoice 
+
+router.get('/downloadInvoice/:id', userAuth , invoiceController.invoice)
 
 //Google Auth
 
