@@ -75,7 +75,7 @@ body {
 }
 
 /* Sidebar */
-.sidebar {
+/* .sidebar {
     width: 200px;
     flex-shrink: 0;
     border: 1px solid var(--border-color);
@@ -115,7 +115,7 @@ body {
 
 .sidebar ul li a:hover {
     color: var(--primary-color);
-}
+} */
 
 /* Order Tracking Main Content */
 .order-content {

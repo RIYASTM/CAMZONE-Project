@@ -3,42 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coupon Page</title>
+    <title>My Coupons - CaveOne</title>
     <link rel="stylesheet" href="/stylesheet/user/coupon.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header>
+    <%- include('../partials/users/header',{search , cart}) %>
 
-        <%- include('../partials/users/header',{search,cart}) %>
-    
-    </header>
-    <nav>
-        <a href="/">Home</a> &gt;
-        <a href="/cart">Cart</a> &gt;
-        <a href="/coupon">Coupon</a>
-    </nav>
+    <main class="coupon-page">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Home</a>
+                <span class="separator">></span>
+                <a href="/my-account">My Account</a>
+                <span class="separator">></span>
+                <span class="current">My Coupons</span>
+            </div>
 
-    <div class="coupon-container">
-        <div class="coupon-card">
-            <h2>🎉 Congratulations! 30% off your new purchase!</h2>
-            <p>Use the coupon now or look for it in your personal account.</p>
-            <div class="coupon-code">
-                <span>30%SALEOFF</span>
-                <button>Copy coupon</button>
+            <div class="coupon-layout">
+                <!-- Sidebar -->
+                <%- include('../partials/users/sideBar', {currentPage : 'My Coupons'}) %>
+
+                <!-- Coupon content -->
+                <div class="coupon-content">
+                    <div class="coupon-header">
+                        <h2>Available Coupons</h2>
+                    </div>
+
+                    <!-- Coupon list -->
+                    <div class="coupon-list"> 
+                        <% if(coupons && coupons.length > 0) { %>
+                            <% coupons.forEach(coupon => { %>
+                                <div class="coupon-card <%= coupon.discountType %>">
+                                    <div class="coupon-header-section">
+                                        <div class="coupon-title">
+                                            <h3><%= coupon.couponName %></h3>
+                                            <p class="coupon-subtitle">Special discount just for you!</p>
+                                        </div>
+                                        <div class="coupon-discount">
+                                            <span class="discount-value">
+                                                <%= coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount %>
+                                            </span>
+                                            <span class="discount-label">
+                                                <%= coupon.discountType === 'percentage' ? 'OFF' : 'Flat OFF' %>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="coupon-details">
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </div>
+                                            <div class="detail-text">
+                                                Min Order: <span class="detail-value">₹<%= coupon.minOrder %></span>
+                                            </div>
+                                        </div>
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </div>
+                                            <div class="detail-text">
+                                                Uses Left: <span class="detail-value"><%= coupon.couponLimit %></span>
+                                            </div>
+                                        </div>
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="detail-text">
+                                                Valid Until: <span class="detail-value"><%= coupon.validUpto ? new Date(coupon.validUpto).toLocaleDateString() : 'No Expiry' %></span>
+                                            </div>
+                                        </div>
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-tag"></i>
+                                            </div>
+                                            <div class="detail-text">
+                                                Status: <span class="detail-value">Active</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="coupon-code-section">
+                                        <div class="coupon-code hidden" id="coupon-<%= coupons.indexOf(coupon) %>">
+                                            <span class="code-text">
+                                                <%= coupon.couponCode %>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <button class="show-btn" onclick="toggleCouponCode('<%= coupons.indexOf(coupon) %>')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="copy-btn" data-limit="<%=coupon.couponLimit %>" data-code="<%= coupon.couponCode %>" data-dateUpto="<%= coupon.validUpto %>" data-button="this">
+                                                <i class="fas fa-copy"></i> Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <h3>No Coupons Available</h3>
+                                <p>You don't have any coupons at the moment. Check back soon for exciting offers!</p>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Pagination (if needed for large number of coupons) -->
+                     <% if(typeof totalPages !== 'undefined' && totalPages > 1) { %>
+                        <div class="pagination" data-total-pages="<%= totalPages %>">
+                            <span><%= currentPages %> of <%= totalPages %></span>
+                            <div class="pagination-controls">
+                                <button <%= currentPages === 1 ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=1'" 
+                                        title="Go to first page">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </button>
+                                
+                                <button <%= currentPages === 1 ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=<%= currentPages - 1 %>'" 
+                                        title="Previous page">
+                                    <i class="fas fa-angle-left"></i>
+                                </button>
+                                
+                                <span> - </span>
+                                
+                                <button <%= currentPages === totalPages ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=<%= parseInt(currentPages) + 1 %>'" 
+                                        title="Next page">
+                                    <i class="fas fa-angle-right"></i>
+                                </button>
+                                
+                                <button <%= currentPages === totalPages ? 'disabled' : '' %> 
+                                        onclick="window.location.href='?page=<%= totalPages %>'" 
+                                        title="Go to last page">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <% } %>
+                    
+                </div>
             </div>
         </div>
-
-        <div class="coupon-card">
-            <h2>🎉 Congratulations! 10% off your new purchase!</h2>
-            <p>Use the coupon now or look for it in your personal account.</p>
-            <div class="coupon-code">
-                <span>10%SALEOFF</span>
-                <button>Copy coupon</button>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <%- include('../partials/users/footer') %>
 
+    <script src="/javascript/users/coupon.js"></script>
 </body>
 </html>

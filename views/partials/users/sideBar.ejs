@@ -1,11 +1,14 @@
+
+<link rel="stylesheet" href="/stylesheet/partials/users/sideBar.css">
+
 <!-- Sidebar -->
 <aside class="sidebar">
     <h3>Account</h3>
     <ul>
-        <li class="<%= currentPage === 'profile' ? 'active' : '' %>">
+        <li class="<%= currentPage === 'My Profile' ? 'active' : '' %>">
             <a href="/profile">My Profile</a>
         </li>
-        <li class="<%= currentPage === 'address' ? 'active' : '' %>">
+        <li class="<%= currentPage === 'My Address' ? 'active' : '' %>">
             <a href="/address">My Address</a>
         </li>
         <li class="<%= currentPage === 'My Orders' ? 'active' : '' %>">
@@ -16,6 +19,9 @@
         </li>
         <li class="<%= currentPage === 'wishList' ? 'active' : '' %>">
             <a href="/wishList">My Wishlist</a>
+        </li>
+        <li class="<%= currentPage === 'My Coupons' ? 'active' : '' %>">
+            <a href="/coupon">My Coupons</a>
         </li>
         <li class="<%= currentPage === 'rating' ? 'active' : '' %>">
             <a href="#">My Ratings</a>

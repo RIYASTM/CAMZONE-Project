@@ -66,39 +66,6 @@
                     <span>Subtotal</span>
                     <span>₹ <%= subtotal.toLocaleString('en-IN') %></span>
                 </div>
-                
-                <!-- Coupon Section -->
-                <div class="coupon-section">
-                    <!-- Coupon Navigator/Selector -->
-                    <a href="/coupon" class="coupon-toggle">Coupons <i class="fas fa-chevron-right"></i></a>
-                    
-                    <!-- Coupon Input -->
-                    <div class="coupon-input-group">
-                        <input type="text" id="couponCode" placeholder="Enter coupon code" class="coupon-input">
-                        <button id="applyCoupon" class="btn apply-coupon">Apply</button>
-                    </div>
-                    <div id="couponMessage" class="coupon-message" hidden></div>
-                    
-                    <% if (locals.appliedCoupon) { %>
-                    <div class="applied-coupon">
-                        <div class="coupon-info">
-                            <span class="coupon-code"><%= appliedCoupon.code %></span>
-                            <span class="coupon-discount">-₹ <%= appliedCoupon.discount.toLocaleString('en-IN') %></span>
-                        </div>
-                        <button id="removeCoupon" class="remove-coupon">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <% } %>
-                </div>
-                
-                <% if (locals.appliedCoupon) { %>
-                <div class="total-row discount-row">
-                    <span>Discount</span>
-                    <span>-₹ <%= appliedCoupon.discount.toLocaleString('en-IN') %></span>
-                </div>
-                <% } %>
-
                 <div class="total-row discount-offer" style="border-bottom: none;">
                     <span>Saved </span>
                     <span class="saved-amount">-₹ <%= totalOfferedPrice.toLocaleString('en-IN') %></span>

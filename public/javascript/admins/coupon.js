@@ -389,8 +389,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${coupon.couponName}</td>
                 <td>${coupon.couponCode}</td>
                 <td>${coupon.discountType.charAt(0).toUpperCase() + coupon.discountType.slice(1)}</td>
-                <td>${coupon.discountType === 'percentage' ? coupon.discount + '%' : '$' + coupon.discount}</td>
-                <td>$${coupon.minOrder}</td>
+                <td>${coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount}</td>
+                <td>₹${coupon.minOrder}</td>
                 <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
                 <td>${new Date(coupon.validUpto).toLocaleDateString()}</td>
                 <td>${coupon.couponLimit || 'N/A'}</td>

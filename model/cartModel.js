@@ -50,6 +50,10 @@ const cartSchema = new Schema ({
             required : false
         }
     }],
+    couponDiscount : {
+        type : Number,
+        default : 0
+    },
     totalAmount : {
         type : Number,
         default : 0

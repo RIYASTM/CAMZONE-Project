@@ -31,16 +31,15 @@ a {
 /* Container */
 .container {
     /* max-width: 1200px; */
-    margin: 0 auto;
-    background-color: var(--light-gray);
-    padding: 20px;
+    padding: 0 30px 20px;
 }
 
 /* Breadcrumb Navigation */
 .breadcrumb {
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
+    /* margin-bottom: 30px; */
+    padding: 20px 0;
 }
 
 .breadcrumb a {
@@ -65,7 +64,7 @@ a {
 }
 
 /* Sidebar */
-.sidebar {
+/* .sidebar {
     width: 200px;
     flex-shrink: 0;
     border: 1px solid var(--border-color);
@@ -101,7 +100,7 @@ a {
 .sidebar ul li.active a,
 .sidebar ul li a:hover {
     color: var(--text-color);
-}
+} */
 
 /* Wallet Main Content */
 .wallet-main {

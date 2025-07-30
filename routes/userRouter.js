@@ -121,8 +121,11 @@ router.patch('/cartRemove', userAuth , cartController.removeItem)
 
 //Coupon
 
-router.get('/coupon',userAuth, couponController.loadCoupon)
+router.get('/coupon', userAuth, couponController.loadCoupon)
 
+router.post('/applyCoupon', userAuth, couponController.applyCoupon)
+
+router.post('/removeCoupon', userAuth, couponController.removeCoupon)
 
 
 //Checkout

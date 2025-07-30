@@ -3,6 +3,7 @@ const User = require('../../model/userModel')
 const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
 const Order = require('../../model/orderModel')
+const Coupon = require('../../model/couponModel')
 
 
 const {validateAddress} = require('../../helpers/validations')
@@ -29,7 +30,7 @@ const loadCheckout = async (req, res) => {
         const addresses = addressDoc ? addressDoc.address.filter(add => !add.isDeleted) : [];
 
         const cart = await Cart.findOne({ userId }).populate('items.productId');
-        console.log('cart Discount : ', cart.discount)
+        // console.log('cart Discount : ', cart.discount)
         if (!cart || !cart.items.length) {
             return res.render('checkout', {
                 user,
@@ -120,31 +121,38 @@ const checkout = async (req, res) => {
         let totalAmount = 0;
         let totalGST = 0;
 
-        for (let item of cartItems){
-            console.log('total Price : ', item.totalPrice)
-        }
-
         for (let item of cartItems) {
             const product = item.productId;
             item.itemGST = (product.gst || 0) * item.quantity;
             totalAmount += item.totalPrice;
-            totalGST += item.itemGST;
         }
 
-        const finalAmount = Math.floor(totalAmount);
+        const couponCode = data.couponCode
+
+        const coupon = await Coupon.findOne({couponCode})
+        
+        let couponDiscount = 0
+
+        if(coupon){
+            if(coupon.discountType === 'percentage'){
+                couponDiscount = Math.floor((totalAmount * coupon.discount) / 100)
+            }else{
+                couponDiscount = coupon.discount
+            }
+        }
+
+        totalGST = (totalAmount * 18) / 118
+
+        const finalAmount = Math.floor(totalAmount - couponDiscount);
         const priceWithoutGST = Math.floor(finalAmount - totalGST);
-        console.log('cart : ', cartDoc)
 
         const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-        console.log('sub total : ', subtotal)
         const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
-        console.log('total offer price : ', totalOfferPrice)
-        const totalOfferedPrice = totalOfferPrice - subtotal || 0
-        console.log('total offered price : ', totalOfferedPrice)
+        const totalOfferedPrice = totalOfferPrice - subtotal + couponDiscount || 0
 
         const order = new Order({
             userId,
-            orderId,
+            orderId, 
             orderedItems: cartItems.map(item => ({
                 product: item.productId._id,
                 quantity: item.quantity,
@@ -164,7 +172,11 @@ const checkout = async (req, res) => {
         const saveResult = await order.save();
         if (!saveResult) {
             return res.status(500).json({ success: false, message: 'Your order failed to complete!' });
-        }
+        } 
+
+        coupon.couponLimit--
+        console.log('coupon limit : ', coupon.couponLimit)
+        await coupon.save()
 
         // Reduce product stock
         for (let item of cartItems) {
@@ -175,6 +187,8 @@ const checkout = async (req, res) => {
                 await product.save();
             }
         }
+
+        
 
         // Clear cart
         req.session.orderId = orderId;
@@ -189,7 +203,7 @@ const checkout = async (req, res) => {
             message: 'An error occurred while confirming the order!'
         });
     }
-};
+}; 
 
 
 
