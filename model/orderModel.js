@@ -107,7 +107,7 @@ const orderSchema = new Schema ({
     status : {
         type : String,
         required : true,
-        enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Return Request Rejected']
+        enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Return Request Rejected', 'Confirmed']
     },
     createdOn : {
         type : Date,
@@ -117,6 +117,10 @@ const orderSchema = new Schema ({
     couponApplied : {
         type : Boolean,
         default : false
+    },
+    couponCode : {
+        type : String,
+        required : false,
     },
     paymentMethod : {
         type : String
@@ -128,7 +132,29 @@ const orderSchema = new Schema ({
     GST : {
         type : Number,
         required : false
-    }
+    },
+    razorpayOrderId: {
+        type: String,
+        required: false,
+    },
+    razorpayPaymentId: {
+        type: String,
+        required: false,
+    },
+    razorpaySignature: {
+        type: String,
+        required: false,
+    },
+    razorpayStatus : {
+        type : String,
+        enum : ['Pending', 'Paid', 'Failed'],
+        default : 'Pending'
+    },
+    razorpayInvoiceDate: {
+        type: Date,
+        default: Date.now
+    },
+
 })
 
 const Order = mongoose.model("Order",orderSchema)

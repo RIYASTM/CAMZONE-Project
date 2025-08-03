@@ -134,6 +134,8 @@ router.get('/checkout',userAuth, checkoutController.loadCheckout )
 
 router.post('/checkout', userAuth, checkoutController.checkout)
 
+router.post('/verify-payment', userAuth , checkoutController.verifyPayment)
+
 //Order
 router.get('/orderSuccess',  orderControlller.loadOrderSuccess)
 

@@ -8,6 +8,7 @@ const session = require('express-session')
 const port = process.env.PORT || 3000
 const MongoStore = require('connect-mongo');
 const connectDB = require('./config/db')
+const Razorpay = require('razorpay')
 
 
 //Morgan

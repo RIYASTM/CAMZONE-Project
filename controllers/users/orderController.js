@@ -150,7 +150,7 @@ const cancelOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found.' });
         }
 
-        if (!['Pending', 'Processing', 'Shipped', 'Out of Delivery'].includes(order.status)) {
+        if (!['Confirmed','Pending', 'Processing', 'Shipped', 'Out of Delivery'].includes(order.status)) {
             return res.status(400).json({ success: false, message: 'Order cannot be cancelled anymore.' });
         }
 

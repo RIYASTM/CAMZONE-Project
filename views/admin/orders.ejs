@@ -38,6 +38,9 @@
                     <%}%>
                 </div>
                 <div class="top-right">
+                    <button class="filter" onclick="openSalesReportModal()">
+                        <i class="fas fa-chart-line"></i> Sales Report
+                    </button>
                     <select class="filter">
                         <option value="all">Filter</option>
                         <option value="processing">Processing</option>
@@ -203,5 +206,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/javascript/admins/order.js"></script> 
+    <%- include('../partials/admins/salesReport' , {orders}) %>
 </body>
 </html>

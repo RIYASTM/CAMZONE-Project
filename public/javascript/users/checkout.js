@@ -300,7 +300,8 @@
         placeOrderBtn.addEventListener('click', async () => {
             const selectedAddress = document.querySelector('input[name="address"]:checked');
             const paymentMethod = document.querySelector('input[name="payment"]:checked');
-
+            const user = JSON.parse(placeOrderBtn.dataset.user)
+            
             if (!selectedAddress) {
                 Swal.fire({
                     icon: 'warning',
@@ -318,17 +319,15 @@
                 });
                 return;
             }
-
+            
             const addressData = { addressId: selectedAddress.value };
             const paymentData = { method: paymentMethod.value };
             const gst = document.getElementById('gst').textContent
-            const couponCode = couponInput.value || 0
-            console.log('couponCode : ', couponCode)
-            console.log('gst : ', gst)
-
+            const couponCode = couponInput?.value || ''
+            
             placeOrderBtn.disabled = true;
             placeOrderBtn.textContent = 'Processing...';
-
+            
             try {
                 const response = await fetch('/checkout', {
                     method: 'POST',
@@ -339,8 +338,70 @@
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    window.location.href = data.redirectUrl || '/orderSuccess';
-                } else {
+                    if (data.message === 'Razorpay Order Created!') {
+                        const razorpayOrder = data.razorpayOrder;
+                        const amount = data.amount;
+                        const orderId = data.orderId;
+
+                        const options = {
+                            key: 'rzp_test_t9knqvOVCcMCfu',
+                            amount: amount * 100,
+                            currency: 'INR',
+                            name: 'CAMZONE',
+                            description: 'Order Payment',
+                            order_id: razorpayOrder.id,
+                            handler: async function (response) {
+                                const verifyRes = await fetch('/verify-payment', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        razorpayPaymentId: response.razorpay_payment_id,
+                                        razorpayOrderId: response.razorpay_order_id,
+                                        razorpaySignature: response.razorpay_signature,
+                                        orderId: orderId
+                                    })
+                                });
+                                const verifyData = await verifyRes.json();
+                                if (verifyData.success) {
+                                    window.location.href = `/orderSuccess`;
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Payment Verification failed!!',
+                                        text: verifyData.message || 'Something went wrong!!'
+                                    });
+                                }
+                            },
+                            prefill: {
+                                name: user.name,
+                                email: user.email,
+                                contact: user.phone
+                            },
+                            theme: {
+                                color: '#3399cc'
+                            }
+                        };
+
+                        if (amount > 100000) {
+                            options.method = {
+                                netbanking: true,
+                                card: true,
+                                upi: false
+                            };
+
+                            await Swal.fire({
+                                icon: 'warning',
+                                text: "UPI not available for orders above ₹1,00,000. Please choose Cash on Delevery method.",
+                                confirmButtonText: 'OK'
+                            });
+                        }
+
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                    }else{
+                        window.location.href = data.redirectUrl || '/orderSuccess';
+                    }
+                }else{
                     Swal.fire({
                         icon: 'error',
                         title: 'Order Failed',
@@ -362,7 +423,7 @@
 
         });
 
-        // Validation Functions
+
         function validateAddressForm(form) {
             const formData = Object.fromEntries(new FormData(form));
             const namePattern = /^[a-zA-Z\s]+$/;

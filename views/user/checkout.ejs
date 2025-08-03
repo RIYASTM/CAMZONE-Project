@@ -355,18 +355,18 @@
                     <input type="radio" name="payment" value="Razorpay" checked aria-label="Pay with RazorPay">
                     RazorPay
                 </label>
-                <!-- <label class="payment-option">
+                <label class="payment-option">
                     <input type="radio" name="payment" value="Wallet" aria-label="Pay with Wallet">
                     Pay With Wallet
-                </label> -->
+                </label>
                 <label class="payment-option">
-                    <input type="radio" name="payment" value="Cash On Delivery" aria-label="Cash on Delivery">
+                    <input type="radio" name="payment" value="COD" aria-label="Cash on Delivery">
                     Cash on Delivery
                 </label>
             </div>
 
             <!-- Place Order Button -->
-            <button type="button" class="place-order" id="placeOrderBtn">Place Order</button>
+            <button type="button" class="place-order" id="placeOrderBtn" data-user="<%=JSON.stringify(user)%>">Place Order</button>
         </section>
     </main>
 
@@ -374,6 +374,7 @@
     <%- include('../partials/users/footer') %>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/javascript/users/checkout.js"></script>
 
 </body>

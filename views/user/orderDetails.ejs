@@ -156,10 +156,11 @@
                     </div>
                 </div>
             </div>
+            <p class="warning-message">Return is accepted till over 7 days from Delevered</p>
 
             <!-- Action Buttons -->
             <div class="order-actions">
-                <% if(['Pending','Processing','Shipped','Out of Delivery'].includes(order.status)) { %>
+                <% if(['Pending','Processing','Shipped','Out of Delivery','Confirmed'].includes(order.status)) { %>
                     <button class="btn btn-danger" onclick="openModal('cancel', '<%= order._id %>')">Cancel Order</button>
                 <% } %>
                 <% if(order.status === 'Delivered') { %>

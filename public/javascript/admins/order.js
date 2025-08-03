@@ -51,6 +51,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        function openSalesReportModal() {
+            document.getElementById('salesReportModal').classList.add('active');
+            // Set default dates (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
+
+        function closeSalesReportModal() {
+            document.getElementById('salesReportModal').classList.remove('active');
+        }
+
         function populateModal(order) {
             const createDate = new Date(order.createdOn);
             const formattedDate = createDate.toString().split(' ').splice(1, 3).join(' ');
