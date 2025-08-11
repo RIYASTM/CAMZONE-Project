@@ -409,3 +409,284 @@ a {
         font-size: 24px;
     }
 }
+
+/* ===== ADD MONEY MODAL STYLES ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    min-width: 300px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.2s ease-out;
+    border: 1px solid var(--border-color);
+    margin: auto;
+    position: relative;
+}
+
+.modal-overlay[style*="flex"] .modal-container {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--light-gray);
+}
+
+.modal-header h3 {
+    color: var(--accent-color);
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #ff9500;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.modal-close-btn:hover {
+    background-color: #f5f5f5;
+    color: var(--text-color);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--text-color);
+    background-color: rgb(225, 225, 225);
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.form-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background-color: rgb(120, 120, 120);
+}
+
+.form-group input[type="number"].error {
+    border-color: #c62828;
+    background-color: #fff5f5;
+}
+
+.input-error {
+    color: #c62828;
+    font-size: 12px;
+    margin-top: 5px;
+    min-height: 16px;
+}
+
+/* Quick Amounts Section */
+.quick-amounts {
+    margin-bottom: 25px;
+}
+
+.quick-amounts-label {
+    display: block;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.quick-amount-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.quick-amount-btn {
+    padding: 10px 15px;
+    border: 2px solid var(--border-color);
+    background-color: rgb(225, 225, 225);
+    color: var(--text-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.quick-amount-btn:hover {
+    border-color: var(--accent-color);
+    background-color: rgba(255, 152, 0, 0.05);
+    color: var(--accent-color);
+}
+
+.quick-amount-btn:active {
+    transform: scale(0.98);
+}
+
+/* Modal Action Buttons */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-cancel {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background-color: rgb(225, 225, 225);
+    color: var(--text-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+.btn-add-via-razorpay {
+    padding: 12px 24px;
+    border: none;
+    background-color: var(--accent-color);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-add-via-razorpay:hover {
+    background-color: #e68900;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.btn-add-via-razorpay:active {
+    transform: translateY(0);
+}
+
+/* Table improvements */
+.no-transactions {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Mobile Responsiveness for Modal */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 15px;
+    }
+    
+    .modal-container {
+        width: 100%;
+        max-width: 400px;
+        margin: auto;
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .modal-header h3 {
+        font-size: 16px;
+    }
+    
+    .quick-amount-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .quick-amount-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .modal-actions {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+    
+    .btn-cancel,
+    .btn-add-via-razorpay {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-overlay {
+        padding: 10px;
+    }
+    
+    .modal-container {
+        width: 100%;
+        max-width: none;
+        min-height: auto;
+    }
+    
+    .quick-amount-buttons {
+        grid-template-columns: 1fr;
+    }
+}

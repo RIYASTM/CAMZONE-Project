@@ -107,7 +107,12 @@ const orderSchema = new Schema ({
     status : {
         type : String,
         required : true,
-        enum : ['Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Return Request Rejected', 'Confirmed']
+        enum : ['Paid','Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Return Request Rejected', 'Confirmed','Payment failed']
+    },
+    paymentStatus : {
+        type : String,
+        default : 'Pending',
+        enum : ['Paid', 'Pending', 'Failed']
     },
     createdOn : {
         type : Date,

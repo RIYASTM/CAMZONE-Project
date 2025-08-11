@@ -47,7 +47,7 @@
                                 <%= item.discount ? item.discount + '%' : '-' %>
                             </div>
                             <div class="cart-subtotal">
-                                ₹ <span class="item-subtotal"><%= item.totalPrice.toLocaleString('en-IN') %></span>
+                                <span class="item-subtotal">₹ <%= item.totalPrice.toLocaleString('en-IN') %></span>
                                 <button class="remove-item" data-id="<%= item.productId._id %>">
                                     <i class="fas fa-circle-xmark"></i>
                                 </button>
@@ -196,29 +196,6 @@
             }, 5000);
         }
 
-        // async function updateCartItem(productId, quantity, input, originalQuantity) {
-        //     try {
-        //         const response = await fetch('/updateCart', {
-        //             method: 'PATCH',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify({ productId, quantity })
-        //         });
-        //         console.log('Update cart response status:', response.status);
-        //         const data = await response.json();
-        //         console.log('Update cart response data:', data);
-        //         if (data.success) {
-        //             // location.reload();
-        //         } else {
-        //             input.value = originalQuantity;
-        //             Swal.fire('Error', data.message || 'Failed to update cart item.', 'error');
-        //         }
-        //     } catch (error) {
-        //         input.value = originalQuantity; 
-        //         console.error('Error updating cart:', error);
-        //         Swal.fire('Error', 'Something went wrong while updating the cart.', 'error');
-        //     }
-        // }
-
         async function updateCartItem(productId, quantity, input, originalQuantity) {
             try {
                 const response = await fetch('/updateCart', {
@@ -271,25 +248,47 @@
 
 
         async function removeCartItem(productId) {
-            try {
-                const response = await fetch('/cartRemove', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId })
-                });
-                console.log('Remove cart response status:', response.status);
-                const data = await response.json();
-                console.log('Remove cart response data:', data);
-                if (data.success) {
-                    location.reload();
-                } else {
-                    Swal.fire('Error', data.message || 'Failed to remove item from cart.', 'error');
+            Swal.fire({
+                title: 'Remove item from cart?',
+                text: "This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it',
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('/cartRemove', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productId })
+                        });
+
+                        console.log('Remove cart response status:', response.status);
+                        const data = await response.json();
+                        console.log('Remove cart response data:', data);
+
+                        if (data.success) {
+                            Swal.fire(
+                                'Removed!',
+                                'Item has been removed from your cart.',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to remove item from cart.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error removing item:', error);
+                        Swal.fire('Error', 'Something went wrong while removing the item.', 'error');
+                    }
                 }
-            } catch (error) {
-                console.error('Error removing item:', error);
-                Swal.fire('Error', 'Something went wrong while removing the item.', 'error');
-            }
+            });
         }
+
     </script>
 </body>
 </html>

@@ -154,6 +154,13 @@ body {
     font-weight: bold;
 }
 
+.salesTrendChart{
+    display: block;
+    box-sizing: border-box;
+    height: 250px;
+    width: 100%;
+}
+
 /* Charts Section */
 .charts-section {
     display: grid;
@@ -168,6 +175,7 @@ body {
     border-radius: 10px;
     padding: 15px;
     min-height: 300px;
+    width: fit-content;
 }
 
 .chart-header {
@@ -215,6 +223,7 @@ body {
 
 .chart-container canvas {
     max-height: 250px;
+    max-width: 868px;
 }
 
 /* Dropdown */

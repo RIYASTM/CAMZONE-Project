@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Order Details - CAMZONE</title>
   <link rel="stylesheet" href="/stylesheet/user/orderDetails.css">
+
 </head>
 <body>
   <%- include('../partials/users/header',{ search, cart }) %>
@@ -35,7 +36,7 @@
             <div class="order-tracking">
                 <h2>Order Tracking</h2>
                 <div class="tracking-progress">
-                    <div class="tracking-step <%= ['Pending','Processing','Shipped','Out for Delivery','Delivered'].includes(order.status) ? 'completed' : '' %>">
+                    <div class="tracking-step <%= ['Pending','Processing','Shipped','Out for Delivery','Delivered','Confirmed'].includes(order.status) ? 'completed' : '' %>">
                         <div class="step-icon"><i class="icon-order"></i></div>
                         <div class="step-content">
                             <h3>Order Placed</h3>
@@ -166,6 +167,9 @@
                 <% if(order.status === 'Delivered') { %>
                     <button class="btn btn-warning" onclick="openModal('return', '<%= order._id %>')">Return Order</button>
                 <% } %>
+                <% if( order.paymentMethod === 'Razorpay' && (order.razorpayStatus === 'Pending' || order.razorpayStatus === 'Failed')){ %>
+                    <button class="btn btn-warning" id="retryPayment">Retry Payment</button>
+                <%} %>
                 <% if (!['Cancelled', 'Returned'].includes(order.status)) { %>
                     <button class="btn btn-primary" onclick="downloadInvoice('<%= order._id %>')">Download Invoice</button>
                 <% } %>
@@ -174,6 +178,34 @@
         </div>
     </div>
   </main>
+
+  <!--Modal For Retry Payment-->
+
+  <div class="modal fade" id="retryPaymentModal" tabindex="-1" aria-labelledby="retryPaymentModalLabel"  style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="retryPaymentModalLabel">Retry Payment</h5>
+          <button type="button" class="btn-close" id="retryPaymentClose" data-bs-dismiss="modal" aria-label="Close">x</button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Select a payment method:</p>
+          <%if(order.finalAmount <= 500000) {%>
+            <button class="btn btn-outline-primary mb-2" onclick="retryPayment('Razorpay','<%=order.orderId %>','<%=order.paymentMethod%>')">💳 Pay with Razorpay</button><br>
+          <%} else {%>
+            <p> Razorpay not available for orders above ₹5,00,000</p> 
+          <%}%>
+          <button class="btn btn-outline-success mb-2" onclick="retryPayment('Wallet','<%=order.orderId %>','<%=order.paymentMethod%>')">🪙 Pay with Wallet</button><br>
+          <% if(order.finalAmount <= 10000) {%>
+            <button class="btn btn-outline-secondary" onclick="retryPayment('COD','<%=order.orderId %>','<%=order.paymentMethod%>')">🚚 Switch to Cash on Delivery</button>
+          <% }else{ %>
+            <p>COD not available for orders above ₹10000</p>
+            <%} %>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">
@@ -256,6 +288,7 @@
 
   <%- include('../partials/users/footer') %>
 
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/javascript/users/order.js"></script>
 

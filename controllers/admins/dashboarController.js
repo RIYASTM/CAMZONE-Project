@@ -4,11 +4,12 @@ const Users = require('../../model/userModel');
 const loadDashboard = async (req, res) => {
     try {
         const admin = req.session.admin;
+
         const orders = await Orders.find()
             .populate('orderedItems.product', 'productName salePrice')
             .populate('userId', 'name')
             .lean();
-        const users = await Users.find({ status: true }).lean();
+        const users = await Users.find({ status : true }).lean();
 
         return res.render('dashboard', {
             currentPage: 'dashboard',

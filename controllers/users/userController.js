@@ -71,8 +71,12 @@ const loadHomePage = async (req, res) => {
 
         const productsWithOffers = products.map( product => {
             const productOffer = product.productOffer || 0;
-            const brandOffer = product.brand?.brandOffer || 0;
-            const categoryOffer = product.category?.categoryOffer || 0;
+            let brandOffer = product.brand?.brandOffer || 0;
+            let categoryOffer = product.category?.categoryOffer || 0;
+
+            brandOffer > categoryOffer ? categoryOffer = 0 : brandOffer = 0
+
+            
 
             const totalOffer = productOffer + brandOffer + categoryOffer;
 
@@ -149,11 +153,14 @@ const loadShop = async (req, res) => {
         const sortName = req.query.sortName;
         const stock = req.query.sortQuantity;
 
-        const user = await User.findOne({ email: usermail });
+        console.log('price : ',price)
+
         
         const query = { isDeleted: false, isBlocked: false };
-
+        
         const userId = req.session.user
+        
+        const user = await User.findById(userId);
 
         const cart = userId ? await Cart.findOne({userId}) : 0
         
@@ -165,33 +172,33 @@ const loadShop = async (req, res) => {
         if (price) {
             switch (price) {
                 // 🔃 Sorting cases
-                case 'LOW - HIGH':
+                case 'LOW-HIGH':
                     sortOption.salePrice = 1;
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
-                case 'HIGH - LOW':
+                case 'HIGH-LOW':
                     sortOption.salePrice = -1;
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
         
                 // 💰 Filtering cases
-                case 'below 10000':
+                case 'below-10000':
                     query.salePrice = { $lt: 10000 };
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
-                case '10000':
+                case '10000-50000':
                     query.salePrice = { $gte: 10000, $lt: 50000 };
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
-                case '50000':
+                case '50000-100000':
                     query.salePrice = { $gte: 50000, $lt: 100000 };
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
-                case '100000':
+                case '100000-500000':
                     query.salePrice = { $gte: 100000, $lt: 500000 };
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
-                case '500000':
+                case 'above-500000':
                     query.salePrice = { $gte: 500000 };
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
@@ -252,7 +259,7 @@ const loadShop = async (req, res) => {
             if (sortName === 'A-Z') {
                 sortOption.productName = 1;
                 queryParts.push(`sortName=${encodeURIComponent(sortName)}`);
-            } else if (sortName === 'Z - A') {
+            } else if (sortName === 'Z-A') {
                 sortOption.productName = -1;
                 queryParts.push(`sortName=${encodeURIComponent(sortName)}`);
             }

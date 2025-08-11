@@ -29,7 +29,6 @@ const loadOrderSuccess = async (req,res) => {
 
         const userOrder = await Order.findOne({orderId})
              .populate("orderedItems.product")
-        // console.log('Order : ', userOrder)
 
         if(!userOrder){
             return res.status(401).json({ success : false , message : 'Order not found!'})
@@ -37,14 +36,21 @@ const loadOrderSuccess = async (req,res) => {
         
         console.log("Order ID from session:", orderId);
 
-        return res.render('orderSuccess',{
-            order : userOrder,
-            search,
-            currentPage : 'orderSuccess'
-        })
-
+        if(req.session.orderSuccess = true){
+            
+            res.render('orderSuccess',{
+                order : userOrder,
+                search,
+                currentPage : 'orderSuccess'
+            })
+            
+            return req.session.orderSuccess = false
+        }
+        
+        return res.redirect('/')
     } catch (error) {
         console.log('Failed to render success : ',error )
+        return res.redirect('/pageNotFound')
     }
 }
 
@@ -70,8 +76,6 @@ const loadMyOrders = async (req,res) => {
                                         .skip(skip)
                                         .limit(limit)
                                         .populate("orderedItems.product")
-
-        // console.log('User Orders : ', userOrders)
 
         return res.render('myOrders',{
             orders : userOrders,
@@ -114,8 +118,6 @@ const loadOrderDetails = async (req,res) => {
 
         const order = await Order.findById(orderId).populate("orderedItems.product")
 
-        // console.log('selected order : ',order)
-
         return res.render('orderDetails',{
             order ,
             search,
@@ -131,14 +133,6 @@ const loadOrderDetails = async (req,res) => {
         return res.status(500).json({ success : false , message : 'An error occurred while loading the order details!!'})        
     }
 }
-
-const loadOrderCancelled = async (req,res) => {}
-
-const loadOrderPending = async (req,res) => {}
-
-const loadOrderDelivered = async (req,res) => {}
-
-const loadOrderReturned = async (req,res) => {}
 
 const cancelOrder = async (req, res) => {
     try {
@@ -209,8 +203,6 @@ const cancelOrder = async (req, res) => {
     }
 };
 
-
-
 const returnRequest = async (req,res) => {
     try {
 
@@ -272,10 +264,6 @@ module.exports = {
     loadOrderSuccess,
     loadMyOrders,
     loadOrderDetails,
-    loadOrderCancelled,
-    loadOrderDelivered,
-    loadOrderPending,
-    loadOrderReturned,
     cancelOrder,
     returnRequest
 }

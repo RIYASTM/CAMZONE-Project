@@ -1,3 +1,4 @@
+
 let currentOrderId = null;
     let modalType = null;
 
@@ -127,3 +128,230 @@ let currentOrderId = null;
           Swal.fire('Error', 'Failed to download invoice. Please try again.', 'error');
         });
     }
+
+    const retryPaymentModal = document.getElementById('retryPaymentModal')
+    const closeButton = document.getElementById('retryPaymentClose')
+    const retryPaymentButton = document.getElementById('retryPayment')
+
+    retryPaymentButton.addEventListener('click', () => openPaymentModal())
+
+    closeButton.addEventListener('click', ()=>  closePaymentModal() )
+
+    function openPaymentModal(){
+      retryPaymentModal.style.display = 'block'
+    }
+
+    function closePaymentModal(){
+      retryPaymentModal.style.display = 'none'
+    }
+
+  async function retryPayment(method, orderId, oldMethod) {
+    console.log('Payment Method:', method);
+    console.log('orderId:', orderId);
+    console.log('Old Method:', oldMethod);
+
+    try {
+      if (method !== oldMethod) {
+        const result = await Swal.fire({
+          title: 'Are you sure?',
+          text: 'Do you want to change the payment method?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, change it!',
+          cancelButtonText: 'No, keep current'
+        });
+
+        if (!result.isConfirmed) return;
+
+        const res = await fetch('/retryPayment', {
+          method: 'POST',
+          body: JSON.stringify({ method, orderId}),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const response = await res.json();
+
+        if (!response.success) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: response.message || 'Failed to repay'
+          });
+        } else {
+          if (response.message === 'Razorpay Order Created!') {
+            const { razorpayOrder, amount, orderId, user } = response;
+
+            console.log("Razorpay")
+            if (amount > 100000) {
+                await Swal.fire({
+                    icon: 'warning',
+                    text: "UPI not available for orders above ₹1,00,000. Please choose Cash on Delevery method.",
+                    confirmButtonText: 'OK'
+                });
+            }
+
+            const options = {
+              key: 'rzp_test_t9knqvOVCcMCfu',
+              amount: amount * 100,
+              currency: 'INR',
+              name: 'CAMZONE',
+              description: 'Order Payment',
+              order_id: razorpayOrder.id,
+              handler: async function (response) {
+                const verifyRes = await fetch('/verify-payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpaySignature: response.razorpay_signature,
+                    orderId: orderId
+                  })
+                });
+
+                const verifyData = await verifyRes.json();
+                if (verifyData.success) {
+                  Swal.fire({
+                    icon : 'success',
+                    title : 'Success',
+                    text : verifyData.message || 'Repayment with Razorpay is successfull!!'
+                  })
+                  window.location.reload();
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Payment Verification failed!',
+                    text: verifyData.message || 'Something went wrong!'
+                  });
+                }
+              },
+              prefill: {
+                name: user.name,
+                email: user.email,
+                contact: user.phone
+              },
+              theme: {
+                color: '#3399cc'
+              }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+
+          } else {
+            Swal.fire({
+              icon: 'success',
+              title: 'Success',
+              text: response.message
+            }).then(() => window.location.reload());
+          }
+        }
+
+      } else {
+        const res = await fetch('/retryPayment', {
+          method: 'POST',
+          body: JSON.stringify({ orderId, method }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await res.json();
+
+        if(data.success && data.message === 'Razorpay Order Created!' ){
+          const { razorpayOrder, amount, orderId, user } = data;
+
+          console.log('Razorpay')
+
+          if (amount > 100000) {
+              await Swal.fire({
+                icon: 'warning',
+                text: "UPI not available for orders above ₹1,00,000. Please choose Cash on Delivery method.",
+                confirmButtonText: 'OK'
+              });
+            }
+            
+
+          const options = {
+            key: 'rzp_test_t9knqvOVCcMCfu',
+            amount: amount * 100,
+            currency: 'INR',
+            name: 'CAMZONE',
+            description: 'Order Payment',
+            order_id: razorpayOrder.id,
+            handler: async function (response) {
+              const verifyRes = await fetch('/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpaySignature: response.razorpay_signature,
+                  orderId: orderId
+                })
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyData.success) {
+                Swal.fire({
+                  icon : 'success',
+                  title : 'Success',
+                  text : verifyData.message || 'Repayment with Razorpay is successfull!!'
+                })
+                window.location.reload();
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Payment Verification failed!',
+                  text: verifyData.message || 'Something went wrong!'
+                });
+              }
+            },
+            prefill: {
+              name: user.name,
+              email: user.email,
+              contact: user.phone
+            },
+            theme: {
+              color: '#3399cc'
+            }
+          };
+
+          const rzp = new Razorpay(options);
+          rzp.open();
+
+        }else if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: data.message || `Your repayment with ${data.method} successful!!`
+          }).then(() => window.location.reload());
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Your repayment failed!!'
+          });
+        }
+      }
+
+    } catch (error) {
+      console.log('Something went wrong with repayment: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Unexpected error occurred.'
+      });
+    }
+  }
+
+
+
+
+
+
+

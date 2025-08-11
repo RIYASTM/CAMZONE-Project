@@ -1,14 +1,24 @@
-
+const Orders = require('../../model/orderModel')
+const Users = require('../../model/userModel')
 
 
 const loadReports = async (req,res) => {
     try {
+
+        const orders = await Orders.find()
+                    .populate('orderedItems.product', 'productName salePrice')
+                    .populate('userId', 'name')
+                    .lean();
+        const users = await Users.find({ status : true }).lean();
+        
         return res.render('reports',{
             pageTitle : 'Reports',
             currentPage:'reports',
             currentPages : 1,
             totalPages : 10,
-            iconClass : 'fa-chart-bar'
+            iconClass : 'fa-chart-bar',
+            orders,
+            users
         })
     } catch (error) {
         

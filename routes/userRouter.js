@@ -136,6 +136,8 @@ router.post('/checkout', userAuth, checkoutController.checkout)
 
 router.post('/verify-payment', userAuth , checkoutController.verifyPayment)
 
+router.post('/retryPayment', userAuth, checkoutController.retryPayment)
+
 //Order
 router.get('/orderSuccess',  orderControlller.loadOrderSuccess)
 
@@ -163,6 +165,10 @@ router.get('/orderDetails', userAuth , orderControlller.loadOrderDetails)
 //wallet Details
 
 router.get('/wallet', userAuth , walletController.loadWallet)
+
+router.post('/addtoWallet', userAuth , walletController.addTowallet)
+
+router.post('/verify-Amount', userAuth, walletController.verifyAmount)
 
 
 //Wish List

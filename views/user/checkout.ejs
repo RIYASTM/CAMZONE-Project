@@ -345,6 +345,9 @@
                 <h4>Total: <span id="totalAmount">₹ <%= Math.floor(cart.totalAmount).toLocaleString('en-IN') %></span></h4>
             </div>
 
+
+            
+
             <!-- Divider -->
             <hr class="section-divider">
 
@@ -352,7 +355,7 @@
             <div class="payment-methods">
                 <h4>Payment Method</h4>
                 <label class="payment-option">
-                    <input type="radio" name="payment" value="Razorpay" checked aria-label="Pay with RazorPay">
+                    <input type="radio" name="payment" value="Razorpay" aria-label="Pay with RazorPay">
                     RazorPay
                 </label>
                 <label class="payment-option">
@@ -369,6 +372,22 @@
             <button type="button" class="place-order" id="placeOrderBtn" data-user="<%=JSON.stringify(user)%>">Place Order</button>
         </section>
     </main>
+    <div class="modal fade" id="retryPaymentModal" tabindex="-1" aria-labelledby="retryPaymentModalLabel"  style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="retryPaymentModalLabel">Retry Payment</h5>
+                    <button type="button" class="btn-close" id="retryPaymentClose" data-bs-dismiss="modal" aria-label="Close">x</button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Select a payment method:</p>
+                    <button class="btn btn-outline-primary mb-2" id="razorpayButton" onclick="retryPayment('Razorpay')">💳 Pay with Razorpay</button><br>                                                        
+                    <button class="btn btn-outline-success mb-2" id="walletButton" onclick="retryPayment('Wallet')">🪙 Pay with Wallet</button><br>                            
+                    <button class="btn btn-outline-secondary" id="codButton" onclick="retryPayment('COD')">🚚 Switch to Cash on Delivery</button>                                                    
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <%- include('../partials/users/footer') %>
