@@ -28,14 +28,12 @@
             <div class="image-section">
                 <img src="/images/Group 150.png" alt="Camera close-up" class="camera-image">
             </div>
-
             <div class="form-section">
                 <h1>Verify Email</h1>
                 <p>Enter OTP received in your email</p>
-                
                 <form  id="verifyOtpForm" >
                     <div class="form-group">
-                        <input type="text" id="otp" name="otp" placeholder="OTP" class="otp-input"  >
+                        <input type="text" id="otp" name="otp" placeholder="OTP" class="otp-input">
                         <label for="otp">OTP</label>
                     </div>
                     
@@ -44,7 +42,8 @@
                 
                 <div class="resend-container">
                     <a href="#" id="resend-link" >Resend OTP</a>
-                    <span id="timer">9 s</span>
+                    <input type="hidden" id="remainig" value="<%=remainingTime%>">
+                    <span id="timer">60 s</span>
                 </div>
             </div>
         </div>

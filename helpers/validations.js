@@ -8,19 +8,21 @@ function validateUser(data) {
     let error = {};
 
     if (!data.name) {
-        error.name = "user name is required!!"
+        error.name = "User name is required!!"
     } else if (!namepattern.test(data.name)) {
         error.name = "Name can only contain Alphabets and spaces!!"
+    } else if(!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())){
+        error.name = "Name can't allow multiple spaces!!"
     }
 
     if (!data.email) {
-        error.email = "email is required";
+        error.email = "Email is required";
     } else if (!emailpattern.test(data.email)) {
         error.email = "Invalid Format!!"
     }
 
     if (!data.password) {
-        error.password = "password is required"
+        error.password = "Password is required"
     } else if (data.password.length < 8) {
         error.password = "Enter minimum 8 charactors!!"
     } else if (!alpha.test(data.password) || !digit.test(data.password)) {
@@ -28,7 +30,7 @@ function validateUser(data) {
     }
 
     if (!data.confirmPassword) {
-        error.confirmPassword = "confirmPassword is required!!"
+        error.confirmPassword = "ConfirmPassword is required!!"
     } else if (data.password !== data.confirmPassword) {
         error.confirmPassword = "Passwords don`t match!!"
     }

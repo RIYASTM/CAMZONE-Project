@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Element Selection
     const profileSection = document.getElementById('profile-section');
@@ -15,18 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordModal = document.getElementById('passwordModal')
     const cancelPasswordButton = document.getElementById('cancelPasswordButton');
     const changePasswordForm = document.getElementById('changePasswordForm');
-    const otpInputs = document.querySelectorAll('.otp-input');
     const currentPasswordInput = document.getElementById('currentPassword');
-    const sendOtpButton = document.getElementById('sendOtpButton');
-    const verifyOtpButton = document.getElementById('verifyOtpButton');
     const newPasswordInput = document.getElementById('newPassword');
     const confirmPasswordInput = document.getElementById('confirmPassword');
     const submitButton = changePasswordForm.querySelector('button[type="submit"]');
 
     // State Variables
     const originalValues = {};
-    let isOtpSent = false;
-    let isOtpVerified = false;
 
     // Utility Functions
     function clearErrors(form) {
@@ -38,21 +31,12 @@ document.addEventListener('DOMContentLoaded', function() {
         clearErrors(form);
         if (errors && typeof errors === 'object') {
             Object.entries(errors).forEach(([field, message]) => {
-                if (field === 'otp') {
-                    const otpWrapper = document.getElementById('otpInputs');
-                    otpWrapper.classList.add('is-invalid');
-                    const feedback = otpWrapper.parentElement.querySelector('.invalid-feedback');
-                    if (feedback) {
+                const input = form.querySelector(`input[name="${field}"], .${field}`);
+                if (input) {
+                    input.classList.add('is-invalid');
+                    const feedback = input.parentElement.querySelector('.invalid-feedback') || input.nextElementSibling;
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
                         feedback.textContent = message;
-                    }
-                } else {
-                    const input = form.querySelector(`input[name="${field}"], .${field}`);
-                    if (input) {
-                        input.classList.add('is-invalid');
-                        const feedback = input.parentElement.querySelector('.invalid-feedback') || input.nextElementSibling;
-                        if (feedback && feedback.classList.contains('invalid-feedback')) {
-                            feedback.textContent = message;
-                        }
                     }
                 }
             });
@@ -60,24 +44,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayFormError(field, message) {
-        clearErrors(field === 'otp' ? changePasswordForm : profileForm);
-        if (field === 'otp') {
-            const otpWrapper = document.getElementById('otpInputs');
-            otpWrapper.classList.add('is-invalid');
-            const feedback = otpWrapper.parentElement.querySelector('.invalid-feedback');
-            if (feedback) {
+        clearErrors(field === 'currentPassword' || field === 'newPassword' || field === 'confirmPassword' ? changePasswordForm : profileForm);
+        const input = (field === 'currentPassword' || field === 'newPassword' || field === 'confirmPassword')
+            ? changePasswordForm.querySelector(`[name="${field}"]`)
+            : profileForm.querySelector(`[name="${field}"]`);
+        if (input) {
+            input.classList.add('is-invalid');
+            const feedback = input.parentElement.querySelector('.invalid-feedback') || input.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
                 feedback.textContent = message;
-            }
-        } else {
-            const input = (field === 'currentPassword' || field === 'newPassword' || field === 'confirmPassword')
-                ? changePasswordForm.querySelector(`[name="${field}"]`)
-                : profileForm.querySelector(`[name="${field}"]`);
-            if (input) {
-                input.classList.add('is-invalid');
-                const feedback = input.parentElement.querySelector('.invalid-feedback') || input.nextElementSibling;
-                if (feedback && feedback.classList.contains('invalid-feedback')) {
-                    feedback.textContent = message;
-                }
             }
         }
     }
@@ -92,6 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             errors.name = "First name is required!";
         } else if (!namePattern.test(data.name)) {
             errors.name = "Name can only contain letters and spaces!";
+        } else if(!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())) {
+            errors.name = "Name can't allow multiple spaces!!";
         }
         if (!data.email) {
             errors.email = "Email is required!";
@@ -107,8 +84,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return Object.keys(errors).length > 0 ? errors : null;
     }
 
-    function validateForm(data) {
+    function validatePasswordForm(data) {
         let errors = {};
+
+        if (!data.currentPassword) {
+            errors.currentPassword = "Current password is required!";
+        }
 
         if (!data.newPassword) {
             errors.newPassword = "New password is required!";
@@ -214,7 +195,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
     async function submitForm() {
         clearErrors(profileForm);
         const formData = new FormData(profileForm);
@@ -300,146 +280,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Password Section
-
-    otpInputs.forEach((input, index) => {
-        input.addEventListener('input', (e) => {
-            const value = e.target.value;
-            if (!/^\d*$/.test(value)) {
-                e.target.value = '';
-                return;
-            }
-            if (value.length === 1 && index < otpInputs.length - 1) {
-                otpInputs[index + 1].focus();
-            }
-        });
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !input.value && index > 0) {
-                otpInputs[index - 1].focus();
-            }
-        });
-
-        input.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const pasteData = e.clipboardData.getData('text').replace(/\D/g, '');
-            if (pasteData.length > 0) {
-                for (let i = 0; i < Math.min(pasteData.length, otpInputs.length); i++) {
-                    otpInputs[i].value = pasteData[i] || '';
-                    if (i < otpInputs.length - 1 && pasteData[i]) {
-                        otpInputs[i + 1].focus();
-                    }
-                }
-            }
-        });
-    });
-
-    sendOtpButton.addEventListener('click', async () => {
-        clearErrors(changePasswordForm)
-        const currentPassword = currentPasswordInput.value.trim();
-        if (!currentPassword) {
-            displayFormError('currentPassword', 'Current password is required!');
-            return;
-        }
-
-        try {
-            sendOtpButton.disabled = true;
-            const response = await fetch('/checkPassword', {
-                method: 'POST',
-                body: JSON.stringify({ currentPassword }),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                Swal.fire('Success', 'OTP sent successfully!', 'success');
-                isOtpSent = true;
-                currentPasswordInput.disabled = true;
-                sendOtpButton.disabled = true;
-                otpInputs.forEach(input => input.disabled = false);
-                verifyOtpButton.disabled = false;
-            } else {
-                displayFormError('currentPassword', data.message || 'Failed to send OTP!');
-                if (data.errors && data.errors.currentPassword) {
-                    document.querySelector(".currentPasswordError").textContent = data.errors.currentPassword;
-                }
-                isOtpSent = false;
-            }
-        } catch (error) {
-            console.error('Error sending OTP:', error);
-            Swal.fire('Error', 'Failed to send OTP.', 'error');
-            isOtpSent = false;
-        } finally {
-            sendOtpButton.disabled = false;
-        }
-    });
-
-    verifyOtpButton.addEventListener('click', async () => {
-        const otp = Array.from(otpInputs).map(input => input.value).join('');
-        if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-            displayFormError('otp', 'Please enter a valid 6-digit OTP!');
-            return;
-        }
-
-        try {
-            verifyOtpButton.disabled = true;
-            const response = await fetch('/confirmOTP', {
-                method: 'POST',
-                body: JSON.stringify({ otp }),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                Swal.fire('Success', 'OTP verified successfully!', 'success');
-                isOtpVerified = true;
-                newPasswordInput.disabled = false;
-                confirmPasswordInput.disabled = false;
-                submitButton.disabled = false;
-                otpInputs.forEach(input => input.disabled = true);
-                verifyOtpButton.disabled = true;
-            } else {
-                displayFormError('otp', data.message || 'Invalid OTP!');
-                isOtpVerified = false;
-            }
-        } catch (error) {
-            console.error('Error verifying OTP:', error);
-            Swal.fire('Error', 'Failed to verify OTP.', 'error');
-            isOtpVerified = false;
-        } finally {
-            verifyOtpButton.disabled = false;
-        }
-    });
-
+    // Password Change Section
     changePasswordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        if (!isOtpSent) {
-            Swal.fire('Error', 'Please send the OTP first!', 'error');
-            return;
-        }
-
-        if (!isOtpVerified) {
-            Swal.fire('Error', 'Please verify the OTP first!', 'error');
-            return;
-        }
+        clearErrors(changePasswordForm);
 
         const formData = new FormData(changePasswordForm);
         const jsonData = Object.fromEntries(formData);
 
-        let errors = validateForm(jsonData);
+        // Trim values
+        Object.keys(jsonData).forEach(key => {
+            jsonData[key] = jsonData[key].trim();
+        });
+
+        let errors = validatePasswordForm(jsonData);
         if (errors) {
-            console.log('Validation error:', errors);
             displayFormErrors(changePasswordForm, errors);
             return;
         }
 
         try {
-            const response = await fetch('/changepassword', {
-                method: 'PATCH',
+            submitButton.disabled = true;
+            submitButton.textContent = 'Updating...';
+
+            const response = await fetch('/changePassword', {
+                method: 'POST',
                 body: JSON.stringify(jsonData),
                 headers: { 'Content-Type': 'application/json' }
             });
+
             const data = await response.json();
 
             if (!data.success) {
@@ -454,23 +323,17 @@ document.addEventListener('DOMContentLoaded', function() {
             Swal.fire('Success', data.message || 'Password updated successfully!', 'success')
                 .then(() => {
                     changePasswordForm.reset();
-                    otpInputs.forEach(input => input.value = '');
-                    isOtpSent = false;
-                    isOtpVerified = false;
-                    newPasswordInput.disabled = true;
-                    confirmPasswordInput.disabled = true;
-                    submitButton.disabled = true;
-                    currentPasswordInput.disabled = false;
-                    sendOtpButton.disabled = false;
-                    otpInputs.forEach(input => input.disabled = true);
-                    verifyOtpButton.disabled = true;
                     profileSection.style.display = 'block';
                     passwordModal.style.display = 'none';
-                    cancelPasswordButton.style.display = 'none'
+                    cancelPasswordButton.style.display = 'none';
                 });
+
         } catch (error) {
             console.error('Error updating password:', error);
             Swal.fire('Error', 'Something went wrong while updating the password.', 'error');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Update Password';
         }
     });
 
@@ -478,12 +341,14 @@ document.addEventListener('DOMContentLoaded', function() {
     passwordButton.addEventListener('click', () => {
         profileSection.style.display = 'none';
         passwordModal.style.display = 'block';
-        cancelPasswordButton.style.display = 'block'
+        cancelPasswordButton.style.display = 'block';
     });
 
     cancelPasswordButton.addEventListener('click', () => {
+        changePasswordForm.reset();
+        clearErrors(changePasswordForm);
         profileSection.style.display = 'block';
         passwordModal.style.display = 'none';
-        cancelPasswordButton.style.display = 'none'
+        cancelPasswordButton.style.display = 'none';
     });
 });

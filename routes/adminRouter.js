@@ -51,7 +51,7 @@ router.post('/addCategory', adminAuth, handleMulterError(uploadCategory), catego
 
 router.post('/editCategory', adminAuth, handleMulterError(uploadCategory), categoryController.editCategory);
 
-router.post('/deleteCategory', adminAuth, categoryController.deleteCategory);
+// router.post('/deleteCategory', adminAuth, categoryController.deleteCategory);
 
 router.post('/addCategoryOffer', adminAuth, categoryController.addCategoryOffer);
 

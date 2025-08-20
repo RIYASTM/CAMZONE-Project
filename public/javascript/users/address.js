@@ -186,7 +186,7 @@
 
                         Swal.fire('Deleted!', data.message || 'Address deleted successfully.', 'success')
                             .then(() => {
-                                window.location.reload(); // Refresh to update address list
+                                window.location.reload();
                             });
                     } catch (error) {
                         console.error('Error deleting address:', error);
@@ -198,7 +198,7 @@
 
             function validateForm(data) {
                 const namePattern = /^[a-zA-Z\s]+$/;
-                const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/; // More flexible phone pattern
+                const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/;
                 const pincodePattern = /^\d{5,10}$/;
                 let errors = {};
 

@@ -61,46 +61,8 @@ a {
 .content {
     display: flex;
     gap: 40px;
+    min-height: 421px;
 }
-
-/* Sidebar */
-/* .sidebar {
-    width: 200px;
-    flex-shrink: 0;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-}
-
-.sidebar h3 {
-    margin-bottom: 20px;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text-color);
-}
-
-.sidebar ul {
-    list-style: none;
-}
-
-.sidebar ul li {
-    margin-bottom: 10px;
-}
-
-.sidebar ul li a {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    display: block;
-    padding: 5px 0;
-    transition: color 0.3s;
-}
-
-.sidebar ul li.active a,
-.sidebar ul li a:hover {
-    color: var(--text-color);
-} */
 
 /* Wallet Main Content */
 .wallet-main {

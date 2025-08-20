@@ -12,7 +12,7 @@ if(env.error)throw new Error("Failed to load .env file: ",env.error.message)
 passport.use(new GoogleStrategy({
     clientID : process.env.GOOGLE_CLIENT_ID,
     clientSecret : process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL : '/google/callback'
+    callbackURL : '/auth/google/callback'
     
 },
 async (accessToken,refreshToken,profile,done) => {
@@ -32,6 +32,7 @@ async (accessToken,refreshToken,profile,done) => {
                 email : profile.emails[0].value,
                 googleId : profile.id
             })
+            console.log('Google User : ', user)
             await user.save()
 
             return done(null,user)
@@ -39,6 +40,7 @@ async (accessToken,refreshToken,profile,done) => {
         
 
     } catch (error) {
+        console.log("google auth error : ", error)
         
         return done(error,null)
     }

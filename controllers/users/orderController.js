@@ -117,6 +117,11 @@ const loadOrderDetails = async (req,res) => {
         const orderId = req.query.id
 
         const order = await Order.findById(orderId).populate("orderedItems.product")
+        const isUser = order.userId.toString() === userId.toString()
+
+        if(!isUser){
+            return res.status(401).json({ success : false, message : 'Wrong order details!!!'})
+        }
 
         return res.render('orderDetails',{
             order ,

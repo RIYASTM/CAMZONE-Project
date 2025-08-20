@@ -84,7 +84,7 @@
                                 <td><%= category.isListed ? 'Listed' : 'Unlisted' %></td>
                                 <td>
                                     <a href="#" class="action-icon" onclick="showEditCategoryModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.categoryOffer %>', '<%= category.isListed %>', '<%= category.categoryImage %>')"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="action-icon" id="delete-category" onclick="deleteCategory('<%= category._id %>')"><i class="fas fa-trash"></i></a>
+                                    <!-- <a href="#" class="action-icon" id="delete-category" ><i class="fas fa-trash"></i></a> -->
                                 </td>
                             </tr>
                         <% }) %>

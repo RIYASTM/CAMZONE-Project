@@ -32,6 +32,10 @@ const loadHomePage = async (req, res) => {
 
         const user = await User.findById(userId)
 
+        if(user){
+            console.log('User : ', user)
+        }
+
         const cart = userId ? await Cart.findOne({ userId }) : 0;
 
         const brands = await Brands.find({ isDeleted: false, isBlocked: false });
@@ -589,17 +593,7 @@ const signup = async (req, res) => {
 
         req.session.userOtp = otp;
 
-        let seconds = 10
-
-        let countdown = setInterval(() => {
-            seconds --
-            
-            if(seconds <= 0){
-                clearInterval(countdown)
-                req.session.userOtp = null
-                console.log('Resent OTP Expired!!')
-            }
-        },1000)
+        req.session.otpGenerated = Date.now()
 
         const emailSent = await sendOTP(email, otp);
         if (!emailSent) {
@@ -659,12 +653,25 @@ const loadVerifyEmail = async (req, res) => {
 
         const userId = req.session.user
 
+        const otpGenerated = req.session.otpGenerated
+
+        const expiryTime = 60 * 1000
+
+        const now = Date.now()
+
+        // let remainingTime = Math.max(0,Math.floor((expiryTime - (now - otpGenerated)) / 1000))
+
+        if (otpGenerated) {
+            remainingTime = Math.max(0, expiryTime - (now - otpGenerated));
+        }
+
         const cart = userId ? await Cart.findOne({userId}) : 0
 
         return res.render('emailVerify', {
             currentPage: 'emailVerify',
             search,
-            cart
+            cart,
+            remainingTime
         }
         )
     } catch (error) {
@@ -682,6 +689,21 @@ const verifyEmail = async (req, res) => {
 
         console.log('from body : ', otp)
         console.log('from session : ', req.session.userOtp)
+
+        const expiryTime = 60 * 1000
+
+        const now = Date.now()
+
+        const time = new Date(now)
+
+        const otpGenerated = req.session.otpGenerated
+
+        if(now - otpGenerated > expiryTime){
+            req.session.userOtp = null
+            const time = new Date(now)
+            console.log('tiem  : ', time.toLocaleTimeString())
+            return res.status(400).json({ success : false, message : 'OTP has been expired!!'})
+        }
 
         if (otp === req.session.userOtp) {
             const user = req.session.userData
@@ -704,7 +726,7 @@ const verifyEmail = async (req, res) => {
                 redirectUrl: "/"
             });
         } else {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: "Invalid OTP. Please try again!!"
             })
@@ -736,17 +758,9 @@ const resendOtp = async (req, res) => {
 
         let otp = generateOtp();
         req.session.userOtp = otp;
-        let seconds = 39
+        req.session.otpGenerated = Date.now()
 
-        let countdown = setInterval(() => {
-            seconds --
-            
-            if(seconds <= 0){
-                clearInterval(countdown)
-                req.session.userOtp = null
-                console.log('OTP Expired!!')
-            }
-        },1000)
+        const remainingTime = 60 * 1000;
 
         const emailSent = await sendOTP(email, otp)
         if (!emailSent) {
@@ -759,7 +773,8 @@ const resendOtp = async (req, res) => {
         console.log("Resend otp:", otp);
         return res.status(200).json({
             success: true,
-            message: "OTP resent successfully"
+            message: "OTP resent successfully",
+            remainingTime
         });
     } catch (error) {
         console.log("Error resending OTP:", error);

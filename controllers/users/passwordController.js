@@ -131,16 +131,22 @@ const changePassword = async (req,res) => {
 
         const data = req.body
 
+        const currentPassword = data.currentPassword
+
+        const isMatch = await bcrypt.compare( currentPassword , user.password)
+
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Password didn`t Match",
+                errors: { currentPassword: "Password didn`t match with old Password" }
+            });
+        }
+
         let validationError = validatePassword(data)
 
         if(validationError){
             return res.status(401).json({success : false , message : 'Validation error' })
-        }
-
-        const otp = req.session.userOtp
-
-        if(!otp){
-            return res.status(404).json({success : false , message : 'User not confirmed!!'})
         }
 
         const hashedPassword = await securePassword(data.newPassword)

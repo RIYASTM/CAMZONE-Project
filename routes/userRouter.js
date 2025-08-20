@@ -80,11 +80,11 @@ router.post('/resetPassword',userController.resetPassword)
 
 // router.get('/passwordManage', userAuth, passwordController.loadPassword)
 
-router.post('/checkPassword', userAuth , passwordController.checkPassword)
+// router.post('/checkPassword', userAuth , passwordController.checkPassword)
 
-router.post('/confirmOTP',userAuth, passwordController.confirmOTP)
+// router.post('/confirmOTP',userAuth, passwordController.confirmOTP)
 
-router.patch('/changepassword', userAuth, passwordController.changePassword)
+router.post('/changePassword', userAuth, passwordController.changePassword)
 
 
 //Address Managing
@@ -146,14 +146,6 @@ router.get('/orderSuccess',  orderControlller.loadOrderSuccess)
 
 router.get('/myOrders' , userAuth , orderControlller.loadMyOrders)
 
-// router.get('/orderDelivered' , userAuth , orderControlller.loadOrderDelivered)
-
-// router.get('/orderOnTheWay' , userAuth , orderControlller.loadOrderPending)
-
-// router.get('/orderCancelled' , userAuth , orderControlller.loadOrderCancelled)
-
-// router.get('/orderReturned' , userAuth , orderControlller.loadOrderReturned)
-
 router.post('/orderCancel' , userAuth , orderControlller.cancelOrder )
 
 router.post('/orderReturn', userAuth, orderControlller.returnRequest)
@@ -196,7 +188,7 @@ router.get('/auth/google/callback', (req, res, next) => {
       req.logIn(user, (loginErr) => {if (loginErr) {
            return res.redirect(`/signup?message=${encodeURIComponent('Login failed')}`);}
       req.session.user = user._id;
-           return res.redirect('/home');
+           return res.redirect('/');
       });
     })(req, res, next);});
 

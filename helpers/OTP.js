@@ -11,9 +11,9 @@ async function sendOTP(email, otp) {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
-            port: 587,
-            secure: false,
-            require: true,
+            // port: 587,
+            // secure: false,
+            // require: true,
             auth: {
                 user: process.env.NODEMAILER_EMAIL,
                 pass: process.env.NODEMAILER_PASSWORD
@@ -42,6 +42,9 @@ async function sendOTP(email, otp) {
 
 async function sendOTPForgott(email, otp) {
     try {
+        console.log("Email:", process.env.NODEMAILER_EMAIL);
+        console.log("Password:", process.env.NODEMAILER_PASSWORD);
+
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             port: 587,

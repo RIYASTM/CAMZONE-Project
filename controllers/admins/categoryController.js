@@ -1,4 +1,4 @@
-const { render } = require('ejs');
+const { render, name } = require('ejs');
 const Category = require('../../model/categoryModel');
 const Products = require('../../model/productModel');
 const fs = require('fs').promises;
@@ -52,8 +52,11 @@ const loadCategory = async (req, res) => {
 const addCategory = async (req, res) => {
     try {
         const { categoryName, categoryDescription, listCategory, offerPrice } = req.body;
+        
         const normalizedName = sanitizeHtml(categoryName.trim().toLowerCase());
-        const findCategory = await Category.findOne({ name: normalizedName });
+
+        const categories = await Category.find();
+        const findCategory = categories.find(cat => cat.name.toLowerCase() === normalizedName)
 
         if (findCategory) {
             return res.status(409).json({
@@ -118,9 +121,10 @@ const editCategory = async (req, res) => {
         }
 
         const normalizedName = sanitizeHtml(categoryName.trim().toLowerCase());
-        const existCategory = await Category.findOne({ name: normalizedName });
+        const categories = await Category.find();
+        const findCategory = categories.find(cat => cat.name.toLowerCase() === normalizedName)
 
-        if (existCategory && existCategory._id.toString() !== id) {
+        if (findCategory && findCategory._id.toString() !== id) {
             return res.status(400).json({
                 success: false,
                 message: 'Category already exists with this name!',
@@ -184,30 +188,31 @@ const editCategory = async (req, res) => {
     }
 };
 
-const deleteCategory = async (req, res) => {
-    try {
-        const { categoryId } = req.body;
-        const category = await Category.findById(categoryId);
-        if (!category) {
-            return res.status(404).json({ status: false, message: 'Category not found!' });
-        }
+// const deleteCategory = async (req, res) => {
+//     try {
+//         const { categoryId } = req.body;
+//         const category = await Category.findById(categoryId);
+//         if (!category) {
+//             return res.status(404).json({ status: false, message: 'Category not found!' });
+//         }
 
-        if (category.categoryImage) {
-            const imagePath = path.join(__dirname, '../../public/uploads/category', category.categoryImage);
-            try {
-                await fs.unlink(imagePath);
-            } catch (err) {
-                console.error('Failed to delete category image:', err);
-            }
-        }
+//         if (category.categoryImage) {
+//             const imagePath = path.join(__dirname, '../../public/uploads/category', category.categoryImage);
+//             try {
+//                 await fs.unlink(imagePath);
+//             } catch (err) {
+//                 console.error('Failed to delete category image:', err);
+//             }
+//         }
 
-        await Category.findByIdAndDelete(categoryId);
-        return res.status(200).json({ status: true, message: 'Category deleted successfully' });
-    } catch (error) {
-        console.error('Category deletion failed:', error);
-        return res.status(500).json({ status: false, message: 'An error occurred while deleting category!' });
-    }
-};
+//         category.isDeleted = true
+//         category.save()
+//         return res.status(200).json({ status: true, message: 'Category deleted successfully' });
+//     } catch (error) {
+//         console.error('Category deletion failed:', error);
+//         return res.status(500).json({ status: false, message: 'An error occurred while deleting category!' });
+//     }
+// };
 
 const addCategoryOffer = async (req, res) => {
     try {
@@ -276,7 +281,7 @@ module.exports = {
     loadCategory,
     addCategory,
     editCategory,
-    deleteCategory,
     addCategoryOffer,
     removeCategoryOffer,
+    // deleteCategory,
 };

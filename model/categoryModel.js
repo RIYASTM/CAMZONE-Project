@@ -26,6 +26,10 @@ const categorySchema = new Schema ({
     categoryImage : {
         type : String,
         required : false
+    },
+    isDeleted : {
+        type : Boolean,
+        default : false
     }
 })
 

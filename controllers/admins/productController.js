@@ -8,6 +8,7 @@ const sharp = require('sharp')
 
 //Helper Function 
 const {validateProductForm} = require('../../helpers/validations')
+const {calculateDiscountedPrice} = require('../../helpers/productOffer')
 
 
 
@@ -97,9 +98,6 @@ const addProduct = async (req, res) => {
     try {
         const data = req.body;
 
-        // console.log('Received form data:', data);
-        // console.log('Received files:', req.files);
-
         console.log('brand : ', data.brand)
 
         const existProduct = await Products.findOne({ productName: data.productName }).populate(['category','brand']);
@@ -117,15 +115,13 @@ const addProduct = async (req, res) => {
 
         const productImages = req.files ? req.files.map(file => file.filename) : [];
 
-        // console.log('Product images to save:', productImages);
-
         if (productImages.length === 0) {
             return res.status(400).json({ success: false, message: 'At least one product image is required!' });
         }
 
         const regularPrice = parseFloat(data.regularPrice)
         const gst = (regularPrice * 18 ) / 118
-        let salePrice = parseFloat(data.salePrice)
+        let salePrice = parseFloat(data.salePrice) || 0
         
         const productOffer = parseFloat(data.productOffer) || 0;
         console.log('Product offer : ',productOffer)
@@ -173,10 +169,6 @@ const editProduct = async (req, res) => {
         const data = req.body;
         const productId = data.id;
         const page = data.currentPages
-
-        // console.log('page  : ', page)
-        // console.log('data : ',data)
-
 
         const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } });
 

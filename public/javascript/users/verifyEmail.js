@@ -5,13 +5,13 @@
  document.addEventListener('DOMContentLoaded', function() {
     const verifyOtpForm = document.getElementById('verifyOtpForm');
 
-    console.log(verifyOtpForm, 'form')
+    // console.log(verifyOtpForm, 'form')
 
     verifyOtpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        console.log('text')
+        // console.log('text')
         const otp = document.getElementById('otp').value
-        console.log(otp)
+        // console.log(otp)
 
         try {
             const response = await fetch('/verify-email', {
@@ -22,7 +22,7 @@
 
             const data = await response.json();
 
-            console.log(data)
+            // console.log(data)
 
             if (data.success) {
                 Swal.fire('Success',data.message || ' successful', 'success')
@@ -30,6 +30,7 @@
                     window.location.href = data.redirectUrl || '/';
                 });
             }else{
+                console.log('Invalid Otp')
                 Swal.fire('Failed', data.message || 'Invalid OTP' , 'error')
             }
         } catch (error) {
@@ -43,19 +44,25 @@
 
 
 
+    // let seconds = parseInt(timerElement.textContent);
     let timerElement = document.getElementById('timer');
     let resendLink = document.getElementById('resend-link');
-    let seconds = parseInt(timerElement.textContent);
-    
+    const verifyButton = document.getElementById('verify-btn')
+    let remainingTime = document.getElementById('remainig').value / 1000
+    let seconds = remainingTime > 0 ? remaining : 0
+
+    timerElement.textContent = seconds + ' s'
+    console.log('remaining time : ', remainingTime)
     let countdownInterval = setInterval(() => {
-        seconds--;
-        timerElement.textContent = seconds + ' s';
         
         if (seconds <= 0) {
             clearInterval(countdownInterval);
-            document.getElementById('verify-btn').disabled = true
+            verifyButton.disabled = true
             resendLink.classList.add('active');
+            return
         }
+        seconds--;
+        timerElement.textContent = seconds + ' s';
     }, 1000);
     
     resendLink.addEventListener('click', function(e) {
@@ -82,20 +89,22 @@
                         showConfirmButton: false,
                         timer: 1500
                     });
-                    seconds = 39;
-                    timerElement.textContent = seconds + ' s';
+                    let remaining = data.remainingTime ? data.remainingTime / 1000 : 0
+                    let remainSeconds = remaining <= 0 ? 0 : remaining
+                    timerElement.textContent = remainSeconds + ' s';
                     resendLink.classList.remove('active');
                     if (countdownInterval) {
                         clearInterval(countdownInterval);
                         countdownInterval = setInterval(() => {
-                        seconds--;
-                        timerElement.textContent = seconds + ' s';
-                            if (seconds <= 0) {
+                            if (remainSeconds <= 0) {
                                 clearInterval(countdownInterval);
                                 countdownInterval = null;
                                 document.getElementById('verify-btn').disabled = true,
                                 resendLink.classList.add('active');
+                                return
                             }
+                            remainSeconds--;
+                            timerElement.textContent = remainSeconds + ' s';
                         }, 1000);
                     }
                 } else {

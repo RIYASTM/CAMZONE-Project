@@ -88,6 +88,10 @@ function validateUser(data){
         error.name = "User name is required !!"
     }else if(!namepattern.test(data.name)){
         error.name = "Name can only contain Alphabets and spaces !!"
+    }else if(!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())){
+        error.name = "Name can't allow multiple spaces!!"
+    }else if(data.name.length < 4){
+        error.name = 'Name should contain min 4 characters!!'
     }
     if(!data.email){
         error.email = "Email is required !!";

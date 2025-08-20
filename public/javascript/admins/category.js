@@ -385,41 +385,41 @@ async function removeOffer(categoryId) {
     }
 }
 
-async function deleteCategory(categoryId) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!',
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                const response = await fetch('/admin/deleteCategory', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        categoryId: categoryId,
-                    }),
-                });
+// async function deleteCategory(categoryId) {
+//     Swal.fire({
+//         title: 'Are you sure?',
+//         text: "You won't be able to revert this!",
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#d33',
+//         cancelButtonColor: '#3085d6',
+//         confirmButtonText: 'Yes, delete it!',
+//     }).then(async (result) => {
+//         if (result.isConfirmed) {
+//             try {
+//                 const response = await fetch('/admin/deleteCategory', {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                     },
+//                     body: JSON.stringify({
+//                         categoryId: categoryId,
+//                     }),
+//                 });
 
-                const data = await response.json();
+//                 const data = await response.json();
 
-                if (response.ok && data.status) {
-                    Swal.fire('Category Removed', 'The Category has been removed', 'success').then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire('Failed', data.message || 'Category removing failed', 'error');
-                }
-            } catch (error) {
-                Swal.fire('Error', 'An error occurred while deleting category', 'error');
-                console.error('Category removing failed:', error);
-            }
-        }
-    });
-}
+//                 if (response.ok && data.status) {
+//                     Swal.fire('Category Removed', 'The Category has been removed', 'success').then(() => {
+//                         location.reload();
+//                     });
+//                 } else {
+//                     Swal.fire('Failed', data.message || 'Category removing failed', 'error');
+//                 }
+//             } catch (error) {
+//                 Swal.fire('Error', 'An error occurred while deleting category', 'error');
+//                 console.error('Category removing failed:', error);
+//             }
+//         }
+//     });
+// }
