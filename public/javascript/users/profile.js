@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // DOM Element Selection
     const profileSection = document.getElementById('profile-section');
     const profileForm = document.getElementById('profileForm');
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
             errors.name = "First name is required!";
         } else if (!namePattern.test(data.name)) {
             errors.name = "Name can only contain letters and spaces!";
-        } else if(!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())) {
+        } else if (!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())) {
             errors.name = "Name can't allow multiple spaces!!";
         }
         if (!data.email) {
@@ -112,13 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     originalValues.profileImage = previewImg ? previewImg.src : '';
 
-    profilePicContainer.addEventListener('click', function() {
+    profilePicContainer.addEventListener('click', function () {
         if (!fileInput.disabled) {
             fileInput.click();
         }
     });
 
-    fileInput.addEventListener('change', function() {
+    fileInput.addEventListener('change', function () {
         if (this.files && this.files[0]) {
             if (this.files[0].size > 5 * 1024 * 1024) {
                 Swal.fire('Error', 'Profile picture must be less than 5MB.', 'error');
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 if (previewImg) {
                     previewImg.src = e.target.result;
                 } else {
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Profile Form Event Listeners
-    editProfileButton.addEventListener('click', function() {
+    editProfileButton.addEventListener('click', function () {
         if (editProfileButton.textContent === 'Edit') {
             formInputs.forEach(input => input.disabled = false);
             fileInput.disabled = false;
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    cancelProfileButton.addEventListener('click', function() {
+    cancelProfileButton.addEventListener('click', function () {
         formInputs.forEach(input => {
             input.disabled = true;
             if (input.type !== 'file') {

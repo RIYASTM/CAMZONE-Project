@@ -1,53 +1,53 @@
-document.addEventListener("DOMContentLoaded",function (){
+document.addEventListener("DOMContentLoaded", function () {
     const signinForm = document.getElementById('signinForm')
 
-    signinForm.addEventListener('submit',async (e) => {
+    signinForm.addEventListener('submit', async (e) => {
         e.preventDefault()
         clearErrors(signinForm)
 
         const email = document.getElementById('email').value
         const password = document.getElementById('password').value
 
-        
 
-        let errors = validateForm({email,password})
-        if(errors){
-            displayFormError(signinForm,errors)
+
+        let errors = validateForm({ email, password })
+        if (errors) {
+            displayFormError(signinForm, errors)
             return
         }
         try {
-            const response = await fetch('/signin',{
-                method : "POST",
-                body : JSON.stringify({email,password}),
-                headers : {'content-Type' : 'application/json'}
+            const response = await fetch('/signin', {
+                method: "POST",
+                body: JSON.stringify({ email, password }),
+                headers: { 'content-Type': 'application/json' }
             })
 
             const data = await response.json()
 
-            if(!data.success){
-                Swal.fire('Error',data.message || 'Validation error', 'error')
-            }else{
+            if (!data.success) {
+                Swal.fire('Error', data.message || 'Validation error', 'error')
+            } else {
                 Swal.fire('Success', data.message || 'Signin Success', 'success')
-                .then(() => {
-                    window.location.replace(data.redirectUrl)
-                })
+                    .then(() => {
+                        window.location.replace(data.redirectUrl)
+                    })
             }
         } catch (error) {
             console.error('Signup error:', error);
             Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
         }
     })
-    function displayFormError(signinform,errors){
+    function displayFormError(signinform, errors) {
         clearErrors(signinform)
 
-        if(errors && typeof errors === 'object' ){
-            Object.entries(errors).forEach(([field,message]) => {
+        if (errors && typeof errors === 'object') {
+            Object.entries(errors).forEach(([field, message]) => {
                 const input = signinform.querySelector(`input[name = ${field}]`)
 
-                if(input){
+                if (input) {
                     input.classList.add('is-invalid')
                     const feedback = input.nextElementSibling
-                    if(feedback && feedback.classList.contains('invalid-feedback')){
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
                         feedback.textContent = message
                     }
                 }
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded",function (){
         }
     }
 
-    function clearErrors(signinform){
+    function clearErrors(signinform) {
         signinform.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
         signinForm.querySelectorAll('.invalid-feedback').forEach(el => el.textcontent = '')
     }
@@ -63,20 +63,20 @@ document.addEventListener("DOMContentLoaded",function (){
 })
 
 
-function validateForm({email,password}){
-const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
-let error = {}
+function validateForm({ email, password }) {
+    const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
+    let error = {}
 
-if(!email){
-    error.email = 'Email is required!!'
-}else if(!emailPattern.test(email)){
-    error.email = 'Invalid Email'
-}
+    if (!email) {
+        error.email = 'Email is required!!'
+    } else if (!emailPattern.test(email)) {
+        error.email = 'Invalid Email'
+    }
 
-if(!password){
-    error.password = "Password is required!!"
-}
+    if (!password) {
+        error.password = "Password is required!!"
+    }
 
-return Object.keys(error).length > 0 ? error : null
+    return Object.keys(error).length > 0 ? error : null
 }
 

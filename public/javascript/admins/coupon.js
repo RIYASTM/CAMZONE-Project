@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filter = document.querySelector('.filter');
     const clearButton = document.getElementById('clear-button');
 
-    let currentPages = 1; // Track current page for pagination
+    let currentPages = 1;
 
     // Modal close on outside click or Escape key
     [addCouponModal, editCouponModal, deleteCouponModal].forEach(modal => {
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteCouponModal.style.display = 'none';
     });
 
-    
+
     document.querySelector('.coupons-table tbody').addEventListener('click', async (e) => {
         e.preventDefault();
         const button = e.target.closest('.editCouponButton, .deleteCoupon');
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     searchBar.addEventListener('input', debounce(async () => {
-        currentPages = 1; 
+        currentPages = 1;
         await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
     }, 300));
 
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addCouponForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData(addCouponForm);
         const jsonData = {};
         formData.forEach((value, key) => {
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     editCouponForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearErrors(editCouponForm);
-        
+
         const formData = new FormData(editCouponForm);
         const jsonData = {};
         formData.forEach((value, key) => {

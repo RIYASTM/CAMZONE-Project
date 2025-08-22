@@ -1,20 +1,20 @@
 const search = document.getElementById('search')
 const searchValue = search.value
 
-document.getElementById('search').addEventListener('keypress',function(e){
-    const  searchValue = search.value
+document.getElementById('search').addEventListener('keypress', function (e) {
+    const searchValue = search.value
 
-    if(e.key === 'Enter'){
+    if (e.key === 'Enter') {
         window.location.href = `?search=${searchValue}`
     }
 })
 
-if(searchValue){
+if (searchValue) {
 
-document.getElementById('clear-button').addEventListener('click',function(e){
+    document.getElementById('clear-button').addEventListener('click', function (e) {
 
-    window.location.href = `/admin/brands`
-})
+        window.location.href = `/admin/brands`
+    })
 }
 
 const addBrandModal = document.getElementById('addBrandModal')
@@ -22,13 +22,13 @@ const addBrandModal = document.getElementById('addBrandModal')
 const editBrandModal = document.getElementById('editBrandModal')
 
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
 
     //Add Brand
     const addBrandButton = document.getElementById('addBrandButton')
     const cancelAddButton = document.getElementById('cancelAddButton')
     const addBrandForm = document.getElementById('addBrandForm')
-    
+
 
     addBrandButton.addEventListener('click', showAddBrandModal)
 
@@ -47,13 +47,13 @@ document.addEventListener('DOMContentLoaded',()=>{
             const description = button.dataset.description
             const image = button.dataset.image
             const brandOffer = button.dataset.brandoffer;
-            const isBlocked = button.dataset.isblocked == 'true' 
+            const isBlocked = button.dataset.isblocked == 'true'
 
             showEditBrandModal(id, name, description, image, isBlocked, brandOffer)
         })
     })
 
-    
+
 
     // editBrandButton.addEventListener('click', showEditBrandModal)
 
@@ -73,34 +73,34 @@ document.addEventListener('DOMContentLoaded',()=>{
             }
         });
 
-        console.log('jsonData : ',jsonData)
+        console.log('jsonData : ', jsonData)
 
         const errors = validateForm(jsonData)
 
-        console.log('validation errors : ',errors)
+        console.log('validation errors : ', errors)
 
-        if(errors){
+        if (errors) {
             displayFormError(addBrandForm, errors)
             return
         }
 
         try {
             const response = await fetch('/admin/addBrand', {
-            method : 'POST',
-            body: formdata
-        })
-        const data = await response.json();
-
-        if(!data.success){
-            console.log('errot')
-            Swal.fire('Error', data.message || 'Validation error' , 'error');
-            return false;
-        }
-            Swal.fire('success', data.message || 'Category added successfully' , 'success')
-            .then(() => {
-                window.location.replace(data.redirectUrl);
+                method: 'POST',
+                body: formdata
             })
-        
+            const data = await response.json();
+
+            if (!data.success) {
+                console.log('errot')
+                Swal.fire('Error', data.message || 'Validation error', 'error');
+                return false;
+            }
+            Swal.fire('success', data.message || 'Category added successfully', 'success')
+                .then(() => {
+                    window.location.replace(data.redirectUrl);
+                })
+
         } catch (error) {
             console.log(error.message)
         }
@@ -119,40 +119,40 @@ document.addEventListener('DOMContentLoaded',()=>{
             }
         });
 
-        console.log('jsonData : ',jsonData)
+        console.log('jsonData : ', jsonData)
 
         const errors = validateForm(jsonData)
 
-        console.log('validation errors : ',errors)
+        console.log('validation errors : ', errors)
 
-        if(errors){
+        if (errors) {
             displayFormError(editBrandForm, errors)
             return
         }
 
         try {
             const response = await fetch('/admin/editBrand', {
-            method : 'POST',
-            body: formdata
-        })
-        const data = await response.json();
-
-        if(!data.ok && data.success !== true){
-            console.log('error')
-            Swal.fire('Error', data.message || 'Validation error' , 'error');
-            return false;
-        }else{
-           
-
-            Swal.fire('success', data.message || 'Category edited successfully', 'success')
-            .then(() => {
-                window.location.replace(data.redirectUrl);
+                method: 'POST',
+                body: formdata
             })
-        }
-           
+            const data = await response.json();
+
+            if (!data.ok && data.success !== true) {
+                console.log('error')
+                Swal.fire('Error', data.message || 'Validation error', 'error');
+                return false;
+            } else {
+
+
+                Swal.fire('success', data.message || 'Category edited successfully', 'success')
+                    .then(() => {
+                        window.location.replace(data.redirectUrl);
+                    })
+            }
+
         } catch (error) {
             console.log(error.message)
-            Swal.fire('Error', "Something went wrong while editing brand" , 'error')
+            Swal.fire('Error', "Something went wrong while editing brand", 'error')
         }
     })
 
@@ -160,40 +160,40 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 //Add Brand
 
-function showAddBrandModal(){
-        addBrandModal.style.display = 'block'
+function showAddBrandModal() {
+    addBrandModal.style.display = 'block'
 }
 
-function hideAddBrandModal(){
+function hideAddBrandModal() {
     addBrandModal.style.display = 'none'
 }
 
 //Edit Brand
 
-function hideEditBrandModal(){
-        editBrandModal.style.display = 'none'
-    }
+function hideEditBrandModal() {
+    editBrandModal.style.display = 'none'
+}
 
-function showEditBrandModal(id, name, description, image, isBlocked , brandOffer){
-        const editBrandModal = document.getElementById('editBrandModal');
-        document.getElementById('brandId').value = id;
-        document.getElementById('editBrandName').value = name;
-        document.getElementById('editBrandDescription').value = description;
-        document.getElementById('editCheckbox').checked = isBlocked == true ;
-        document.getElementById('editBrandOffer').value = brandOffer ? brandOffer : '';
-        const currentImageDiv = document.getElementById('currentImage');
-        if (image) {
-            currentImageDiv.innerHTML = `<img src="/uploads/brands/${image}" alt="Current Image" style="width: 50px; height: 50px; object-fit: fill;">`;
-        } else {
-            currentImageDiv.innerHTML = 'No Image';
-        }
-        editBrandModal.style.display = 'block'
+function showEditBrandModal(id, name, description, image, isBlocked, brandOffer) {
+    const editBrandModal = document.getElementById('editBrandModal');
+    document.getElementById('brandId').value = id;
+    document.getElementById('editBrandName').value = name;
+    document.getElementById('editBrandDescription').value = description;
+    document.getElementById('editCheckbox').checked = isBlocked == true;
+    document.getElementById('editBrandOffer').value = brandOffer ? brandOffer : '';
+    const currentImageDiv = document.getElementById('currentImage');
+    if (image) {
+        currentImageDiv.innerHTML = `<img src="/uploads/brands/${image}" alt="Current Image" style="width: 50px; height: 50px; object-fit: fill;">`;
+    } else {
+        currentImageDiv.innerHTML = 'No Image';
     }
+    editBrandModal.style.display = 'block'
+}
 
 
 //Delete Brand
 
-async function deleteBrand(brandId){
+async function deleteBrand(brandId) {
 
     Swal.fire({
         title: "Are you sure?",
@@ -206,47 +206,47 @@ async function deleteBrand(brandId){
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-            
-            const response = await fetch('/admin/deleteBrand',{
-                method : "POST",
-                headers : {
-                    'Content-Type' : 'application/json'
-                },
-                body : JSON.stringify({
-                    brandId : brandId
-                })
-            })
 
-            const data = await response.json()
-
-            if(response.ok && data.success === true){
-                Swal.fire(
-                    'Brand Removed',
-                    'The Brand has been removed',
-                    'success'
-                ).then(()=>{
-                    location.reload()
+                const response = await fetch('/admin/deleteBrand', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        brandId: brandId
+                    })
                 })
-            }else{
-                Swal.fire( 'Failed', data.message || 'Brand removing failed', 'error' )
+
+                const data = await response.json()
+
+                if (response.ok && data.success === true) {
+                    Swal.fire(
+                        'Brand Removed',
+                        'The Brand has been removed',
+                        'success'
+                    ).then(() => {
+                        location.reload()
+                    })
+                } else {
+                    Swal.fire('Failed', data.message || 'Brand removing failed', 'error')
+                }
+
+            } catch (error) {
+                wal.fire(
+                    'Error',
+                    'An error iccurred while deleting Brand',
+                    'error'
+                )
+                console.log('Brand removing failed : ', error)
             }
+        }
 
-        } catch (error) {
-            wal.fire(
-                'Error',
-                'An error iccurred while deleting Brand',
-                'error'
-            )
-            console.log('Brand removing failed : ',error)
-        }
-        }
-        
 
     })
 }
 
 
-function clearErrors(brandForm){
+function clearErrors(brandForm) {
     brandForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
     brandForm.querySelectorAll('.invalid-feedback').forEach(el => {
         if (el.parentNode) {
@@ -255,18 +255,18 @@ function clearErrors(brandForm){
     });
 }
 
-function displayFormError(brandForm, errors){
+function displayFormError(brandForm, errors) {
     clearErrors(brandForm)
 
-    if(errors && typeof errors === 'object'){
-        Object.entries(errors).forEach(([field,message]) => {
+    if (errors && typeof errors === 'object') {
+        Object.entries(errors).forEach(([field, message]) => {
 
-            const input = brandForm.querySelector(`.${field}`) 
-                                                    
-            if(input){
+            const input = brandForm.querySelector(`.${field}`)
+
+            if (input) {
                 input.classList.add('is-invalid')
                 const feedback = input.nextElementSibling;
-                if(feedback && feedback.classList.contains('invalid-feedback')){
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
                     feedback.textContent = message
                 } else {
                     const feedbackDiv = document.createElement('div');
@@ -279,20 +279,20 @@ function displayFormError(brandForm, errors){
     }
 }
 
-function validateForm(data){
+function validateForm(data) {
 
     const namePattern = /^[a-zA-Z\s]+$/
     let error = {}
 
-    if(!data.brandName){
+    if (!data.brandName) {
         error.brandName = 'Please enter the Name'
 
-    }else if(!namePattern.test(data.brandName)){
+    } else if (!namePattern.test(data.brandName)) {
         error.brandName = 'Name includes only the alphabets'
 
     }
 
-    if(!data.description){
+    if (!data.description) {
         error.description = 'Please enter the Discription'
     }
 

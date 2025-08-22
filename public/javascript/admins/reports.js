@@ -4,23 +4,21 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         const ordersElement = document.getElementById('salesReportData');
         const usersElement = document.getElementById('usersData');
-        
+
         if (!ordersElement || !usersElement) {
             console.error('Required data elements not found');
             return;
         }
-        
+
         const orders = JSON.parse(ordersElement.value.replace(/&#39;/g, "'"));
         const users = JSON.parse(usersElement.value.replace(/&#39;/g, "'"));
 
         window.orders = orders;
         window.users = users;
 
-        // Initialize reports
-        generateReport(); 
+        generateReport();
         updateCustomerInsights(users);
-        
-        // Initialize dropdowns
+
         setTimeout(() => {
             initializeDropdowns();
         }, 100);
@@ -39,7 +37,7 @@ const endDateInput = document.getElementById('endDate');
 let debounceTimeout = null;
 
 function debounce(func, delay) {
-    return function(...args) {
+    return function (...args) {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => func.apply(this, args), delay);
     };
@@ -65,7 +63,7 @@ if (reportTypeSelect) {
     reportTypeSelect.addEventListener('change', () => {
         if (isProgrammaticChange) return;
         const isCustom = reportTypeSelect.value === 'custom';
-        
+
         if (startDateInput) startDateInput.disabled = !isCustom;
         if (endDateInput) endDateInput.disabled = !isCustom;
 
@@ -95,7 +93,7 @@ function updateDashboard(filteredOrders) {
         console.error('Invalid orders data provided to updateDashboard');
         return;
     }
-    
+
     updateSalesSummary(filteredOrders);
     updateTopProducts(filteredOrders);
     updateRecentOrders(filteredOrders);
@@ -104,7 +102,7 @@ function updateDashboard(filteredOrders) {
 
 function updateSalesSummary(orders) {
     if (!orders || !Array.isArray(orders)) return;
-    
+
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum, o) => sum + (o.finalAmount || 0), 0);
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -117,40 +115,40 @@ function updateSalesSummary(orders) {
 
     if (growthValueEl) growthValueEl.textContent = growthValue + '%';
     if (totalOrdersEl) totalOrdersEl.textContent = totalOrders.toLocaleString();
-    if (totalRevenueEl) totalRevenueEl.textContent = `₹${totalRevenue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-    if (avgOrderValueEl) avgOrderValueEl.textContent = `₹${avgOrderValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+    if (totalRevenueEl) totalRevenueEl.textContent = `₹${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+    if (avgOrderValueEl) avgOrderValueEl.textContent = `₹${avgOrderValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 }
 
 function calcGrowth(orders) {
     if (!window.orders || !Array.isArray(window.orders)) return 0;
-    
+
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-    
+
     const recentOrders = window.orders.filter(o => {
         const date = new Date(o.createdOn);
         return date >= sevenDaysAgo && date <= now;
     });
-    
+
     const olderOrders = window.orders.filter(o => {
         const date = new Date(o.createdOn);
         return date < sevenDaysAgo;
     });
-    
+
     if (olderOrders.length === 0) return 100;
-    
+
     const growth = ((recentOrders.length - olderOrders.length) / olderOrders.length) * 100;
     return Math.round(growth * 100) / 100;
 }
 
 function updateTopProducts(orders) {
     if (!orders || !Array.isArray(orders)) return;
-    
+
     const productMap = {};
 
     orders.forEach(order => {
         if (!order.orderedItems || !Array.isArray(order.orderedItems)) return;
-        
+
         order.orderedItems.forEach(item => {
             if (!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
 
@@ -165,7 +163,7 @@ function updateTopProducts(orders) {
 
             const price = item.productPrice || 0;
             const quantity = item.quantity || 0;
-            
+
             productMap[id].revenue += price * quantity;
             productMap[id].quantity += quantity;
         });
@@ -182,7 +180,7 @@ function updateTopProducts(orders) {
                 <td>${i + 1}</td>
                 <td>${p.name}</td>
                 <td>${p.quantity.toLocaleString()}</td>
-                <td>₹${p.revenue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td>₹${p.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 <td>--</td>
             </tr>
         `).join('');
@@ -191,19 +189,19 @@ function updateTopProducts(orders) {
 
 function updateRecentOrders(orders) {
     if (!orders || !Array.isArray(orders)) return;
-    
+
     const sorted = [...orders]
-        .filter(order => order && order.createdOn) 
+        .filter(order => order && order.createdOn)
         .sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn))
         .slice(0, 20); // Show more orders in reports
-    
+
     const tbody = document.getElementById('recentOrdersTable');
     if (!tbody) return;
-    
+
     tbody.innerHTML = sorted.map(order => {
         const date = new Date(order.createdOn).toLocaleDateString('en-IN', {
-            day: 'numeric', 
-            month: 'short', 
+            day: 'numeric',
+            month: 'short',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -222,7 +220,7 @@ function updateRecentOrders(orders) {
                 <td>${orderId}</td>
                 <td>${customerName}</td>
                 <td>${productName}</td>
-                <td>₹${amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td>₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 <td>${paymentMethod}</td>
                 <td><span class="status ${status.toLowerCase().replace(/\s+/g, '-')}">${status}</span></td>
             </tr>
@@ -232,10 +230,10 @@ function updateRecentOrders(orders) {
 
 function updatePaymentMethods(orders) {
     if (!orders || !Array.isArray(orders)) return;
-    
+
     const total = orders.length;
     if (total === 0) return;
-    
+
     const methods = { COD: 0, RAZORPAY: 0, WALLET: 0 };
 
     orders.forEach(order => {
@@ -276,10 +274,10 @@ function updatePaymentMethods(orders) {
 
 function updateCustomerInsights(users) {
     if (!users || !Array.isArray(users)) return;
-    
+
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-    
+
     const newUsers = users.filter(u => {
         if (!u.createdOn) return false;
         const created = new Date(u.createdOn);
@@ -288,7 +286,7 @@ function updateCustomerInsights(users) {
 
     const returning = users.filter(u => u.orders?.length > 1);
     const retentionRate = users.length > 0 ? (returning.length / users.length) * 100 : 0;
-    
+
     // Calculate average customer value
     const totalRevenue = window.orders ? window.orders.reduce((sum, o) => sum + (o.finalAmount || 0), 0) : 0;
     const avgCustomerValue = users.length > 0 ? totalRevenue / users.length : 0;
@@ -301,16 +299,16 @@ function updateCustomerInsights(users) {
     if (newCustomersEl) newCustomersEl.textContent = newUsers.length.toLocaleString();
     if (returningCustomersEl) returningCustomersEl.textContent = returning.length.toLocaleString();
     if (customerRetentionEl) customerRetentionEl.textContent = `${retentionRate.toFixed(1)}%`;
-    if (avgCustomerValueEl) avgCustomerValueEl.textContent = `₹${avgCustomerValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+    if (avgCustomerValueEl) avgCustomerValueEl.textContent = `₹${avgCustomerValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 }
 
 function generateReport() {
     if (generatingReport || !window.orders) {
         return;
     }
-    
+
     generatingReport = true;
-    
+
     try {
         const reportType = reportTypeSelect?.value || 'all';
         const startInput = startDateInput?.value;
@@ -326,37 +324,37 @@ function generateReport() {
                 startDate.setHours(0, 0, 0, 0);
                 endDate = new Date();
                 break;
-                
-            case 'weekly': 
+
+            case 'weekly':
                 startDate = new Date();
                 startDate.setDate(startDate.getDate() - 7);
                 endDate = new Date();
                 break;
-                
-            case 'monthly': 
+
+            case 'monthly':
                 startDate = new Date();
                 startDate.setMonth(startDate.getMonth() - 1);
                 endDate = new Date();
                 break;
-                
-            case 'yearly': 
+
+            case 'yearly':
                 startDate = new Date();
                 startDate.setFullYear(startDate.getFullYear() - 1);
                 endDate = new Date();
                 break;
-                
+
             case 'custom':
                 if (startInput && endInput) {
                     startDate = new Date(startInput);
                     endDate = new Date(endInput);
                     endDate.setHours(23, 59, 59, 999);
-                    
+
                     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
                         console.error('Invalid dates provided');
                         showAlert('Invalid dates provided', 'error');
                         return;
                     }
-                    
+
                     if (startDate > endDate) {
                         console.error('Start date cannot be later than end date');
                         showAlert('Start date cannot be later than end date', 'error');
@@ -368,7 +366,7 @@ function generateReport() {
                     return;
                 }
                 break;
-                
+
             case 'all':
             default:
                 updateDashboard(filteredOrders);
@@ -377,15 +375,15 @@ function generateReport() {
 
         filteredOrders = filteredOrders.filter(order => {
             if (!order.createdOn) return false;
-            
+
             const orderDate = new Date(order.createdOn);
             if (isNaN(orderDate.getTime())) return false;
-            
+
             return orderDate >= startDate && orderDate <= endDate;
         });
 
         updateDashboard(filteredOrders);
-        
+
     } catch (error) {
         console.error('Error in generateReport:', error);
         showAlert('Error generating report', 'error');
@@ -396,16 +394,16 @@ function generateReport() {
 
 function initializeDropdowns() {
     const dropdowns = document.querySelectorAll('.dropdown');
-    
+
     dropdowns.forEach(dropdown => {
         const menu = dropdown.querySelector('.dropdown-menu');
         const currentFilter = dropdown.querySelector('span[data-filter]');
-        
+
         if (!menu || !currentFilter) return;
-        
+
         dropdown.addEventListener('click', (e) => {
             e.stopPropagation();
-            
+
             // Close other dropdowns
             dropdowns.forEach(d => {
                 if (d !== dropdown) {
@@ -416,7 +414,7 @@ function initializeDropdowns() {
                     }
                 }
             });
-            
+
             // Toggle current dropdown
             const isOpen = menu.style.display === 'block';
             menu.style.display = isOpen ? 'none' : 'block';
@@ -432,7 +430,7 @@ function initializeDropdowns() {
                 currentFilter.setAttribute('data-filter', filter);
                 menu.style.display = 'none';
                 dropdown.classList.remove('open');
-                
+
                 debouncedApplyFilter(dropdown.id, filter);
             });
         });
@@ -456,7 +454,7 @@ const debouncedApplyFilter = debounce((dropdownId, filter) => {
 
 function applyFilter(dropdownId, filter) {
     if (!window.orders) return;
-    
+
     let filteredOrders = [...window.orders];
     const now = new Date();
     let startDate;
@@ -536,40 +534,40 @@ function exportReport() {
 // Excel Export Functions
 function exportToExcel() {
     showAlert('Generating Excel report...', 'info');
-    
+
     try {
         // Create workbook
         const wb = XLSX.utils.book_new();
-        
+
         // Add Summary Sheet
         const summaryData = getSummaryDataForExcel();
         const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
         XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
-        
+
         // Add Products Sheet
         const productsData = getProductsData();
         const productsWs = XLSX.utils.aoa_to_sheet(productsData);
         XLSX.utils.book_append_sheet(wb, productsWs, 'Top Products');
-        
+
         // Add Orders Sheet
         const ordersData = getOrdersData();
         const ordersWs = XLSX.utils.aoa_to_sheet(ordersData);
         XLSX.utils.book_append_sheet(wb, ordersWs, 'Recent Orders');
-        
+
         // Add Payment Methods Sheet
         const paymentData = getPaymentData();
         const paymentWs = XLSX.utils.aoa_to_sheet(paymentData);
         XLSX.utils.book_append_sheet(wb, paymentWs, 'Payment Methods');
-        
+
         // Add Customer Insights Sheet
         const customerData = getCustomerData();
         const customerWs = XLSX.utils.aoa_to_sheet(customerData);
         XLSX.utils.book_append_sheet(wb, customerWs, 'Customer Insights');
-        
+
         // Save file
         const fileName = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
-        
+
         showAlert('Excel report exported successfully!', 'success');
     } catch (error) {
         console.error('Excel export error:', error);
@@ -579,11 +577,11 @@ function exportToExcel() {
 
 function exportToPDF() {
     showAlert('Generating PDF report...', 'info');
-    
+
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+
         // Set document properties
         doc.setProperties({
             title: 'Sales Report',
@@ -591,27 +589,27 @@ function exportToPDF() {
             author: 'Sales Dashboard',
             creator: 'Sales Dashboard System'
         });
-        
+
         let yPosition = 20;
-        
+
         // Title
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('Sales Report', 20, yPosition);
         yPosition += 15;
-        
+
         // Generated date
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, yPosition);
         yPosition += 20;
-        
+
         // Summary Section
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text('Summary', 20, yPosition);
         yPosition += 10;
-        
+
         const summaryData = getSummaryDataForPDF();
         doc.setFontSize(12);
         doc.setFont(undefined, 'normal');
@@ -620,18 +618,18 @@ function exportToPDF() {
             yPosition += 8;
         });
         yPosition += 10;
-        
+
         // Top Products Section
         if (yPosition > 250) {
             doc.addPage();
             yPosition = 20;
         }
-        
+
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text('Top Products', 20, yPosition);
         yPosition += 10;
-        
+
         const productsData = getProductsData();
         if (productsData.length > 1) {
             doc.autoTable({
@@ -643,18 +641,18 @@ function exportToPDF() {
             });
             yPosition = doc.lastAutoTable.finalY + 15;
         }
-        
+
         // Payment Methods Section
         if (yPosition > 200) {
             doc.addPage();
             yPosition = 20;
         }
-        
+
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text('Payment Methods', 20, yPosition);
         yPosition += 10;
-        
+
         const paymentData = getPaymentData();
         if (paymentData.length > 1) {
             doc.autoTable({
@@ -666,18 +664,18 @@ function exportToPDF() {
             });
             yPosition = doc.lastAutoTable.finalY + 15;
         }
-        
+
         // Customer Insights Section
         if (yPosition > 200) {
             doc.addPage();
             yPosition = 20;
         }
-        
+
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text('Customer Insights', 20, yPosition);
         yPosition += 10;
-        
+
         const customerData = getCustomerData();
         if (customerData.length > 1) {
             doc.autoTable({
@@ -688,11 +686,11 @@ function exportToPDF() {
                 styles: { fontSize: 12 }
             });
         }
-        
+
         // Save PDF
         const fileName = `sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(fileName);
-        
+
         showAlert('PDF report exported successfully!', 'success');
     } catch (error) {
         console.error('PDF export error:', error);
@@ -867,15 +865,15 @@ function exportProductsToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('Top Products Report', 20, 20);
-        
+
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
-        
+
         const productsData = getProductsData();
         if (productsData.length > 1) {
             doc.autoTable({
@@ -886,7 +884,7 @@ function exportProductsToPDF() {
                 styles: { fontSize: 10 }
             });
         }
-        
+
         doc.save(`top-products-report-${new Date().toISOString().split('T')[0]}.pdf`);
         showAlert('Products PDF report exported!', 'success');
     } catch (error) {
@@ -898,15 +896,15 @@ function exportOrdersToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l'); // Landscape for orders table
-        
+
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('Recent Orders Report', 20, 20);
-        
+
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
-        
+
         const ordersData = getOrdersData();
         if (ordersData.length > 1) {
             doc.autoTable({
@@ -926,7 +924,7 @@ function exportOrdersToPDF() {
                 }
             });
         }
-        
+
         doc.save(`orders-report-${new Date().toISOString().split('T')[0]}.pdf`);
         showAlert('Orders PDF report exported!', 'success');
     } catch (error) {
@@ -938,15 +936,15 @@ function exportPaymentToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('Payment Methods Report', 20, 20);
-        
+
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
-        
+
         const paymentData = getPaymentData();
         if (paymentData.length > 1) {
             doc.autoTable({
@@ -957,7 +955,7 @@ function exportPaymentToPDF() {
                 styles: { fontSize: 12 }
             });
         }
-        
+
         doc.save(`payment-methods-report-${new Date().toISOString().split('T')[0]}.pdf`);
         showAlert('Payment PDF report exported!', 'success');
     } catch (error) {
@@ -969,15 +967,15 @@ function exportCustomerToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('Customer Insights Report', 20, 20);
-        
+
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
-        
+
         const customerData = getCustomerData();
         if (customerData.length > 1) {
             doc.autoTable({
@@ -988,7 +986,7 @@ function exportCustomerToPDF() {
                 styles: { fontSize: 12 }
             });
         }
-        
+
         doc.save(`customer-insights-report-${new Date().toISOString().split('T')[0]}.pdf`);
         showAlert('Customer PDF report exported!', 'success');
     } catch (error) {
@@ -1002,7 +1000,7 @@ function getSummaryData() {
     const totalRevenueEl = document.getElementById('totalRevenue');
     const avgOrderValueEl = document.getElementById('avgOrderValue');
     const growthRateEl = document.getElementById('growthRate');
-    
+
     return {
         totalOrders: totalOrdersEl?.textContent || '0',
         totalRevenue: totalRevenueEl?.textContent || '₹0',
@@ -1038,27 +1036,27 @@ function getSummaryDataForPDF() {
 function getProductsData() {
     const table = document.getElementById('topProductsTable');
     const rows = table?.querySelectorAll('tr') || [];
-    
+
     const headers = ['Rank', 'Product Name', 'Units Sold', 'Revenue', 'Growth'];
     const data = [headers];
-    
+
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length > 0) {
             data.push(Array.from(cells).map(cell => cell.textContent.trim()));
         }
     });
-    
+
     return data;
 }
 
 function getOrdersData() {
     const table = document.getElementById('recentOrdersTable');
     const rows = table?.querySelectorAll('tr') || [];
-    
+
     const headers = ['Order Date', 'Order ID', 'Customer', 'Item', 'Order Total', 'Payment Method', 'Order Status'];
     const data = [headers];
-    
+
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length > 0) {
@@ -1069,7 +1067,7 @@ function getOrdersData() {
             }));
         }
     });
-    
+
     return data;
 }
 
@@ -1080,7 +1078,7 @@ function getPaymentData() {
     const codCountEl = document.getElementById('codCount');
     const onlineCountEl = document.getElementById('onlineCount');
     const walletCountEl = document.getElementById('walletCount');
-    
+
     return [
         ['Payment Method', 'Percentage', 'Order Count'],
         ['Cash on Delivery', codEl?.textContent || '0%', codCountEl?.textContent || '(0 orders)'],
@@ -1094,7 +1092,7 @@ function getCustomerData() {
     const returningCustomersEl = document.getElementById('returningCustomers');
     const retentionEl = document.getElementById('customerRetention');
     const avgValueEl = document.getElementById('avgCustomerValue');
-    
+
     return [
         ['Metric', 'Value'],
         ['New Customers (30 days)', newCustomersEl?.textContent || '0'],
@@ -1106,18 +1104,18 @@ function getCustomerData() {
 
 // Keep CSV download function for backward compatibility
 function downloadCSV(data, filename) {
-    const csv = data.map(row => 
+    const csv = data.map(row =>
         row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(',')
     ).join('\n');
-    
+
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute('href', url);
     link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

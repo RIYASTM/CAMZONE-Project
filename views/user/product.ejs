@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,17 +8,20 @@
     <link rel="stylesheet" href="/stylesheet/user/product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        .stock.active{
+        .stock.active {
             color: red;
         }
     </style>
 </head>
+
 <body>
     <header>
         <%- include('../partials/users/header', {search , cart }) %>
     </header>
     <nav class="breadcrumb">
-        <a href="/">Home</a> > <a href="/shop">All Products</a> > <a href="#"><%= product.productName %></a>
+        <a href="/">Home</a> > <a href="/shop">All Products</a> > <a href="#">
+            <%= product.productName %>
+        </a>
     </nav>
     <div class="container">
         <div class="product-detail">
@@ -25,21 +29,23 @@
                 <!-- Main Image with Zoom Container -->
                 <div class="main-image-container">
                     <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 0) { %>
-                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="main-image" id="mainImage">
+                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>"
+                            class="main-image" id="mainImage">
                     <% } else { %>
                         <span>No Main Image</span>
                     <% } %>
                     <!-- Zoom Lens and Result -->
                     <div class="zoom-lens" id="zoomLens"></div>
-                    <div class="zoom-result" id="zoomResult"></div>
                 </div>
 
                 <!-- Thumbnail Images -->
                 <div class="thumbnail-images">
-                    <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 1) { %>
-                        <% product.productImage.slice(1).forEach((image, index) => { %>
-                            <img src="/uploads/products/<%= image %>" alt="<%= product.productName %> Thumbnail <%= index + 1 %>" 
-                                 class="thumbnail <%= index === 0 ? 'active' : '' %>" data-src="/uploads/products/<%= image %>">
+                    <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length>1) { %>
+                        <% product.productImage.slice(1).forEach((image, index)=> { %>
+                            <img src="/uploads/products/<%= image %>"
+                                alt="<%= product.productName %> Thumbnail <%= index + 1 %>"
+                                class="thumbnail <%= index === 0 ? 'active' : '' %>"
+                                data-src="/uploads/products/<%= image %>">
                         <% }) %>
                     <% } else { %>
                         <span>No Thumbnails Available</span>
@@ -47,20 +53,37 @@
                 </div>
             </div>
             <div class="product-info">
-                <h1><%= product.productName %></h1>
+                <h1>
+                    <%= product.productName %>
+                </h1>
                 <div class="price">
-                    <span class="current">₹ <%= product.salePrice %></span>
-                    <span class="original">₹ <%= product.regularPrice %></span>
-                    <span class="current offer"><%= totalOffer ? totalOffer + ' %' : '' %></span>
+                    <% if ( product.salePrice < product.regularPrice || product.totalOffer) { %>
+                        <span class="current">₹ <%= product.salePrice %></span>
+                        <span class="original">₹ <%= product.regularPrice %></span>
+                    <% } else { %>
+                        <span class="current">₹ <%= product.regularPrice %></span>
+                    <% } %>
+                    <span class="current offer">
+                        <%= totalOffer ? totalOffer + ' %' : '' %>
+                    </span>
                 </div>
-                <p class="rating">★★★★★ 
-                    <% if(product.status !== 'Available'){%>
-                        <span class="stock active"><%= product.status %></span></p>
+                <p class="rating">★★★★★
+                    <% if(product.status !=='Available' ){%>
+                        <span class="stock active">
+                            <%= product.status %>
+                        </span>
                     <%}else{%>
-                        <span class="stock"><%= product.status %></span>
+                        <span class="stock">
+                            <%= product.status %>
+                        </span>
+                        <% if (product.quantity <=5) { %>
+                            <span class="stock active">Only <%= product.quantity %> left!!</span>
+                        <% }else if(product.quantity < 10) { %>
+                            <span class="stock active">Only few items left!!</span>
+                        <% } %>
                     <%}%>
                 </p>
-                    
+
                 <p class="description">
                     <%= product.description %>
                 </p>
@@ -73,13 +96,14 @@
                     </div>
                 </div>
                 <div class="buttons">
-                    <% if(product.status !== 'Available'){%>
+                    <% if(product.status !=='Available' ){%>
                         <span class="stock active">Available Soon</span>
                     <%}else{%>
                         <button class="add-to-cart" id="addtoCart" data-id="<%=product._id%>">Add to Cart</button>
                         <button class="buy-now">Buy Now</button>
                     <%}%>
-                    <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" onclick="addtoWishlist('<%= product._id %>')">
+                    <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>"
+                        onclick="addtoWishlist('<%= product._id %>')">
                         <i class="fa fa-heart"></i>
                     </div>
                 </div>
@@ -89,7 +113,11 @@
             <button class="tab active" data-tab="specifications">Specifications</button>
             <button class="tab" data-tab="reviews">Reviews</button>
             <div class="sku">Brand: <%= product.brand.brandName %></div>
-            <div class="category">Category: <%= product.category.name %> <span class="offer"><%= product.category.categoryOffer ? product.category.categoryOffer + '%' : '' %></span></div>
+            <div class="category">Category: <%= product.category.name %> 
+                <span class="offer">
+                    <%= product.category.categoryOffer ? product.category.categoryOffer + '%' : '' %>
+                </span>
+            </div>
         </div>
         <div class="tab-content" id="reviews">
             <p>No customer reviews yet</p>
@@ -97,18 +125,35 @@
         <div class="related-products">
             <h2>Related Products</h2>
             <div class="product-grid">
-                <% for(let i = 0; i < relatedProducts.length; i++) { %>
-                    <div class="product-card">
-                        <% if (relatedProducts[i].productImage && relatedProducts[i].productImage.length > 0) { %>
-                            <img src="/uploads/products/<%= relatedProducts[i].productImage[0] %>" alt="<%= relatedProducts[i].productName %>">
-                        <% } else { %>
-                            <span>No Image</span>
-                        <% } %>
-                        <h3><%= relatedProducts[i].productName %></h3>
-                        <p>₹ <%= relatedProducts[i].salePrice %></p>
-                        <span class="rating"><%= '★'.repeat(relatedProducts[i].rating ? relatedProducts[i].rating : 1) %></span>
+                <% relatedProducts.forEach(product => { %>
+                <div class="product-card" data-id="<%=product._id%>">
+                    <% if (product.productImage && product.productImage.length> 0) { %>
+                        <img src="/uploads/products/<%= product.productImage[0] %>"
+                            alt="<%= product.productName %>">
+                    <% } else { %>
+                        <span>No Image</span>
+                    <% } %>
+                    <div class="product-name <%= product.productName.length > 18 ? 'scrollable' : '' %>">
+                        <span><%= product.productName %></span>
                     </div>
-                <% } %>
+
+
+                    <div class="relatedprice">
+                        <% if ( product.salePrice < product.regularPrice || totalOffer > 0) { %>
+                            <span class="current">₹ <%= product.salePrice %></span>
+                            <span class="original">₹ <%= product.regularPrice %></span>
+                        <% } else { %>
+                            <span class="current">₹ <%= product.regularPrice %></span>
+                        <% } %>
+                        <p class="current offer">
+                            <%= totalOffer ? totalOffer + ' %' : '' %>
+                        </p>
+                    </div>
+                    <span class="rating">
+                        <%= '★' .repeat(product.rating ? product.rating : 1) %>
+                    </span>
+                </div>
+                <% }) %>
             </div>
         </div>
     </div>
@@ -116,197 +161,7 @@
         <%- include('../partials/users/footer') %>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Tab Switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab).classList.add('active');
-            });
-        });
-
-        // Image Switching and Zoom Effect
-        document.addEventListener('DOMContentLoaded', () => {
-            const minusBtn = document.querySelector('.quantity-btn.minus');
-            const plusBtn = document.querySelector('.quantity-btn.plus');
-            const quantityInput = document.querySelector('#quantity-input');
-            const cartButton = document.getElementById('addtoCart');
-
-            cartButton.addEventListener('click', () => {
-                const productId = cartButton.dataset.id;
-                addToCart(productId);
-            });
-
-            minusBtn.addEventListener('click', function() {
-                let quantity = parseInt(quantityInput.value);
-                if (quantity > 1) {
-                    quantityInput.value = quantity - 1;
-                }
-            });
-
-            plusBtn.addEventListener('click', function() {
-                let quantity = parseInt(quantityInput.value);
-                quantityInput.value = quantity + 1;
-            });
-
-            // Image Switching
-            const mainImage = document.getElementById('mainImage');
-            const thumbnails = document.querySelectorAll('.thumbnail');
-
-            thumbnails.forEach(thumbnail => {
-                thumbnail.addEventListener('click', () => {
-                    const newSrc = thumbnail.getAttribute('data-src');
-                    mainImage.src = newSrc;
-
-                    // Update active class
-                    thumbnails.forEach(t => t.classList.remove('active'));
-                    thumbnail.classList.add('active');
-                });
-            });
-
-            // Zoom Effect
-            const mainImageContainer = document.querySelector('.main-image-container');
-            const zoomLens = document.getElementById('zoomLens');
-            const zoomResult = document.getElementById('zoomResult');
-
-            // Set zoom result background to the main image
-            if (mainImage) {
-                zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
-            }
-
-            mainImageContainer.addEventListener('mouseenter', () => {
-                zoomLens.style.display = 'block';
-                zoomResult.style.display = 'block';
-            });
-
-            mainImageContainer.addEventListener('mouseleave', () => {
-                zoomLens.style.display = 'none';
-                zoomResult.style.display = 'none';
-            });
-
-            mainImageContainer.addEventListener('mousemove', (e) => {
-                const rect = mainImage.getBoundingClientRect();
-                const lensWidth = zoomLens.offsetWidth;
-                const lensHeight = zoomLens.offsetHeight;
-                const resultWidth = zoomResult.offsetWidth;
-                const resultHeight = zoomResult.offsetHeight;
-
-                // Calculate mouse position relative to the image
-                let x = e.clientX - rect.left;
-                let y = e.clientY - rect.top;
-
-                // Keep lens within image bounds
-                x = Math.max(lensWidth / 2, Math.min(x, rect.width - lensWidth / 2));
-                y = Math.max(lensHeight / 2, Math.min(y, rect.height - lensHeight / 2));
-
-                // Position the lens
-                zoomLens.style.left = `${x - lensWidth / 2}px`;
-                zoomLens.style.top = `${y - lensHeight / 2}px`;
-
-                // Calculate zoom ratio
-                const ratioX = resultWidth / lensWidth;
-                const ratioY = resultHeight / lensHeight;
-
-                // Set zoom result background size
-                const imgWidth = mainImage.naturalWidth;
-                const imgHeight = mainImage.naturalHeight;
-                zoomResult.style.backgroundSize = `${imgWidth * ratioX}px ${imgHeight * ratioY}px`;
-
-                // Position the zoomed background
-                const bgPosX = (x - lensWidth / 2) * ratioX;
-                const bgPosY = (y - lensHeight / 2) * ratioY;
-                zoomResult.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
-            });
-
-            // Update zoom result background when main image changes
-            thumbnails.forEach(thumbnail => {
-                thumbnail.addEventListener('click', () => {
-                    zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
-                });
-            });
-
-            // Wishlist Toggle
-            document.querySelectorAll('.wishlist-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const icon = btn.querySelector('i');
-                    btn.classList.toggle('active');
-                    const isActive = btn.classList.contains('active');
-                    icon.className = isActive ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-
-                    // Optionally update server or local storage here
-                    // e.g., send AJAX call to add/remove from wishlist
-                });
-            });
-        });
-
-
-        function addToCart(productId) {
-            const quantity = document.querySelector('#quantity-input').value;
-
-            if (quantity>0) {
-                console.log(quantity)
-
-                
-                     fetch('/addtocart', {
-                        method: "POST",
-                        body: JSON.stringify({ productId, quantity }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    }).then(response=> response.json())
-                    .then(data=>{
-                    if (data.success) {
-                        Swal.fire('success', data.message || 'Product added to cart successfully', 'success');
-                        window.location.replace(data.redirectUrl);
-                    } else {
-                        Swal.fire('error', data.message || 'Product adding to cart is failed', 'error');
-                        // window.location.reload();
-                    }
-                })
-                
-                    
-                
-            }
-        }
-
-        function addtoWishlist(productId) {
-            fetch('/addtowishlist', {
-                method: 'POST',
-                body: JSON.stringify({ productId }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(response => response.json())
-            .then(data => {
-                if (data.success) {
-
-                    // Swal.fire({
-                    //     icon: 'success',
-                    //     title: data.done,
-                    //     text: data.message,
-                    //     timer: 1500,
-                    //     showConfirmButton: false
-                    // });
-
-                    const icon = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
-
-                    if(icon){
-                        if(data.done === 'Added'){
-                            icon.classList.add('active');
-                        }else if (data.done === 'Removed'){
-                            icon.classList.remove('active')
-                        }
-                    }
-
-                } else {
-                    Swal.fire('Oops', data.message || 'Something went wrong', 'error');
-                }
-            }).catch(() => {
-                Swal.fire('Oops', 'Request failed', 'error');
-            });
-        }
-    </script>
+    <script src="/javascript/users/product.js"></script>
 </body>
+
 </html>

@@ -1,6 +1,6 @@
 
 // Filter functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
 
     const moneyButton = document.getElementById('addMoney')
@@ -13,16 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const filterDropdown = document.querySelector('.filter-dropdown');
 
-    
+
     if (filterDropdown) {
-        filterDropdown.addEventListener('change', function(e) {
+        filterDropdown.addEventListener('change', function (e) {
             const filter = e.target.value;
             const rows = document.querySelectorAll('.transaction-table tbody tr');
-            
+
             rows.forEach(row => {
                 const typeElement = row.querySelector('.transaction-type');
                 const statusElement = row.querySelector('.transaction-status');
-                
+
                 if (filter === 'all') {
                     row.style.display = '';
                 } else if (filter === 'credit' && typeElement && typeElement.textContent.toLowerCase().includes('credit')) {
@@ -39,18 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.querySelectorAll('.balance-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
+        card.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-5px)';
         });
-        
-        card.addEventListener('mouseleave', function() {
+
+        card.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0)';
         });
     });
 
     document.querySelectorAll('.quick-amount-btn').forEach(btn => {
         const amount = btn.dataset.amount
-        btn.addEventListener('click',(e)=> {
+        btn.addEventListener('click', (e) => {
             document.querySelectorAll('.quick-amount-btn').forEach(b => b.disabled = true)
             addMoneyButton.disabled = true
             e.preventDefault()
@@ -64,39 +64,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 5000);
         })
     })
-    
-    addMoneyModal.addEventListener('submit', (e)=> {
+
+    addMoneyModal.addEventListener('submit', (e) => {
         e.preventDefault()
 
         addMoneyButton.disabled = true
-        
+
         const amount = moneyInput.value
 
         setTimeout(() => {
             addMoneyButton.disabled = false
         }, 5000);
-        
+
         addAmount(amount)
     })
-    
-    async function addAmount(amount){
-        console.log('money : ', amount)
-        try{
 
-            const response = await fetch('/addtoWallet',{
-                method : 'POST',
-                headers :  {
-                    'Content-Type' : 'application/json'
+    async function addAmount(amount) {
+        console.log('money : ', amount)
+        try {
+
+            const response = await fetch('/addtoWallet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                body : JSON.stringify({amount})
+                body: JSON.stringify({ amount })
             })
 
             const data = await response.json()
 
-            if(data.success && data.message === 'Razorpay Order Created!'){
+            if (data.success && data.message === 'Razorpay Order Created!') {
 
                 closeAddMoneyModal()
-                const {razorpayOrder, user} = data
+                const { razorpayOrder, user } = data
                 console.log("hello")
 
                 const options = {
@@ -165,15 +165,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const rzp = new Razorpay(options);
                 rzp.open();
-            }else{
+            } else {
                 Swal.fire({
-                    icon : 'error',
-                    title : 'Failed',
-                    text : data.message || 'Failed to adding money to your Wallet.'
+                    icon: 'error',
+                    title: 'Failed',
+                    text: data.message || 'Failed to adding money to your Wallet.'
                 })
             }
-            
-        } catch(error) {
+
+        } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Order Failed',
@@ -181,25 +181,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
-    cancelButton.addEventListener('click', ()=> {
+
+    cancelButton.addEventListener('click', () => {
         closeAddMoneyModal()
     })
 
-    closeButton.addEventListener('click', ()=> {
+    closeButton.addEventListener('click', () => {
         closeAddMoneyModal()
     })
-    
-    moneyButton.addEventListener('click', () =>{
-            openAddMoneyModal()
+
+    moneyButton.addEventListener('click', () => {
+        openAddMoneyModal()
     })
-    
-    
-    function closeAddMoneyModal(){
+
+
+    function closeAddMoneyModal() {
         addMoneyModal.style.display = 'none'
     }
-    
-    function openAddMoneyModal(){
+
+    function openAddMoneyModal() {
         addMoneyModal.style.display = 'block'
     }
 

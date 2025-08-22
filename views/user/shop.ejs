@@ -132,6 +132,7 @@
         const resetCategory = document.getElementById('reset-category');
         const resetBrand = document.getElementById('reset-brand');
         const clearAllBtn = document.getElementById('clear-all');
+        const search = document.getElementById('search').value
 
         function applyFilters() {
             const selectedBrands = Array.from(brandCheckboxes)
@@ -147,6 +148,7 @@
             const selectedStockSort = document.querySelector('input.stock:checked')?.value || '';
 
             let queryParts = [];
+            
 
             if (selectedBrands.length > 0) {
                 queryParts.push(selectedBrands.map(b => `brand=${encodeURIComponent(b)}`).join('&'));
@@ -168,8 +170,13 @@
                 queryParts.push(`sortQuantity=${encodeURIComponent(selectedStockSort)}`);
             }
 
+            if(search){
+                queryParts.push(`search=${encodeURIComponent(search)}`)
+            }
+
             // Preserve the current page if it exists
             const params = new URLSearchParams(window.location.search);
+            console.log('params : ', params)
             const currentPage = params.get('page') || '1';
             queryParts.push(`page=${currentPage}`);
 

@@ -45,6 +45,16 @@ const addtoWishlist = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found.' });
         }
 
+        const cart = await Cart.findOne({userId}).populate('items.productId')
+
+        console.log('cart items : ', cart.items)
+
+        const existInCart = cart.items.find(item => item.productId._id.toString() === productId)
+
+        if(existInCart){
+            return res.status(402).json({ success : false, message : 'Item already in your cart!!!'})
+        }
+
         let wishlist = await Wishlist.findOne({ user : userId }).populate('items.product');
 
         if (!wishlist) {
