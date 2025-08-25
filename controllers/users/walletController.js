@@ -15,41 +15,52 @@ const loadWallet = async (req,res) => {
         const search = req.query.search || '';
         const userId = req.session.user
         const user = await User.findById(userId)
-        const cart = await Cart.findById(userId)
-
-        const userWallet = await Wallet.findOne({userId})
-
-        // console.log('Transaction : ', transactions)
-        // console.log('User Wallet : ', userWallet)
+        const cart = await Cart.findOne({userId})
         
+        
+        
+        const userWallet = await Wallet.findOne({userId})
+        
+        const transactions = userWallet.transactions || []
+        
+        const page = parseInt(req.query.page) || 1
+        const limit = 6
+        const skip = (page - 1 ) * limit
+        const totalTransaction = transactions.length
+
+        const totalPages = Math.ceil(totalTransaction / limit)
+
+        const userTransactions = transactions.splice(skip, limit)
+
+        // console.log('userTransactions : ', userTransactions)
+
         if(!userWallet){
             return res.render('wallet',{
                 user,
-                wallet : {balance : 0},
-                transactions : [],
-                currentPage : 'Wallet',
                 cart,
                 search,
-                curretnPages : 1,
-                totalPage : 2
+                currentPage : 'Wallet',
+                wallet : {balance : 0},
+                transactions : [],
+                currentPages : page,
+                totalPages
             })
         }
-
-        const transactions = userWallet.transactions || []
         
         return res.render('wallet',{
-            currentPage : 'Wallet',
             user,
-            search,
             cart,
+            search,
+            currentPage : 'Wallet',
             wallet : userWallet,
-            transactions
+            transactions : userTransactions,
+            currentPages : page,
+            totalPages
         })
 
     } catch (error) {
         console.log('error on launching wallet page : ', error)
-        // res.status(500).render('error', { message: 'Failed to load wallet.' });
-        return res.redirect('/pageNotFound')
+        return res.status(500).redirect('/pageNotFound')
     }
 } 
 

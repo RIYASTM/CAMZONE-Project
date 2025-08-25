@@ -535,6 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             closeButton.addEventListener('click', () => {
                 retryPaymentModal.style.display = 'none';
+                window.location.href = '/'
             });
 
             window.retryPayment = function (method, currentOrderId = orderId, oldMethod = 'Razorpay') {

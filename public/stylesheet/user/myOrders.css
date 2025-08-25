@@ -168,7 +168,7 @@ body {
     margin-bottom: 30px;
 }
 
- .order-item {
+.order-item {
     display: grid;
     grid-template-columns: 200px 1fr auto;
     gap: 20px;
@@ -180,42 +180,42 @@ body {
     background-color: #fafafa;
 }
 
- .order-info .order-id {
+.order-info .order-id {
     font-weight: bold;
     color: #2c3e50;
     font-size: 16px;
     margin-bottom: 5px;
 }
 
- .order-info .order-product {
+.order-info .order-product {
     color: #7f8c8d;
     font-size: 14px;
 }
 
- .order-details {
+.order-details {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
- .order-details .label {
+.order-details .label {
     font-size: 12px;
     color: #7f8c8d;
     margin-right: 5px;
 }
 
- .order-details .value {
+.order-details .value {
     font-size: 14px;
     color: #2c3e50;
 }
 
- .order-status {
+.order-status {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
- .status {
+.status {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -223,27 +223,27 @@ body {
     text-transform: uppercase;
 }
 
- .status.pending {
+.status.pending {
     background-color: #f39c12;
     color: white;
 }
 
- .status.delivered {
+.status.delivered {
     background-color: #27ae60;
     color: white;
 }
 
- .status.cancelled {
+.status.cancelled {
     background-color: #e74c3c;
     color: white;
 }
 
- .order-actions {
+.order-actions {
     display: flex;
     gap: 10px;
 }
 
- .btn {
+.btn {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
@@ -252,17 +252,17 @@ body {
     transition: background-color 0.3s;
 }
 
- .btn-primary {
+.btn-primary {
     background-color: #e67e22;
     color: white;
 }
 
- .btn-secondary {
+.btn-secondary {
     background-color: #95a5a6;
     color: white;
 }
 
- .btn:hover {
+.btn:hover {
     opacity: 0.9;
 }
 

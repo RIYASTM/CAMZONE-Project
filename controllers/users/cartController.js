@@ -53,7 +53,7 @@ const loadCart = async (req, res) => {
             cartItems = cartItems.filter(item => item.productId !== null);
 
             cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-            cart.GST = cartItems.reduce((total, item) => total + (item.productGst || 0) * item.quantity, 0);
+            cart.GST = (cart.totalAmount * 18 ) / 118
 
             await cart.save();
 

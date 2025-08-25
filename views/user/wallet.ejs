@@ -6,8 +6,8 @@
     <title>My Wallet</title>
     <link rel="stylesheet" href="/stylesheet/user/wallet.css">
 </head>
+<%- include('../partials/users/header',{ search , cart }) %>
 <body>
-    <%- include('../partials/users/header',{search , cart}) %>
 
     <div class="container">
         <!-- Breadcrumb Navigation -->
@@ -43,7 +43,7 @@
                 <section class="transaction-section">
                     <div class="section-header">
                         <h3>Transaction History</h3>
-                        <select class="filter-dropdown" id="transactionFilter">
+                        <select class="filter-dropdown" id="transactionFilter" data-transactions="<%=transactions%>" >
                             <option value="all">All Transactions</option>
                             <option value="credit">Credits Only</option>
                             <option value="debit">Debits Only</option>
@@ -63,7 +63,7 @@
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="transactionTable" data-transactions="<%=transactions%>">
                                 <% if (transactions && transactions.length > 0) { %>
                                     <% transactions.forEach(transaction => { %>
                                         <tr>
@@ -103,6 +103,34 @@
                         <span>💰</span>
                         Add Money to Wallet
                     </button>
+                </div>
+
+                <!--Pagination -->
+                <div class="pagination" data-total-pages="<%= totalPages %>">
+                    <span><%= currentPages %> of <%= totalPages %></span>
+                    <div class="pagination-controls">
+                        <button <%= currentPages === 1 ? 'disabled' : '' %> 
+                            onclick="window.location.href='?page=1'" title="Go to first page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </button>
+                        
+                        <button <%= currentPages === 1 ? 'disabled' : '' %> 
+                            onclick="window.location.href='?page=<%= currentPages - 1 %>'" title="Previous page">
+                            <i class="fas fa-angle-left"></i>
+                        </button>
+                        
+                        <span> - </span>
+                        
+                        <button <%= currentPages === totalPages ? 'disabled' : '' %> 
+                            onclick="window.location.href='?page=<%= parseInt(currentPages) + 1 %>'" title="Next page">
+                            <i class="fas fa-angle-right"></i>
+                        </button>
+                        
+                        <button <%= currentPages === totalPages ? 'disabled' : '' %> 
+                            onclick="window.location.href='?page=<%= totalPages %>'" title="Go to last page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </div>
                 </div>
             </main>
         </div>

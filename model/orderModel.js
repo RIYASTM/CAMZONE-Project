@@ -127,6 +127,10 @@ const orderSchema = new Schema ({
         type : String,
         required : false,
     },
+    couponDiscount : {
+        type : Number,
+        default : 0
+    },
     paymentMethod : {
         type : String
     },

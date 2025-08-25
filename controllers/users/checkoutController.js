@@ -30,9 +30,9 @@ async function calculateAmounts(couponCode,totalAmount, cartItems){
                 }
             }
 
-            const totalGST = (totalAmount * 18) / 118
-
+            
             const finalAmount = Math.floor(totalAmount - couponDiscount);
+            const totalGST = (finalAmount * 18) / 118
             const priceWithoutGST = Math.floor(finalAmount - totalGST);
 
             const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
@@ -40,6 +40,7 @@ async function calculateAmounts(couponCode,totalAmount, cartItems){
             const totalOfferedPrice = totalOfferPrice - subtotal + couponDiscount || 0
 
             return {
+                couponDiscount,
                 priceWithoutGST,
                 totalOfferedPrice,
                 finalAmount,
@@ -158,7 +159,7 @@ const checkout = async (req, res) => {
 
         const couponCode = data.couponCode
         
-        const {finalAmount, totalOfferPrice, totalOfferedPrice, totalGST, priceWithoutGST, coupon } = await calculateAmounts(couponCode, totalAmount, cartItems)
+        const {finalAmount, totalOfferPrice, totalOfferedPrice, totalGST, priceWithoutGST, coupon , couponDiscount } = await calculateAmounts(couponCode, totalAmount, cartItems)
 
         if( paymentMethod === 'COD' &&finalAmount > 50000){
             return res.status(401).json({ success :false, message : 'COD is not available for the amount 50000 & above!!'})
@@ -177,6 +178,7 @@ const checkout = async (req, res) => {
             })),
             totalPrice: priceWithoutGST + totalOfferedPrice,
             finalAmount: finalAmount,
+            couponDiscount,
             discount: totalOfferedPrice || 0,
             address: orderAddress,
             status: 'Pending',
@@ -350,7 +352,7 @@ const retryPayment = async (req, res) => {
             if(order.paymentMethod === 'Razorpay' && finalAmount > 500000){
                 return res.status(400).json({ success : false, message : 'Razorpay is not available for the amount 500000 & above'})
             }
-            console.log('Payment method:', method);
+            // console.log('Payment method:', method);
             const razorpayOrder = await generateRazorpayCheckout(finalAmount);
             order.razorpayOrderId = razorpayOrder.id;
             
@@ -414,6 +416,7 @@ const retryPayment = async (req, res) => {
             }
 
             order.paymentMethod = method;
+            order.paymentStatus = 'Paid'
             const saveResult = await order.save();
 
             if (!saveResult) {

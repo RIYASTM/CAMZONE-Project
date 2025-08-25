@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     const filterDropdown = document.querySelector('.filter-dropdown');
+    const transactions = filterDropdown.dataset.transactions
+    console.log('transactions : ', transactions)
 
 
     if (filterDropdown) {

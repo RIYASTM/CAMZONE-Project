@@ -1,4 +1,11 @@
+//Modules
+const nodemailer = require('nodemailer')
+const env = require('dotenv').config()
+const bcrypt = require('bcrypt')
+const userAuth = require('../../middleware/userAuth')
+const session = require('express-session')
 
+//Models
 const User = require('../../model/userModel')
 const Brands = require('../../model/brandModel')
 const Products = require('../../model/productModel')
@@ -6,13 +13,7 @@ const Category = require('../../model/categoryModel')
 const Cart = require('../../model/cartModel')
 const Wishlist = require('../../model/wishlistModel')
 
-const nodemailer = require('nodemailer')
-const env = require('dotenv').config()
-const bcrypt = require('bcrypt')
-const userAuth = require('../../middleware/userAuth')
-const session = require('express-session')
-
-//helpers
+//helper Functions
 const securePassword = require('../../helpers/hashPass')
 const { sendOTPForgott, generateOtp, sendOTP } = require('../../helpers/OTP')
 const { validateForm, validateUser } = require('../../helpers/validations')
@@ -20,7 +21,6 @@ const { validateForm, validateUser } = require('../../helpers/validations')
 
 
 //Home Page
-
 const loadHomePage = async (req, res) => {
     try {
 
@@ -28,13 +28,7 @@ const loadHomePage = async (req, res) => {
         const usermail = req.session.usermail;
         const userId = req.session.user
 
-        // console.log('Session Data : ',req.session)
-
         const user = await User.findById(userId)
-
-        if (user) {
-            console.log('User : ', user)
-        }
 
         const cart = userId ? await Cart.findOne({ userId }) : 0;
 
@@ -44,7 +38,6 @@ const loadHomePage = async (req, res) => {
         const query = { isBlocked: false, isDeleted: false };
 
         if (search) {
-            console.log('search : ', search)
 
             const brandIds = await Brands.find({
                 brandName: { $regex: search.trim(), $options: 'i' },
@@ -62,7 +55,6 @@ const loadHomePage = async (req, res) => {
                 { category: { $in: categoryIds } }
             ];
         }
-
 
         const products = await Products.find({
             ...query,
@@ -93,35 +85,14 @@ const loadHomePage = async (req, res) => {
 
         const wishList = await Wishlist.findOne({ user: userId }).populate('items.product')
 
-        let wishlistItems = []
-
-        if (wishList) {
-
-            wishlistItems = wishList.items.map(item => item.product._id.toString())
-
-            // console.log('wishlist Items : ', wishlistItems)
-        }
+        let wishlistItems = wishList ? wishList.items.map(item => item.product._id.toString()) : []
 
         const newProducts = productsWithOffers
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 8);
 
-        if (user) {
-
-            return res.render('home', {
-                search,
-                cart,
-                user,
-                brands,
-                category: categories,
-                newProducts,
-                products: productsWithOffers,
-                currentPage: 'home',
-                wishlistItems
-            });
-        }
-
         return res.render('home', {
+            user : user || '',
             search,
             cart,
             currentPage: 'home',
@@ -297,22 +268,8 @@ const loadShop = async (req, res) => {
 
         const totalPages = Math.ceil((totalProducts >= 2 ? totalProducts : 1) / limit);
 
-        if (user) {
-            return res.render('shop', {
-                search,
-                cart,
-                user,
-                brands,
-                category: categories,
-                products: products || [],
-                currentPage: 'shop',
-                currentPages: page,
-                totalPages,
-                finalQuery
-            });
-        }
-
         return res.render('shop', {
+            user : user || '',
             search,
             cart,
             brands,
@@ -332,6 +289,7 @@ const loadShop = async (req, res) => {
     }
 }
 
+//Product Page
 const loadProduct = async (req, res) => {
     try {
 
@@ -396,30 +354,8 @@ const loadProduct = async (req, res) => {
 
         const relatedProducts = await Products.find({ category: findCategory })
 
-        if (user) {
-
-            console.log("user mail: ", usermail)
-
-            return res.render('product', {
-                search,
-                cart,
-                user,
-                brands: findBrand,
-                category: findCategory,
-                product,
-                totalOffer,
-                relatedProducts,
-                currentPage: 'product',
-                wishlistItems
-            })
-
-        }
-
-        const brands = await Brands.find({ isDeleted: false, isBlocked: false })
-        const category = await Category.find({ isListed: true })
-        const products = await Products.find({ isBlocked: false, isDeleted: false })
-
         return res.render('product', {
+            user : user || '',
             search,
             cart,
             brands: findBrand,
@@ -755,7 +691,7 @@ const resendOtp = async (req, res) => {
     }
 }
 
-//Password Resetting
+//Forgot Password Resetting
 const loadforgotPass = async (req, res) => {
     try {
         const search = req.query.search || ''
@@ -920,6 +856,29 @@ const resetPassword = async (req, res) => {
     }
 }
 
+//cart
+const loadCart = async (req, res) => {
+    try {
+        
+        search = req.query.search || ''
+        
+        const product = await Products.find({ isBlocked: false })
+        
+        const userId = req.session.user
+        
+        const cart = userId ? await Cart.findOne({ userId }) : 0
+        
+        return res.render('cart', {
+            currentPage: 'cart',
+            product,
+            search,
+            cart
+        })
+        
+    } catch (error) {
+        console.log('Failed to load the cart page : ', error)
+    }
+}
 
 //Error Page
 const pageNotFound = async (req, res) => {
@@ -929,36 +888,9 @@ const pageNotFound = async (req, res) => {
         console.log('================================================')
         console.log('Failed to load Page!!', error)
         console.log('================================================')
-        return res.status(500).render('page-404')
-
+        return res.status(500).send('Something went wrong with this page....')
     }
 }
-
-
-//cart
-const loadCart = async (req, res) => {
-    try {
-
-        search = req.query.search || ''
-
-        const product = await Products.find({ isBlocked: false })
-
-        const userId = req.session.user
-
-        const cart = userId ? await Cart.findOne({ userId }) : 0
-
-        return res.render('cart', {
-            currentPage: 'cart',
-            product,
-            search,
-            cart
-        })
-
-    } catch (error) {
-        console.log('Failed to load the cart page : ', error)
-    }
-}
-
 
 
 

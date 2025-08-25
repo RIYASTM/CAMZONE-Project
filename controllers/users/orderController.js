@@ -2,6 +2,7 @@ const User = require("../../model/userModel")
 const Order = require('../../model/orderModel')
 const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
+const Coupon = require('../../model/couponModel')
 const { search } = require("../../routes/userRouter")
 
 const {addToWallet} = require('../../helpers/wallet')
@@ -93,7 +94,6 @@ const loadMyOrders = async (req,res) => {
 }
 
 const loadOrderDetails = async (req,res) => {
-
     try {
 
         const userId = req.session.user
@@ -169,19 +169,31 @@ const cancelOrder = async (req, res) => {
 
         const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled');
         
-       
-
+        
+        let finalPrice = order.finalAmount - refundAmount
+        order.finalAmount -= refundAmount
+        
+        if(order.couponApplied && order.finalAmount > 0){
+            const couponCode = order.couponCode || ''
+            const coupon = couponCode ?  await Coupon.findOne({couponCode}) : ''
+            finalPrice += order.couponDiscount
+            if(finalPrice < coupon.minOrder){
+                refundAmount -= coupon.discount
+                order.couponApplied = false
+            }
+        }
+        
         if (isFullCancellation || allCancelled) {   
             ({refundAmount,refundReason} = orderCancel(order, reason))
         }
-
-        order.totalPrice -= refundAmount
         
         await order.save();
 
+
+        console.log("order saved...")
         
-        if (['Razorpay', 'Wallet'].includes(order.paymentMethod)) {
-            console.log('userID : ', userId)
+        if (['Razorpay', 'Wallet'].includes(order.paymentMethod) && (order.status === 'Confirmed' || order.paymentStatus === 'Paid')) {
+            console.log('wallet userID : ', userId)
             await addToWallet(userId, refundAmount, refundReason);
         }
 
@@ -192,8 +204,6 @@ const cancelOrder = async (req, res) => {
                 await product.save();
             }
         }
-
-        
 
         return res.status(200).json({
             success: true,
