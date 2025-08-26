@@ -1,6 +1,6 @@
 let generatingReport = false;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => { 
     try {
         const ordersElement = document.getElementById('salesReportData');
         const usersElement = document.getElementById('usersData');

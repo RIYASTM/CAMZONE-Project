@@ -96,6 +96,7 @@ function updateDashboard(filteredOrders) {
 
     updateSalesSummary(filteredOrders);
     updateTopProducts(filteredOrders);
+    updateTopCategories(filteredOrders)
     updateRecentOrders(filteredOrders);
     updatePaymentMethods(filteredOrders);
 }
@@ -139,6 +140,55 @@ function calcGrowth(orders) {
 
     const growth = ((recentOrders.length - olderOrders.length) / olderOrders.length) * 100;
     return Math.round(growth * 100) / 100;
+}
+
+function updateTopCategories(orders) {
+    if (!orders || !Array.isArray(orders)) return;
+
+    const categories = JSON.parse(document.getElementById('categoryFilter').dataset.items);
+    const categoryMap = {};
+
+    orders.forEach(order => {
+        if (!order.orderedItems || !Array.isArray(order.orderedItems)) return;
+
+        order.orderedItems.forEach(item => {
+            if (!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
+
+            const id = item.product?.category?._id || item.product?.category?.toString() || 'unknown';
+            if (!categoryMap[id]) {
+                // lookup category name from `categories` array (passed from EJS)
+                const catObj = categories.find(c => c._id.toString() === id.toString());
+                categoryMap[id] = {
+                    name: catObj ? catObj.name : 'Unknown',
+                    revenue: 0,
+                    quantity: 0
+                };
+            }
+
+            const price = item.productPrice || 0;
+            const quantity = item.quantity || 0;
+
+            categoryMap[id].revenue += price * quantity;
+            categoryMap[id].quantity += quantity;
+        });
+    });
+
+    const topCategories = Object.values(categoryMap)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 15); // Show top 15 categories
+
+    const tbody = document.getElementById('topCategoriesTable');
+    if (tbody) {
+        tbody.innerHTML = topCategories.map((c, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${c.name}</td>
+                <td>${c.quantity.toLocaleString()}</td>
+                <td>₹${c.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td>--</td>
+            </tr>
+        `).join('');
+    }
 }
 
 function updateTopProducts(orders) {

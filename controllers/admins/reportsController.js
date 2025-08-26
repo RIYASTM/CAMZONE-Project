@@ -1,5 +1,6 @@
 const Orders = require('../../model/orderModel')
 const Users = require('../../model/userModel')
+const Categories = require('../../model/categoryModel')
 
 
 const loadReports = async (req,res) => {
@@ -8,8 +9,17 @@ const loadReports = async (req,res) => {
         const orders = await Orders.find()
                     .populate('orderedItems.product', 'productName salePrice')
                     .populate('userId', 'name')
+                    .populate({
+                        path: 'orderedItems.product',
+                        populate: {
+                        path: 'category',
+                        model: 'Category'
+                        }
+                    })
                     .lean();
         const users = await Users.find({ status : true }).lean();
+
+        const categories = await Categories.find()
         
         return res.render('reports',{
             pageTitle : 'Reports',
@@ -17,6 +27,7 @@ const loadReports = async (req,res) => {
             currentPages : 1,
             totalPages : 10,
             iconClass : 'fa-chart-bar',
+            categories,
             orders,
             users
         })

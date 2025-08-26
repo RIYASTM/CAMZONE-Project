@@ -1,6 +1,7 @@
 const { options } = require("sanitize-html");
 const Order = require("../../model/orderModel");
 const Product = require('../../model/productModel')
+const Coupon = require('../../model/couponModel')
 
 const {returnItem,orderReturn} = require('../../helpers/orderReturn')
 const {addToWallet} = require('../../helpers/wallet')
@@ -117,23 +118,25 @@ const returnOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found...' });
         }
 
-        console.log('order found ')
+        if(order.status === 'Returned'){
+            return res.status(401).json({ success : false, message : 'This order already returned...'})
+        }
 
         const productIds = Array.isArray(productId) ? productId.map(id => id.toString()) : [productId.toString()];
-        console.log('productIds found')
         const products = order.orderedItems.map(item => item.product.toString());
-        console.log('products found')
 
         const returnItems = order.orderedItems.filter(item =>
             productIds.includes(item.product.toString())
         );
-        console.log('returnItems found')
+
+        const alreadyReturned = returnItems.some(item => item.itemStatus === 'Returned')
+
+        if(alreadyReturned){
+            return res.status(401).json({ success : false, message : 'This items is already returned...'})
+        }
 
         const isFullReturn = products.length === productIds.length &&
             productIds.every(id => products.includes(id));
-
-        console.log('isFullReturn found', isFullReturn)
-            
             
         if (returnItems && returnItems.length > 0) {
                 
@@ -141,30 +144,47 @@ const returnOrder = async (req, res) => {
 
             const isFullReturned = order.orderedItems.every(item => item.itemStatus === 'Returned')
 
-            console.log('isFullReturned', isFullReturned)
-            
             if (isFullReturn || isFullReturned) {
                 ({ refundAmount, refundReason } = orderReturn(order, reason, newStatus))
-            } 
+            }
 
-            for (let item of returnItems) {
-                const product = await Product.findById(item.product);
-                if (product) {
-                    product.quantity += item.quantity;
-                    console.log('quantity changed')
-                    await product.save();
+            // for (let item of returnItems) {
+            //     const product = await Product.findById(item.product);
+            //     if (product) {
+            //         product.quantity += item.quantity;
+            //         await product.save();
+            //     }
+            // }
+
+            const bulkOps = returnItems.map(item => ({
+                updateOne: {
+                    filter: { _id: item.product },
+                    update: { $inc: { quantity: item.quantity } }
+                }
+            }));
+            await Product.bulkWrite(bulkOps);
+
+
+            let finalPrice = order.finalAmount - refundAmount
+            order.finalAmount -= refundAmount
+            
+            if(order.couponApplied && order.finalAmount > 0){
+                const couponCode = order.couponCode || ''
+                const coupon = couponCode ?  await Coupon.findOne({couponCode}) : ''
+                finalPrice += order.couponDiscount
+                if(finalPrice < coupon.minOrder){
+                    refundAmount -= coupon.discount
+                    order.finalAmount += coupon.discount
+                    order.couponApplied = false
                 }
             }
 
             await order.save();
-            console.log('order saved')
 
             
             if (newStatus === 'Returned' && refundAmount > 0) {
                 const userId = order.userId
-                console.log('userId : ', userId)
                 await addToWallet(userId, refundAmount, refundReason);
-                console.log('added to wallet')
             }
 
             const message = newStatus !== 'Returned'
@@ -176,14 +196,44 @@ const returnOrder = async (req, res) => {
             return res.status(200).json({ success: true, message });
 
         } else {
-            order.status = newStatus;
-            order.reason = reason;
-            order.orderedItems.forEach(item => {
-                item.itemStatus = newStatus;
-                item.reason = reason;
-            });
+
+            let { refundAmount, refundReason } = orderReturn(order, reason, newStatus)
+            // order.status = newStatus;
+            // order.reason = reason;
+            // order.orderedItems.forEach(item => {
+            //     item.itemStatus = newStatus;
+            //     item.reason = reason;
+            // });
+
+            let finalPrice = order.finalAmount - refundAmount
+            order.finalAmount -= refundAmount
+            
+            if(order.couponApplied && order.finalAmount > 0){
+                const couponCode = order.couponCode || ''
+                const coupon = couponCode ?  await Coupon.findOne({couponCode}) : ''
+                finalPrice += order.couponDiscount
+                if(finalPrice < coupon.minOrder){
+                    refundAmount -= coupon.discount
+                    order.finalAmount += coupon.discount
+                    order.couponApplied = false
+                }
+            }
 
             await order.save();
+
+            if (newStatus === 'Returned' && refundAmount > 0) {
+                const userId = order.userId
+                await addToWallet(userId, refundAmount, refundReason);
+            }
+
+            const bulkOps = returnItems.map(item => ({
+                updateOne: {
+                    filter: { _id: item.product },
+                    update: { $inc: { quantity: item.quantity } }
+                }
+            }));
+            await Product.bulkWrite(bulkOps);
+
 
             return res.status(200).json({ success: true, message: 'Order updated with return status.' });
         }

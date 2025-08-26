@@ -169,6 +169,9 @@ const cancelOrder = async (req, res) => {
 
         const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled');
         
+        if (isFullCancellation || allCancelled) {   
+            ({refundAmount,refundReason} = orderCancel(order, reason))
+        }
         
         let finalPrice = order.finalAmount - refundAmount
         order.finalAmount -= refundAmount
@@ -179,14 +182,12 @@ const cancelOrder = async (req, res) => {
             finalPrice += order.couponDiscount
             if(finalPrice < coupon.minOrder){
                 refundAmount -= coupon.discount
+                order.finalAmount += coupon.discount
                 order.couponApplied = false
             }
         }
         
-        if (isFullCancellation || allCancelled) {   
-            ({refundAmount,refundReason} = orderCancel(order, reason))
-        }
-        
+
         await order.save();
 
 
