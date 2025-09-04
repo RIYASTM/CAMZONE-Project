@@ -6,24 +6,9 @@
     <title>My Wishlist - CamZone</title>
     <link rel="stylesheet" href="/stylesheet/user/wishList.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        .wishlist-btn i {
-            color: #ccc; 
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .wishlist-btn.active i {
-            color: red;
-        }
-        .wishlist-btn:hover i {
-            color: rgb(255, 90, 90);
-        }
-    </style>
 </head>
 <body>
-    <%- include('../partials/users/header',{cart , search}) %>
+    <%- include('../partials/users/header',{ search, cart }) %>
     
     <div class="container">
         <!-- Breadcrumb Navigation -->
@@ -60,10 +45,10 @@
                                     <div class="product-image">
                                         <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
                                             <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
-                                            <% } else { %>
-                                                <span>No Image</span>
-                                                <% } %>
-                                            <button class="wishlist-btn active" data-product-id="<%= item.product._id %>"><i class="fa fa-heart"></i></button>
+                                        <% } else { %>
+                                            <span>No Image</span>
+                                        <% } %>
+                                        <button class="wishlist-btn active" data-product-id="<%= item.product._id %>"><i class="fa fa-heart"></i></button>
                                     </div>
                                     <div class="product-info">
                                         <h4><%= item.product.productName %></h4>
@@ -76,6 +61,7 @@
                                         </div>
                                     </div>
                                     </a>
+                                    <button class="add-to-cart" data-id="<%=item.product._id%>">Add to Cart</button>
                                 </div>
                             <% }); %>
                         <% } else { %>
@@ -88,21 +74,21 @@
                 </div>
 
                 <!-- Just For You Section -->
-                <div class="wishlist-section">
+                <!-- <div class="wishlist-section">
                     <div class="section-header">
                         <h3>Just For You</h3>
                         <a href="#" class="see-all">See All</a>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
 
     <%- include('../partials/users/footer') %>
     
-    <!-- <script src="/js/wishlist.js"></script> -->
+    <script src="/javascript/users/wishlist.js"></script>
 
-    <script>
+    <!-- <script>
         // Wishlist functionality
         document.addEventListener('DOMContentLoaded', function() {
             const wishlistButtons = document.querySelectorAll('.wishlist-btn');
@@ -290,6 +276,6 @@
                 });
             }
         });
-    </script>
+    </script> -->
 </body>
 </html>

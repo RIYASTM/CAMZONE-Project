@@ -62,26 +62,31 @@ const editProfile = async (req, res) => {
 
         // Check for duplicate entries
         const existUser = await User.findOne({
-            $or: [{ name }, { email }, { phone }],
+            $or: [
+                { name: new RegExp(`^${name}$`, "i") },  
+                { email: new RegExp(`^${email}$`, "i") },
+                { phone } 
+            ],
             _id: { $ne: userId }
-        });
+            });
+
 
         if (existUser) {
             let errors = {};
-            if (existUser.name === name) errors.name = 'Username already exists.';
-            if (existUser.email === email) errors.email = 'Email already exists.';
+            if (existUser.name.toLowerCase() === name.toLowerCase()) errors.name = 'Username already exists.';
+            if (existUser.email.toLowerCase() === email.toLowerCase()) errors.email = 'Email already exists.';
             if (existUser.phone === phone) errors.phone = 'Phone number already exists.';
             return res.status(409).json({ success: false, message: 'Duplicate entry found.', errors });
         }
 
-        const data = { name, email, phone };
+        const data = { name, email, phone};
         const errors = validateProfile(data);
         if (errors) {
             return res.status(400).json({ success: false, message: 'Validation Error', errors });
         }
 
-        // 🛑 OTP Verification if email changed
-        if (emailChanged) {
+        // OTP Verification if email changed
+        if (emailChanged) { 
             const sessionOtp = req.session.otp;
             if (!sessionOtp || sessionOtp.verified !== true) {
                 return res.status(401).json({ success: false, message: 'Email change requires OTP verification.' });

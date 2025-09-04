@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart - CAMZONE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheet/user/cart.css">
 </head>
 <body>
@@ -37,7 +38,7 @@
                             </div>
                             <div class="cart-quantity">
                                 <button class="quantity-btn minus" id="minusButton" data-id="<%= item.productId._id %>" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
-                                <input type="text" class="quantity-input" data-product-id="<%= item.productId._id %>" value="<%= item.quantity >= item.productId.quantity ? item.productId.quantity : item.quantity %>" readonly>
+                                <input type="text" class="quantity-input" data-product-id="<%= item.productId._id %>" data-item="<%= JSON.stringify(item) %>" value="<%= item.quantity >= item.productId.quantity ? item.productId.quantity : item.quantity %>" readonly>
                                 <button class="quantity-btn plus" id="plusButton" data-id="<%= item.productId._id %>" data-stock="<%= item.productId.quantity %>" <%= item.quantity >= item.productId.quantity ? 'disabled' : '' %>>+</button>
                             </div>
                             <div class="cart-itemPrice">
@@ -48,9 +49,14 @@
                             </div>
                             <div class="cart-subtotal">
                                 <span class="item-subtotal">₹ <%= item.totalPrice.toLocaleString('en-IN') %></span>
-                                <button class="remove-item" data-id="<%= item.productId._id %>">
-                                    <i class="fas fa-circle-xmark"></i>
-                                </button>
+                                <div class="cart-items-actions">
+                                    <button class="wishlist-btn" data-id="<%= item.productId._id %>">
+                                        <i class="fa fa-heart"></i>
+                                    </button>
+                                    <button class="remove-item" data-id="<%= item.productId._id %>">
+                                        <i class="fas fa-circle-xmark"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     <% }) %> 
@@ -64,17 +70,17 @@
                 <h2>Cart Total</h2>
                 <div class="total-row subtotal">
                     <span>Subtotal</span>
-                    <span>₹ <%= subtotal.toLocaleString('en-IN') %></span>
+                    <span id="subtotal">₹ <%= subtotal.toLocaleString('en-IN') %></span>
                 </div>
                 <div class="total-row discount-offer" style="border-bottom: none;">
                     <span>Saved </span>
-                    <span class="saved-amount">-₹ <%= totalOfferedPrice.toLocaleString('en-IN') %></span>
+                    <span class="saved-amount" id="offeredPrice">-₹ <%= totalOfferedPrice.toLocaleString('en-IN') %></span>
                 </div>
 
                 
                 <div class="total-row grand-total">
                     <span>Total Amount</span>
-                    <span>₹ <%= total.toLocaleString('en-IN') %></span>
+                    <span id="finalAmount">₹ <%= total.toLocaleString('en-IN') %></span>
                 </div>
             </div>
         </div>
@@ -89,206 +95,7 @@
     <%- include('../partials/users/footer') %>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/javascript/users/cart.js"></script>
 
-    <script>
-        // Quantity buttons
-        document.querySelectorAll('.quantity-btn').forEach(button => {
-            button.addEventListener('click', async function() {
-                const productId = this.getAttribute('data-id');
-                const input = this.parentElement.querySelector(`.quantity-input[data-product-id="${productId}"]`);
-                let quantity = parseInt(input.value);
-                const originalQuantity = quantity;
-                const stock = parseInt(this.parentElement.querySelector('.plus').getAttribute('data-stock'));
-
-                console.log('Product ID:', productId, 'Current Quantity:', quantity, 'Stock:', stock);
-
-                if (this.classList.contains('minus') && quantity > 1) {
-                    quantity--;
-                } else if (this.classList.contains('plus') && quantity < stock) {
-                    quantity++;
-                }
-
-                if (quantity !== originalQuantity) {
-                    input.value = quantity;
-                    await updateCartItem(productId, quantity, input, originalQuantity);
-                }
-            });
-        });
-
-        document.querySelectorAll('.remove-item').forEach(button => {
-            button.addEventListener('click', async function() {
-                const productId = this.getAttribute('data-id');
-                await removeCartItem(productId);
-            });
-        });
-
-        // Coupon functionality
-        document.getElementById('applyCoupon')?.addEventListener('click', async function() {
-            const couponCode = document.getElementById('couponCode').value.trim();
-            if (!couponCode) {
-                showCouponMessage('Please enter a coupon code', 'error');
-                return;
-            }
-            
-            await applyCoupon(couponCode);
-        });
-
-        document.getElementById('removeCoupon')?.addEventListener('click', async function() {
-            await removeCoupon();
-        });
-
-        async function applyCoupon(couponCode) {
-            try {
-                const response = await fetch('/apply-coupon', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ couponCode })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showCouponMessage(`Coupon applied successfully! ${data.message}`, 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    showCouponMessage(data.message || 'Invalid coupon code', 'error');
-                }
-            } catch (error) {
-                console.error('Error applying coupon:', error);
-                showCouponMessage('Something went wrong while applying the coupon', 'error');
-            }
-        }
-
-        async function removeCoupon() {
-            try {
-                const response = await fetch('/remove-coupon', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showCouponMessage('Coupon removed successfully', 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    showCouponMessage(data.message || 'Failed to remove coupon', 'error');
-                }
-            } catch (error) {
-                console.error('Error removing coupon:', error);
-                showCouponMessage('Something went wrong while removing the coupon', 'error');
-            }
-        }
-
-        function showCouponMessage(message, type) {
-            const messageElement = document.getElementById('couponMessage');
-            messageElement.textContent = message;
-            messageElement.className = `coupon-message ${type}`;
-            
-            // Clear message after 5 seconds
-            setTimeout(() => {
-                messageElement.textContent = '';
-                messageElement.className = 'coupon-message';
-            }, 5000);
-        }
-
-        async function updateCartItem(productId, quantity, input, originalQuantity) {
-            try {
-                const response = await fetch('/updateCart', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId, quantity })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    
-                    const itemRow = input.closest('.cart-item');
-
-                    const itemSubtotalElement = itemRow.querySelector('.cart-subtotal');
-                    if (itemSubtotalElement && data.values.itemSubTotal) {
-                        itemSubtotalElement.querySelector('.item-subtotal').innerText = data.values.itemSubTotal.toLocaleString('en-IN');
-                    }
-
-                    const grandTotalElement = document.querySelector('.grand-total span:last-child');
-                    if (grandTotalElement && data.values.cartTotal) {
-                        grandTotalElement.innerText = `₹ ${data.values.cartTotal.toLocaleString('en-IN')}`;
-                    }
-                    const subtotalElement = document.querySelector('.subtotal span:last-child');
-                    if (subtotalElement && data.values.cartTotal) {
-                        subtotalElement.innerText = `₹ ${data.values.cartTotal.toLocaleString('en-IN')}`;
-                    }
-
-                    const savedAmountElement = document.querySelector('.saved-amount');
-                    if (savedAmountElement && data.values.discountAmount !== undefined) {
-                        savedAmountElement.innerText = `-₹ ${data.values.discountAmount.toLocaleString('en-IN')}`;
-                    }
-
-                    const minusButton = itemRow.querySelector('.quantity-btn.minus');
-                    const plusButton = itemRow.querySelector('.quantity-btn.plus');
-                    const stock = parseInt(plusButton.getAttribute('data-stock'));
-
-                    minusButton.disabled = quantity <= 1;
-                    plusButton.disabled = quantity >= stock;
-
-                } else {
-                    input.value = originalQuantity;
-                    Swal.fire('Error', data.message || 'Failed to update cart item.', 'error');
-                }
-            } catch (error) {
-                input.value = originalQuantity;
-                console.error('Error updating cart:', error);
-                Swal.fire('Error', 'Something went wrong while updating the cart.', 'error');
-            }
-        }
-
-
-        async function removeCartItem(productId) {
-            Swal.fire({
-                title: 'Remove item from cart?',
-                text: "This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, remove it',
-                cancelButtonText: 'Cancel'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch('/cartRemove', {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId })
-                        });
-
-                        console.log('Remove cart response status:', response.status);
-                        const data = await response.json();
-                        console.log('Remove cart response data:', data);
-
-                        if (data.success) {
-                            Swal.fire(
-                                'Removed!',
-                                'Item has been removed from your cart.',
-                                'success'
-                            ).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire('Error', data.message || 'Failed to remove item from cart.', 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error removing item:', error);
-                        Swal.fire('Error', 'Something went wrong while removing the item.', 'error');
-                    }
-                }
-            });
-        }
-
-    </script>
 </body>
 </html>

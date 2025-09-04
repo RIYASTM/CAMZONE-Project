@@ -78,12 +78,6 @@ router.post('/resetPassword', userController.resetPassword)
 
 //Password changing
 
-// router.get('/passwordManage', userAuth, passwordController.loadPassword)
-
-// router.post('/checkPassword', userAuth , passwordController.checkPassword)
-
-// router.post('/confirmOTP',userAuth, passwordController.confirmOTP)
-
 router.post('/changePassword', userAuth, passwordController.changePassword)
 
 
@@ -117,6 +111,8 @@ router.post('/addtocart', userAuth, cartController.addToCart)
 router.patch('/updateCart', userAuth, cartController.cartUpdate)
 
 router.patch('/cartRemove', userAuth, cartController.removeItem)
+
+router.patch('/cartTowishlist', userAuth , cartController.cartToWishlist)
 
 
 //Coupon

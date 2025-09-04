@@ -42,10 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayFormErrors(signupForm, data.errors);
                 Swal.fire(' ', data.message || 'Validation error!', 'error');
             } else {
-                Swal.fire('Success', data.message || 'Signup successful', 'success')
-                    .then(() => {
-                        window.location.replace(data.redirectUrl);
-                    });
+                window.location.replace(data.redirectUrl);
             }
         } catch (error) {
             console.error('Signup error:', error);

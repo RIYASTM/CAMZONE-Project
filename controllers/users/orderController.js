@@ -3,6 +3,7 @@ const Order = require('../../model/orderModel')
 const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
 const Coupon = require('../../model/couponModel')
+const mongoose = require('mongoose')
 const { search } = require("../../routes/userRouter")
 
 const {addToWallet} = require('../../helpers/wallet')
@@ -116,7 +117,16 @@ const loadOrderDetails = async (req,res) => {
 
         const orderId = req.query.id
 
-        const order = await Order.findById(orderId).populate("orderedItems.product")
+        let query = orderId
+
+        if (mongoose.Types.ObjectId.isValid(orderId)) {
+            query = { $or: [{ _id: orderId }, {orderId : orderId }]};
+        } else {
+            query = {orderId}
+        }
+
+        const order = await Order.findOne(query).populate("orderedItems.product");
+
         const isUser = order.userId.toString() === userId.toString()
 
         if(!isUser){
@@ -149,7 +159,7 @@ const cancelOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found.' });
         }
 
-        if (!['Confirmed','Pending', 'Processing', 'Shipped', 'Out of Delivery'].includes(order.status)) {
+        if (!['Confirmed','Pending', 'Processing', 'Shipped', 'Out of Delivery','Payment Failed'].includes(order.status)) {
             return res.status(400).json({ success: false, message: 'Order cannot be cancelled anymore.' });
         }
 
@@ -224,7 +234,7 @@ const returnRequest = async (req,res) => {
 
         const {orderId , reason , items} = req.body
 
-         const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found...' });
         }
@@ -251,7 +261,9 @@ const returnRequest = async (req,res) => {
             order.reason = reason
             order.orderedItems.forEach(item => {
                 item.itemStatus = 'Return Request';
+                item.reason = reason
             });
+
         } else {
             returnItems.forEach(item => {
                 item.itemStatus = 'Return Request';
@@ -259,6 +271,17 @@ const returnRequest = async (req,res) => {
             });
         }
 
+        const everyItem = order.orderedItems.every(
+            item => item.itemStatus && item.itemStatus.trim().toLowerCase() === "return request".toLowerCase().trim()
+        );
+
+        order.orderedItems.forEach(item => console.log('item status : ', item.itemStatus ) )
+
+        if(everyItem){
+            order.status = 'Return Request'
+            order.reason = reason
+        }
+        
         await order.save();
 
 

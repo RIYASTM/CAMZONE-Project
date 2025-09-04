@@ -168,29 +168,46 @@ function ValidateBrand(data){
         }
     }
 
-
     return Object.keys(error).length > 0 ? error : null
 }
 
 function validateProfile(data) {
 
+    console.log(data)
     const namepattern = /^[A-Za-z\s]+$/;
     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
     const digit = /\d/
+    const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/;
 
     let error = {}
 
     if(!data.name){
-        name.error = 'Name is required!!'
+        error.name = 'Name is required!!'
     }else if(!namepattern.test(data.name)){
-        name.error = "Name should contains only alphabets!!"
+        error.name = "Name should contains only alphabets!!"
+    }
+    if(data.email){
+        if(!emailPattern.test(data.email)){
+            error.email = 'Invalid Email!!'
+        }
+    }
+    if(data.phone){
+        if(data.phone.length < 10 || data.phone.length > 10){
+            error.phone = 'Invalid Phone Number!!'
+        }
     }
     return Object.keys(error).length > 0 ? error : null;
 }
 
 function validateAddress(data){
 
-            const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/;
+            const phonePattern = {
+                'USA' : /^\+1[2-9]\d{2}[2-9]\d{6}$/,
+                'India' : /^\+91[6-9]\d{9}$/,
+                'UK' : /^\+44\d{10}$/,
+                'UAE' : /^\+971\d{8,9}$/,
+                'KSA' : /^\+966\d{8,9}$/
+            };
             const pincodePattern = /^6[0-9]{5}$/;
             const namePattern = /^[a-zA-Z\s]+$/;
             let errors = {};
@@ -219,11 +236,30 @@ function validateAddress(data){
             if (!data.pincode || !pincodePattern.test(data.pincode)) {
                 errors.pincode = "Valid pincode is required 6 digits).";
             }
-            if (!data.phone || !phonePattern.test(data.phone)) {
-                errors.phone = "Valid phone number 1 is required.";
+            // Phone
+            if (data.phone) {
+                if (data.country && phonePattern[data.country]) {
+                    if (!phonePattern[data.country].test(data.phone)) {
+                        errors.phone = "Invalid phone number format!";
+                    }
+                } else {
+                    errors.phone = "Unsupported country for phone validation!";
+                }
+            } else {
+                errors.phone = "Phone number 1 is required!";
             }
-            if (!data.altPhone || !phonePattern.test(data.altPhone)) {
-                errors.altPhone = "Valid phone number 2 is required.";
+
+            // Alternate Phone
+            if (data.altPhone) {
+                if (data.country && phonePattern[data.country]) {
+                    if (!phonePattern[data.country].test(data.altPhone)) {
+                        errors.altPhone = "Invalid phone number format!";
+                    }
+                } else {
+                    errors.altPhone = "Unsupported country for phone validation!";
+                }
+            } else {
+                errors.altPhone = "Phone number 2 is required!";
             }
 
             return Object.keys(errors).length > 0 ? errors : null;

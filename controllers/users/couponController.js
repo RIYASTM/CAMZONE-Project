@@ -69,6 +69,12 @@ const applyCoupon = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Cart not found...' })
         }
 
+        const timeNow = new Date()
+
+        if(timeNow > coupon.validUpto){
+            return res.status(401).json({ success : false , message : 'Coupon has been expired...'})
+        }
+
         if (coupon.discountType === 'fixed') {
             if (cart.totalAmount <= coupon.discount) {
                 return res.status(401).json({ success: false, message: `Your order need minimum amount morethan - ${coupon.discount}...` })

@@ -1,6 +1,7 @@
 const Orders = require('../../model/orderModel')
 const Users = require('../../model/userModel')
-const Categories = require('../../model/categoryModel')
+const Categories = require('../../model/categoryModel');
+const Brand = require('../../model/brandModel');
 
 
 const loadReports = async (req,res) => {
@@ -20,6 +21,7 @@ const loadReports = async (req,res) => {
         const users = await Users.find({ status : true }).lean();
 
         const categories = await Categories.find()
+        const brands = await Brand.find()
         
         return res.render('reports',{
             pageTitle : 'Reports',
@@ -28,6 +30,7 @@ const loadReports = async (req,res) => {
             totalPages : 10,
             iconClass : 'fa-chart-bar',
             categories,
+            brands,
             orders,
             users
         })

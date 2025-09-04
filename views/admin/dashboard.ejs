@@ -22,9 +22,10 @@
             
             <!-- Welcome Section -->
             <div class="welcome-section">
-                <h1>Welcome Admin...</h1>
                 <input type="hidden" id="salesReportData" value='<%= JSON.stringify(orders).replace(/'/g, '&#39;') %>'>
                 <input type="hidden" id="usersData" value='<%= JSON.stringify(users).replace(/'/g, '&#39;') %>'>
+                <input type="hidden" id="categoryData" value="<%=JSON.stringify(categories)%>">
+                <input type="hidden" id="brandData" value="<%=JSON.stringify(brands)%>">
             </div>
             
             <!-- Report Filters -->
@@ -158,7 +159,7 @@
             </div>
 
             <!-- Top Products Section -->
-            <div class="top-products-section">
+            <div class="top-section">
                 <div class="chart-header">
                     <div class="chart-title">
                         <span>Top Selling Products</span>
@@ -193,8 +194,82 @@
                     </table>
                 </div>
             </div>
+            
+            <!-- Top Category Section -->
+            <div class="top-section">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <span>Top Selling Categories</span>
+                        <div class="dropdown" id="categoryFilter">
+                            <span data-filter="week">This week</span>
+                            <i class="fas fa-chevron-down"></i>
+                            <div class="dropdown-menu" style="display: none;">
+                                <div class="dropdown-item" data-filter="week">This week</div>
+                                <div class="dropdown-item" data-filter="month">This month</div>
+                                <div class="dropdown-item" data-filter="all">All time</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-actions">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="sales-report-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Revenue</th>
+                                <th>Growth</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topCategoriesTable">
+                            <!-- Dynamic content will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <!-- Recent Orders -->
+            <!-- Top Brands Section -->
+            <div class="top-section">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <span>Top Selling Brands</span>
+                        <div class="dropdown" id="brandFilter">
+                            <span data-filter="week">This week</span>
+                            <i class="fas fa-chevron-down"></i>
+                            <div class="dropdown-menu" style="display: none;">
+                                <div class="dropdown-item" data-filter="week">This week</div>
+                                <div class="dropdown-item" data-filter="month">This month</div>
+                                <div class="dropdown-item" data-filter="all">All time</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-actions">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="sales-report-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Revenue</th>
+                                <th>Growth</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBrandsTable">
+                            <!-- Dynamic content will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Orders --> 
             <div class="orders-container">
                 <div class="chart-header">
                     <div class="chart-title">

@@ -1,13 +1,5 @@
-
-
 const addressData = '<%- JSON.stringify(address || []) %>';
 console.log('Address Data : ', addressData)
-
-const countryCodeMap = {
-    "India": "+91",
-    "USA": "+1",
-    "UK": "+44"
-};
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('addressModal');
@@ -16,16 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveAddressBtn = document.getElementById('saveAddress');
     const addressForm = document.getElementById('addressForm');
     const addressIdInput = document.getElementById('addressId');
-    const countrySelect = document.getElementById('country');
-    const countryCode1 = document.getElementById('countryCode1');
-    const countryCode2 = document.getElementById('countryCode2');
-
-    // Update country code based on selected country
-    countrySelect.addEventListener('change', (e) => {
-        const code = countryCodeMap[e.target.value] || "+91";
-        countryCode1.textContent = code;
-        countryCode2.textContent = code;
-    });
 
     // Close modal
     closeModal.addEventListener('click', () => {
@@ -120,8 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveAddressBtn.textContent = 'Add Address';
         addressForm.reset();
         addressIdInput.value = '';
-        countryCode1.textContent = '+91';
-        countryCode2.textContent = '+91';
         modal.classList.add('active');
     };
 
@@ -148,10 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (addressTypeRadio) {
                 addressTypeRadio.checked = true;
             }
-
-            const countryCode = countryCodeMap[address.country] || '+91';
-            countryCode1.textContent = countryCode;
-            countryCode2.textContent = countryCode;
         } else {
             Swal.fire('Error', 'Address not found.', 'error');
             return;
@@ -195,10 +171,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-
     function validateForm(data) {
         const namePattern = /^[a-zA-Z\s]+$/;
-        const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/;
+        const phonePattern = {
+            'USA' : /^\+1[2-9]\d{2}[2-9]\d{6}$/,
+            'India' : /^\+91[6-9]\d{9}$/,
+            'UK' : /^\+44\d{10}$/,
+            'UAE' : /^\+971\d{8,9}$/,
+            'SAUDI ARABIA' : /^\+966\d{8,9}$/
+        };
         const pincodePattern = /^\d{5,10}$/;
         let errors = {};
 

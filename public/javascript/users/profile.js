@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+
     // DOM Element Selection
     const profileSection = document.getElementById('profile-section');
     const profileForm = document.getElementById('profileForm');
@@ -151,8 +152,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Profile Form Event Listeners
     editProfileButton.addEventListener('click', function () {
+        const user = JSON.parse(document.getElementById('profile-section').dataset.user)
         if (editProfileButton.textContent === 'Edit') {
             formInputs.forEach(input => input.disabled = false);
+            if(user.googleId){
+                document.getElementById('email').disabled = true
+            }
             fileInput.disabled = false;
             passwordButton.style.display = 'none';
             editProfileButton.textContent = 'Save Changes';

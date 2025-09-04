@@ -116,7 +116,11 @@ const addProduct = async (req, res) => {
         const productImages = req.files ? req.files.map(file => file.filename) : [];
 
         if (productImages.length === 0) {
-            return res.status(400).json({ success: false, message: 'At least one product image is required!' });
+            return res.status(400).json({ success: false, message: 'There is no images added!!!' });
+        }
+
+        if(productImages.length < 3){
+            return res.status(401).json({ success : false, message : 'At least three images needed!!!'})
         }
 
         const regularPrice = parseFloat(data.regularPrice)

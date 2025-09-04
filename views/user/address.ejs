@@ -284,17 +284,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                        <% if (user && address && address.length > 0) { %>
-                            <% address.forEach(addr => { %>
+                            <% if (user && address && address.length > 0) { %>
+                                <% address.forEach(addr => { %>
+                                    <tr>
+                                        <td><%= addr.name %>, <%= addr.streetAddress %>, <%= addr.city %>, <%= addr.state %>, <%= addr.country %>, <%= addr.pincode %></td>
+                                        <td class="action-buttons">
+                                            <button class="btn-icon edit-btn" title="Edit" data-id="<%= addr._id %>" data-address='<%- JSON.stringify(address) %>'>✏️</button>
+                                            <button class="btn-icon delete-btn" title="Delete" onclick="deleteAddress('<%= addr.id %>')">🗑️</button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% }else{ %>
                                 <tr>
-                                    <td><%= addr.name %>, <%= addr.streetAddress %>, <%= addr.city %>, <%= addr.state %>, <%= addr.country %>, <%= addr.pincode %></td>
-                                    <td class="action-buttons">
-                                        <button class="btn-icon edit-btn" title="Edit" data-id="<%= addr._id %>" data-address='<%- JSON.stringify(address) %>'>✏️</button>
-                                        <button class="btn-icon delete-btn" title="Delete" onclick="deleteAddress('<%= addr.id %>')">🗑️</button>
-                                    </td>
+                                    <td>No Addresses</td>
                                 </tr>
-                            <% }) %>
-                        <% } %>
+                            <% } %>
                         </tbody>
                     </table>
                 </div>
@@ -328,8 +332,8 @@
                             <div class="phone-input-wrapper">
                                 <div class="country-code" id="countryCode1">+91</div>
                                 <input type="tel" id="phone" name="phone" placeholder="Phone Number 1">
-                                <div class="invalid-feedback"></div>
                             </div>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     
@@ -338,10 +342,12 @@
                             <label for="country">Country/Region <span class="required">*</span></label>
                             <div class="select-wrapper">
                                 <select id="country" name="country" >
-                                    <option value="">Select your Country/Region</option>
+                                    <option value="" disabled>Select your Country/Region</option>
                                     <option value="India">India</option>
                                     <option value="USA">United States</option>
                                     <option value="UK">United Kingdom</option>
+                                    <option value="UAE">UAE</option>
+                                    <option value="KSA">SAUDI ARABIA</option>
                                 </select>
                                 <div class="invalid-feedback"></div>
                             </div>
@@ -371,10 +377,7 @@
                             <label for="state">State <span class="required">*</span></label>
                             <div class="select-wrapper">
                                 <select id="state" name="state" >
-                                    <option value="">Select your State</option>
-                                    <!-- <option value="Kerala">Kerala</option>
-                                    <option value="Karnataka">Karnataka</option>
-                                    <option value="Tamil Nadu">Tamil Nadu</option> -->
+                                    <option value="" disabled>Select your State</option>
                                 </select>
                                 <div class="invalid-feedback"></div>
                             </div>
@@ -423,8 +426,8 @@
                             <div class="phone-input-wrapper">
                                 <div class="country-code" id="countryCode2">+91</div>
                                 <input type="tel" id="altPhone" name="altPhone" placeholder="Phone number" >
-                                <div class="invalid-feedback"></div>
                             </div>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     
@@ -447,13 +450,17 @@
         const countryCodeMap = {
             "India": "+91",
             "USA": "+1",
-            "UK": "+44"
+            "UK": "+44",
+            "UAE" : "+971",
+            "KSA" : "+966"
         };
 
         const countryStateMap = {
             "India": ["Kerala", "Tamil Nadu", "Karnataka", "Maharashtra", "Delhi"],
             "USA": ["California", "Texas", "Florida", "New York", "Illinois"],
-            "UK": ["England", "Scotland", "Wales", "Northern Ireland"]
+            "UK": ["England", "Scotland", "Wales", "Northern Ireland"],
+            "UAE" : ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm Al-Quwain', 'Ras Al Khaimah', 'Fujairah'],
+            "KSA" : ['Riyadh', 'Makkah', 'Madinah', 'Qassim', 'Hail', 'Tabuk', 'Jizan', 'Najran']
         };
 
 
@@ -479,7 +486,7 @@
 
                 const states = countryStateMap[selectCountry] || []
 
-                stateSelect.innerHTML = `<option value="">Select your State</option>`;
+                stateSelect.innerHTML = `<option value="" disabled>Select your State</option>`;
                 states.forEach(state => {
                     const option = document.createElement('option');
                     option.value = state
@@ -589,19 +596,14 @@
 
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', () => {
-                    console.log('hi')
                     modal.classList.add('active');
                     modalTitle.textContent = 'Edit Address';
                     saveAddressBtn.textContent = 'Update Address';
                     const id = button.dataset.id
 
                     const addressData = JSON.parse (button.dataset.address)
-                    console.log('Address Data : ', addressData)
-                    console.log(typeof addressData)
 
                     const address = addressData.filter(addr => addr._id == id); // Use loose equality since id may be string
-                    console.log('address : ',address)
-                    console.log(typeof address)
 
                     if (address) {
                         addressIdInput.value = address[0]._id;
@@ -615,6 +617,7 @@
                         document.getElementById('email').value = address[0].email || '';
                         document.getElementById('pincode').value = address[0].pincode || '';
                         document.getElementById('altPhone').value = address[0].altPhone || address[0].phone || '';
+
 
                         const country = address[0].country || 'India';
                         const states = countryStateMap[country] || [];
@@ -678,11 +681,19 @@
                     }
                 }
             };
+
+            
         
 
             function validateForm(data) {
                 const namePattern = /^[a-zA-Z\s]+$/;
-                const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/; // More flexible phone pattern
+                const phonePattern = {
+                    'USA' : /^\+1[2-9]\d{2}[2-9]\d{6}$/,
+                    'India' : /^\+91[6-9]\d{9}$/,
+                    'UK' : /^\+44\d{10}$/,
+                    'UAE' : /^\+971d{8,9}$/,
+                    'KSA' : /^\+966d{8,9}$/
+                };
                 const pincodePattern = /^\d{5,10}$/;
                 let errors = {};
 
@@ -692,16 +703,30 @@
                     errors.name = "Name can only contain letters and spaces!";
                 }
 
-                if (!data.phone) {
+                // Phone
+                if (data.phone) {
+                    if (data.country && phonePattern[data.country]) {
+                        if (!phonePattern[data.country].test(data.phone)) {
+                            errors.phone = "Invalid phone number format!";
+                        }
+                    } else {
+                        errors.phone = "Unsupported country for phone validation!";
+                    }
+                } else {
                     errors.phone = "Phone number 1 is required!";
-                } else if (!phonePattern.test(data.phone)) {
-                    errors.phone = "Invalid phone number format!";
                 }
 
-                if (!data.altPhone) {
+                // Alternate Phone
+                if (data.altPhone) {
+                    if (data.country && phonePattern[data.country]) {
+                        if (!phonePattern[data.country].test(data.altPhone)) {
+                            errors.altPhone = "Invalid phone number format!";
+                        }
+                    } else {
+                        errors.altPhone = "Unsupported country for phone validation!";
+                    }
+                } else {
                     errors.altPhone = "Phone number 2 is required!";
-                } else if (!phonePattern.test(data.altPhone)) {
-                    errors.altPhone = "Invalid phone number format!";
                 }
 
                 if (!data.country) {

@@ -73,7 +73,7 @@
                                                 <i class="fas fa-calendar-alt"></i>
                                             </div>
                                             <div class="detail-text">
-                                                Valid Until: <span class="detail-value"><%= coupon.validUpto ? new Date(coupon.validUpto).toLocaleDateString() : 'No Expiry' %></span>
+                                                Valid Until: <span class="detail-value" id="validUpto"><%= coupon.validUpto ? coupon.validUpto.toLocaleDateString() : 'No Expiry' %></span>
                                             </div>
                                         </div>
                                         <div class="detail-item">
@@ -81,7 +81,7 @@
                                                 <i class="fas fa-tag"></i>
                                             </div>
                                             <div class="detail-text">
-                                                Status: <span class="detail-value">Active</span>
+                                                Status: <span class="detail-value status">Active</span>
                                             </div>
                                         </div>
                                     </div>
@@ -96,7 +96,7 @@
                                             <button class="show-btn" onclick="toggleCouponCode('<%= coupons.indexOf(coupon) %>')">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <button class="copy-btn" data-limit="<%=coupon.couponLimit %>" data-code="<%= coupon.couponCode %>" data-dateUpto="<%= coupon.validUpto %>" data-button="this">
+                                            <button class="copy-btn" data-limit="<%=coupon.couponLimit %>" data-code="<%= coupon.couponCode %>" data-dateupto="<%= coupon.validUpto.toISOString() %>" data-button="this">
                                                 <i class="fas fa-copy"></i> Copy
                                             </button>
                                         </div>

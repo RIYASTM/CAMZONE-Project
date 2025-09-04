@@ -19,10 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (data.success) {
-                Swal.fire('Success', data.message || ' successful', 'success')
-                    .then(() => {
-                        window.location.href = data.redirectUrl || '/';
-                    });
+                window.location.href = data.redirectUrl || '/';
             } else {
                 console.log('Invalid Otp')
                 Swal.fire('Failed', data.message || 'Invalid OTP', 'error')
@@ -42,13 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let timerElement = document.getElementById('timer');
     let resendLink = document.getElementById('resend-link');
     const verifyButton = document.getElementById('verify-btn')
-    let remainingTime = document.getElementById('remainig').value / 1000
-    let seconds = remainingTime > 0 ? remaining : 0
+    let remainingTime = Math.ceil(document.getElementById('remainig').value / 1000)
+    let seconds = remainingTime > 0 ? remainingTime : 0
 
-    timerElement.textContent = seconds + ' s'
+    const minute = Math.floor(seconds / 60)
+    const second = seconds % 60
+
     console.log('remaining time : ', remainingTime)
     let countdownInterval = setInterval(() => {
-
+        
         if (seconds <= 0) {
             clearInterval(countdownInterval);
             verifyButton.disabled = true
@@ -56,7 +55,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return
         }
         seconds--;
-        timerElement.textContent = seconds + ' s';
+        // timerElement.textContent = seconds + ' s';
+        timerElement.textContent = `${String(minute).padStart(2, '0')} : ${String(second).padStart(2, '0')} mins`
     }, 1000);
 
     resendLink.addEventListener('click', function (e) {
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 icon: 'success',
                                 title: data.message || 'OTP resent successfully',
                                 showConfirmButton: false,
-                                timer: 1500
+                                timer: 1000
                             });
                         let remaining = data.remainingTime ? data.remainingTime / 1000 : 0
                         let remainSeconds = remaining <= 0 ? 0 : remaining
@@ -94,11 +94,15 @@ document.addEventListener('DOMContentLoaded', function () {
                                     clearInterval(countdownInterval);
                                     countdownInterval = null;
                                     document.getElementById('verify-btn').disabled = true,
-                                        resendLink.classList.add('active');
+                                    resendLink.classList.add('active');
                                     return
                                 }
                                 remainSeconds--;
-                                timerElement.textContent = remainSeconds + ' s';
+                                // timerElement.textContent = remainSeconds + ' s';
+                                const minute = Math.floor(remainSeconds / 60)
+                                const second = remainSeconds % 60
+
+                                timerElement.textContent = `${String(minute).padStart(2, '0')} : ${String(second).padStart(2, '0')} mins`
                             }, 1000);
                         }
                     } else {

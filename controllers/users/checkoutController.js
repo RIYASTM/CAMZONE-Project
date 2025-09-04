@@ -58,6 +58,9 @@ const loadCheckout = async (req, res) => {
             return res.status(401).json({ success: false, message: 'User not authenticated!' });
         }
 
+        const coupons = await Coupon.find() || []
+        console.log('coupon : ', coupons)
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found!' });
@@ -88,7 +91,8 @@ const loadCheckout = async (req, res) => {
             totalOfferedPrice,
             subtotal,
             gst,
-            finalTotal
+            finalTotal,
+            coupons
         });
 
     } catch (error) {
@@ -229,8 +233,9 @@ const checkout = async (req, res) => {
             if(order.paymentStatus === 'Paid'){
                 setTimeout(()=> {
                     order.status = 'Confirmed'
+                    order.orderedItems.forEach(item => item.itemStatus = 'Confirmed')
                     order.save()
-                },10000)
+                },10000) 
             }
             return
         }
@@ -261,10 +266,10 @@ const checkout = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Your order failed to complete!' });
     } catch (error) {
         console.log('Failed to confirm the order: ', error);
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while confirming the order!'
-        });
+        // res.status(500).json({
+        //     success: false,
+        //     message: 'An error occurred while confirming the order!'
+        // });
         return res.redirect('/pageNotFound')
     }
 }; 

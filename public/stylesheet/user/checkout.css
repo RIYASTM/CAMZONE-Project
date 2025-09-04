@@ -441,6 +441,9 @@ body.modal-open {
     display: flex;
     align-items: center;
     gap: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
 }
 
 .browse-coupons-link:hover {
@@ -1011,3 +1014,174 @@ body.modal-open {
         padding: 10px 16px;
     }
 }
+
+/* Modal Base */
+.modal {
+  /* Modal overlay styling here */
+}
+
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 30px 24px;
+  max-width: 1200px;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(36,28,64,0.16);
+}
+
+/* Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.modal-header h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #554d77;
+  margin: 0;
+}
+
+/* Coupon List Grid */
+.coupon-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(385px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+/* Coupon Card */
+.coupon-card {
+  border-radius: 16px;
+  padding: 22px 20px;
+  box-shadow: 0 2px 12px rgba(36,28,64,0.11);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.coupon-card.flat { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.coupon-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 12px 35px rgba(36,28,64,0.17);
+}
+
+/* Coupon Card Header */
+.coupon-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.coupon-title h3 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.coupon-title .coupon-subtitle {
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+}
+
+/* Discount Badge */
+.coupon-discount {
+  background: rgba(255,255,255,0.22);
+  border-radius: 46px;
+  padding: 12px 22px;
+  text-align: center;
+  min-width: 84px;
+  box-shadow: 0 1px 4px rgba(160,118,185,0.09);
+}
+.discount-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 3px rgba(118,75,162,0.13);
+}
+.discount-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+}
+
+/* Details List */
+.coupon-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-icon {
+  width: 18px;
+  height: 18px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+}
+.detail-text, .detail-value {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Coupon Code Section */
+.coupon-code-section {
+  background: rgba(255,255,255,0.13);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.coupon-code {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 2px;
+  user-select: all;
+  transition: all 0.3s;
+}
+.coupon-code.hidden::before { content: '••••••••••••'; }
+.coupon-code.hidden .code-text { display: none; }
+.coupon-code-actions { display: flex; gap: 8px; }
+.show-btn, .copy-btn {
+  background: rgba(255,255,255,0.19);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: #fff;
+  padding: 6px 18px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background 0.2s, transform 0.2s;
+}
+.show-btn:hover, .copy-btn:hover { background: rgba(255,255,255,0.28); transform: translateY(-1px); }
+.copy-btn.copied { background: rgba(76,175,80,0.88); border-color: rgba(76,175,80,0.99); }
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 64px 18px;
+  color: #888;
+}
+.empty-state h3 { font-size: 24px; color: #aaa; margin-bottom: 8px; }
+.empty-state p { font-size: 16px; color: #bbb; margin-bottom: 16px; }
+.empty-icon { font-size: 60px; color: #e6e6e6; margin-bottom: 16px; }
+

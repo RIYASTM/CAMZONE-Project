@@ -12,7 +12,7 @@ const loadWishList = async (req, res) => {
         if (!user) return res.redirect('/login');
 
         const cart = await Cart.findOne({userId}).populate('items.productId')
-
+        console.log("cart : ", cart.items.length)
         const wishList = await Wishlist.findOne({ user : userId }).populate('items.product');
         return res.render('wishList', {
             currentPage: 'WishList',

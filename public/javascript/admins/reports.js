@@ -94,10 +94,11 @@ function updateDashboard(filteredOrders) {
         return;
     }
 
-    updateSalesSummary(filteredOrders);
+    updateTopBrands(filteredOrders);
     updateTopProducts(filteredOrders);
-    updateTopCategories(filteredOrders)
     updateRecentOrders(filteredOrders);
+    updateSalesSummary(filteredOrders);
+    updateTopCategories(filteredOrders)
     updatePaymentMethods(filteredOrders);
 }
 
@@ -142,10 +143,12 @@ function calcGrowth(orders) {
     return Math.round(growth * 100) / 100;
 }
 
+
+
 function updateTopCategories(orders) {
     if (!orders || !Array.isArray(orders)) return;
 
-    const categories = JSON.parse(document.getElementById('categoryFilter').dataset.items);
+    const categories = JSON.parse(document.getElementById('categoryData').value);
     const categoryMap = {};
 
     orders.forEach(order => {
@@ -184,7 +187,53 @@ function updateTopCategories(orders) {
                 <td>${i + 1}</td>
                 <td>${c.name}</td>
                 <td>${c.quantity.toLocaleString()}</td>
-                <td>₹${c.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td>₹ ${c.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td>--</td>
+            </tr>
+        `).join('');
+    }
+}
+
+function updateTopBrands(orders){
+    if(!orders || !Array.isArray(orders)) return;
+
+    const brands = JSON.parse(document.getElementById('brandData').value);
+    const brandMap = {}
+
+    orders.forEach( order => {
+        if(!order.orderedItems || !Array.isArray(order.orderedItems)) return;
+
+        order.orderedItems.forEach( item => {
+            if(!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
+
+            const id = item.product?.brand?._id || item.product?.brand?.toString() || 'Unknown';
+            if(!brandMap[id]){
+                const brandObj = brands.find( brand => brand._id.toString() === id.toString());
+                brandMap[id] = {
+                    name : brandObj ? brandObj.brandName : 'Unknown',
+                    revenue : 0,
+                    quantity : 0
+                }
+            }
+
+            const price = item.productPrice || 0;
+            const quantity = item.quantity || 0;
+
+            brandMap[id].revenue += price * quantity;
+            brandMap[id].quantity += quantity
+        })
+    })
+
+    const topBrands = Object.values(brandMap).sort((a,b) => b.revenue - a.revenue ).slice(0,5);
+
+    const tbody = document.getElementById('topBrandsTable');
+    if(tbody){
+        tbody.innerHTML = topBrands.map((brand, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${brand.name}</td>
+                <td>${brand.quantity.toLocaleString()}</td>
+                <td>₹ ${brand.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 <td>--</td>
             </tr>
         `).join('');
@@ -221,7 +270,7 @@ function updateTopProducts(orders) {
 
     const topProducts = Object.values(productMap)
         .sort((a, b) => b.revenue - a.revenue)
-        .slice(0, 15); // Show more products in reports
+        .slice(0, 15);
 
     const tbody = document.getElementById('topProductsTable');
     if (tbody) {
@@ -230,7 +279,7 @@ function updateTopProducts(orders) {
                 <td>${i + 1}</td>
                 <td>${p.name}</td>
                 <td>${p.quantity.toLocaleString()}</td>
-                <td>₹${p.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td>₹ ${p.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 <td>--</td>
             </tr>
         `).join('');
@@ -270,7 +319,7 @@ function updateRecentOrders(orders) {
                 <td>${orderId}</td>
                 <td>${customerName}</td>
                 <td>${productName}</td>
-                <td>₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td>₹ ${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 <td>${paymentMethod}</td>
                 <td><span class="status ${status.toLowerCase().replace(/\s+/g, '-')}">${status}</span></td>
             </tr>
@@ -547,11 +596,14 @@ function applyFilter(dropdownId, filter) {
     }
 }
 
-// Main Export function with modal/dropdown options
+// ==============================================
+// MAIN EXPORT FUNCTIONS (Export entire report)
+// ==============================================
+
 function exportReport() {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: 'Export Sales Report',
+            title: 'Export Complete Sales Report',
             text: 'Choose export format:',
             icon: 'question',
             showCancelButton: true,
@@ -565,190 +617,190 @@ function exportReport() {
             buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
-                exportToExcel();
+                exportCompleteReportToExcel();
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                exportToPDF();
+                exportCompleteReportToPDF();
             }
         });
     } else {
-        // Fallback if SweetAlert is not available
-        const format = confirm('Choose export format:\nOK = Excel\nCancel = PDF');
+        const format = confirm('Export Complete Report\nOK = Excel\nCancel = PDF');
         if (format) {
-            exportToExcel();
+            exportCompleteReportToExcel();
         } else {
-            exportToPDF();
+            exportCompleteReportToPDF();
         }
     }
 }
 
-// Excel Export Functions
-function exportToExcel() {
-    showAlert('Generating Excel report...', 'info');
+// Complete Excel Export (All sections)
+function exportCompleteReportToExcel() {
+    showAlert('Generating complete Excel report...', 'info');
 
     try {
-        // Create workbook
         const wb = XLSX.utils.book_new();
 
-        // Add Summary Sheet
-        const summaryData = getSummaryDataForExcel();
+        // Summary Sheet
+        const summaryData = [
+            ['CAMZONE Sales Report', ''],
+            ['Generated On', new Date().toLocaleDateString('en-IN')],
+            ['Report Period', getFilterInfo()],
+            ['', ''],
+            ['Key Metrics', 'Values'],
+            ['Total Orders', document.getElementById('totalOrders')?.textContent || '0'],
+            ['Total Revenue', document.getElementById('totalRevenue')?.textContent || '₹0'],
+            ['Average Order Value', document.getElementById('avgOrderValue')?.textContent || '₹0'],
+            ['Growth Rate', document.getElementById('growthRate')?.textContent || '0%']
+        ];
         const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
         XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
 
-        // Add Products Sheet
-        const productsData = getProductsData();
-        const productsWs = XLSX.utils.aoa_to_sheet(productsData);
-        XLSX.utils.book_append_sheet(wb, productsWs, 'Top Products');
+        // Top Products Sheet
+        const productsData = getTableData('topProductsTable', ['Rank', 'Product Name', 'Units Sold', 'Revenue', 'Growth']);
+        if (productsData.length > 1) {
+            const productsWs = XLSX.utils.aoa_to_sheet(productsData);
+            XLSX.utils.book_append_sheet(wb, productsWs, 'Top Products');
+        }
 
-        // Add Orders Sheet
-        const ordersData = getOrdersData();
-        const ordersWs = XLSX.utils.aoa_to_sheet(ordersData);
-        XLSX.utils.book_append_sheet(wb, ordersWs, 'Recent Orders');
+        // Top Categories Sheet
+        const categoriesData = getTableData('topCategoriesTable', ['Rank', 'Category Name', 'Units Sold', 'Revenue', 'Growth']);
+        if (categoriesData.length > 1) {
+            const categoriesWs = XLSX.utils.aoa_to_sheet(categoriesData);
+            XLSX.utils.book_append_sheet(wb, categoriesWs, 'Top Categories');
+        }
 
-        // Add Payment Methods Sheet
-        const paymentData = getPaymentData();
-        const paymentWs = XLSX.utils.aoa_to_sheet(paymentData);
-        XLSX.utils.book_append_sheet(wb, paymentWs, 'Payment Methods');
+        // Top Brands Sheet
+        const brandsData = getTableData('topBrandsTable', ['Rank', 'Brand Name', 'Units Sold', 'Revenue', 'Growth']);
+        if (brandsData.length > 1) {
+            const brandsWs = XLSX.utils.aoa_to_sheet(brandsData);
+            XLSX.utils.book_append_sheet(wb, brandsWs, 'Top Brands');
+        }
 
-        // Add Customer Insights Sheet
-        const customerData = getCustomerData();
-        const customerWs = XLSX.utils.aoa_to_sheet(customerData);
-        XLSX.utils.book_append_sheet(wb, customerWs, 'Customer Insights');
+        // Recent Orders Sheet
+        const ordersData = getTableData('recentOrdersTable', ['Order Date', 'Order ID', 'Customer', 'Item', 'Order Total', 'Payment Method', 'Order Status']);
+        if (ordersData.length > 1) {
+            const ordersWs = XLSX.utils.aoa_to_sheet(ordersData);
+            XLSX.utils.book_append_sheet(wb, ordersWs, 'Recent Orders');
+        }
 
-        // Save file
-        const fileName = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+        // Payment Methods Sheet
+        const paymentData = getPaymentMethodsData();
+        if (paymentData.length > 1) {
+            const paymentWs = XLSX.utils.aoa_to_sheet(paymentData);
+            XLSX.utils.book_append_sheet(wb, paymentWs, 'Payment Methods');
+        }
+
+        // Customer Analytics Sheet
+        const customerData = getCustomerAnalyticsData();
+        if (customerData.length > 1) {
+            const customerWs = XLSX.utils.aoa_to_sheet(customerData);
+            XLSX.utils.book_append_sheet(wb, customerWs, 'Customer Analytics');
+        }
+
+        const fileName = `camzone-complete-sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
-
-        showAlert('Excel report exported successfully!', 'success');
+        showAlert('Complete Excel report exported successfully!', 'success');
     } catch (error) {
         console.error('Excel export error:', error);
-        showAlert('Error exporting Excel report. Please ensure XLSX library is loaded.', 'error');
+        showAlert('Error exporting Excel report', 'error');
     }
 }
 
-function exportToPDF() {
-    showAlert('Generating PDF report...', 'info');
+// Complete PDF Export (All sections)
+function exportCompleteReportToPDF() {
+    showAlert('Generating complete PDF report...', 'info');
 
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
-        // Set document properties
-        doc.setProperties({
-            title: 'Sales Report',
-            subject: 'Business Analytics Report',
-            author: 'Sales Dashboard',
-            creator: 'Sales Dashboard System'
-        });
-
         let yPosition = 20;
 
-        // Title
-        doc.setFontSize(20);
+        // Title Page
+        doc.setFontSize(24);
         doc.setFont(undefined, 'bold');
-        doc.text('Sales Report', 20, yPosition);
+        doc.text('CAMZONE Sales Report', 20, yPosition);
         yPosition += 15;
 
-        // Generated date
-        doc.setFontSize(10);
+        doc.setFontSize(12);
         doc.setFont(undefined, 'normal');
-        doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, yPosition);
-        yPosition += 20;
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')} ${new Date().toLocaleTimeString('en-IN')}`, 20, yPosition);
+        doc.text(`Report Period: ${getFilterInfo()}`, 20, yPosition + 10);
+        yPosition += 30;
 
         // Summary Section
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
-        doc.text('Summary', 20, yPosition);
+        const summaryStartY = yPosition;
+        doc.text('Executive Summary', 20, yPosition);
         yPosition += 10;
 
-        const summaryData = getSummaryDataForPDF();
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'normal');
-        summaryData.forEach(item => {
-            doc.text(`${item.label}: ${item.value}`, 20, yPosition);
-            yPosition += 8;
+        // Replace ₹ with INR in summary
+        const replaceSymbol = (text) => (text ? text.replace(/₹/g, 'INR ') : text);
+
+        const summaryData = [
+            ['Total Orders', document.getElementById('totalOrders')?.textContent || '0'],
+            ['Total Revenue', replaceSymbol(document.getElementById('totalRevenue')?.textContent || 'INR 0')],
+            ['Average Order Value', replaceSymbol(document.getElementById('avgOrderValue')?.textContent || 'INR 0')],
+            ['Growth Rate', document.getElementById('growthRate')?.textContent || '0%']
+        ];
+
+        doc.autoTable({
+            body: summaryData,
+            startY: yPosition,
+            theme: 'striped',
+            styles: { fontSize: 12 },
+            headStyles: { fillColor: [64, 133, 126] }
         });
-        yPosition += 10;
+        yPosition = doc.lastAutoTable.finalY + 15;
 
-        // Top Products Section
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
+        // Draw box around Summary Section
+        const summaryHeight = doc.lastAutoTable.finalY - summaryStartY + 10;
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(64, 133, 126);
+        doc.rect(15, summaryStartY - 5, 180, summaryHeight, 'S');
+
+        // Sections with tables (Top Products, Categories, Brands, Payments, Customers)
+        if (yPosition > 200) { doc.addPage(); yPosition = 20; }
+        addSectionToPDF(doc, 'Top Products', getTableData('topProductsTable', ['Rank', 'Product Name', 'Units Sold', 'Revenue', 'Growth']), yPosition, 10, replaceSymbol);
+        yPosition = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : yPosition + 50;
+
+        if (yPosition > 200) { doc.addPage(); yPosition = 20; }
+        addSectionToPDF(doc, 'Top Categories', getTableData('topCategoriesTable', ['Rank', 'Category Name', 'Units Sold', 'Revenue', 'Growth']), yPosition, 10, replaceSymbol);
+        yPosition = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : yPosition + 50;
+
+        if (yPosition > 200) { doc.addPage(); yPosition = 20; }
+        addSectionToPDF(doc, 'Top Brands', getTableData('topBrandsTable', ['Rank', 'Brand Name', 'Units Sold', 'Revenue', 'Growth']), yPosition, 10, replaceSymbol);
+        yPosition = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : yPosition + 50;
+
+        if (yPosition > 200) { doc.addPage(); yPosition = 20; }
+        addPaymentMethodsToPDF(doc, yPosition, replaceSymbol);
+        yPosition = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : yPosition + 50;
+
+        if (yPosition > 200) { doc.addPage(); yPosition = 20; }
+        addCustomerAnalyticsToPDF(doc, yPosition, replaceSymbol);
+
+        // Add page numbers
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.text(`Page ${i} of ${pageCount}`, 190, 285, { align: 'right' });
         }
 
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text('Top Products', 20, yPosition);
-        yPosition += 10;
-
-        const productsData = getProductsData();
-        if (productsData.length > 1) {
-            doc.autoTable({
-                head: [productsData[0]],
-                body: productsData.slice(1, 11), // Top 10 products for PDF
-                startY: yPosition,
-                theme: 'striped',
-                styles: { fontSize: 10 }
-            });
-            yPosition = doc.lastAutoTable.finalY + 15;
-        }
-
-        // Payment Methods Section
-        if (yPosition > 200) {
-            doc.addPage();
-            yPosition = 20;
-        }
-
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text('Payment Methods', 20, yPosition);
-        yPosition += 10;
-
-        const paymentData = getPaymentData();
-        if (paymentData.length > 1) {
-            doc.autoTable({
-                head: [paymentData[0]],
-                body: paymentData.slice(1),
-                startY: yPosition,
-                theme: 'striped',
-                styles: { fontSize: 12 }
-            });
-            yPosition = doc.lastAutoTable.finalY + 15;
-        }
-
-        // Customer Insights Section
-        if (yPosition > 200) {
-            doc.addPage();
-            yPosition = 20;
-        }
-
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text('Customer Insights', 20, yPosition);
-        yPosition += 10;
-
-        const customerData = getCustomerData();
-        if (customerData.length > 1) {
-            doc.autoTable({
-                head: [customerData[0]],
-                body: customerData.slice(1),
-                startY: yPosition,
-                theme: 'striped',
-                styles: { fontSize: 12 }
-            });
-        }
-
-        // Save PDF
-        const fileName = `sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
+        const fileName = `camzone-complete-sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(fileName);
-
-        showAlert('PDF report exported successfully!', 'success');
+        showAlert('Complete PDF report exported successfully!', 'success');
     } catch (error) {
         console.error('PDF export error:', error);
-        showAlert('Error exporting PDF report. Please ensure jsPDF library is loaded.', 'error');
+        showAlert('Error exporting PDF report', 'error');
     }
 }
 
-// Individual export functions for specific sections
+
+// ==============================================
+// INDIVIDUAL SECTION EXPORT FUNCTIONS
+// ==============================================
+
+// Products Report Export
 function exportProductsReport() {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -757,25 +809,58 @@ function exportProductsReport() {
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Excel',
-            cancelButtonText: 'PDF',
-            reverseButtons: true
+            cancelButtonText: 'PDF'
         }).then((result) => {
             if (result.isConfirmed) {
-                exportProductsToExcel();
+                exportSingleSectionToExcel('Products', 'topProductsTable', ['Rank', 'Product Name', 'Units Sold', 'Revenue', 'Growth']);
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                exportProductsToPDF();
+                exportSingleSectionToPDF('Top Products', 'topProductsTable', ['Rank', 'Product Name', 'Units Sold', 'Revenue', 'Growth']);
             }
         });
-    } else {
-        const format = confirm('Choose format: OK = Excel, Cancel = PDF');
-        if (format) {
-            exportProductsToExcel();
-        } else {
-            exportProductsToPDF();
-        }
     }
 }
 
+// Categories Report Export
+function exportCategoryReport() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Export Categories Report',
+            text: 'Choose export format:',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Excel',
+            cancelButtonText: 'PDF'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                exportSingleSectionToExcel('Categories', 'topCategoriesTable', ['Rank', 'Category Name', 'Units Sold', 'Revenue', 'Growth']);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                exportSingleSectionToPDF('Top Categories', 'topCategoriesTable', ['Rank', 'Category Name', 'Units Sold', 'Revenue', 'Growth']);
+            }
+        });
+    }
+}
+
+// Brands Report Export
+function exportBrandReport() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Export Brands Report',
+            text: 'Choose export format:',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Excel',
+            cancelButtonText: 'PDF'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                exportSingleSectionToExcel('Brands', 'topBrandsTable', ['Rank', 'Brand Name', 'Units Sold', 'Revenue', 'Growth']);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                exportSingleSectionToPDF('Top Brands', 'topBrandsTable', ['Rank', 'Brand Name', 'Units Sold', 'Revenue', 'Growth']);
+            }
+        });
+    }
+}
+
+// Orders Report Export
 function exportOrdersReport() {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -784,25 +869,18 @@ function exportOrdersReport() {
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Excel',
-            cancelButtonText: 'PDF',
-            reverseButtons: true
+            cancelButtonText: 'PDF'
         }).then((result) => {
             if (result.isConfirmed) {
-                exportOrdersToExcel();
+                exportSingleSectionToExcel('Orders', 'recentOrdersTable', ['Order Date', 'Order ID', 'Customer', 'Item', 'Order Total', 'Payment Method', 'Order Status']);
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                exportOrdersToPDF();
+                exportSingleSectionToPDF('Recent Orders', 'recentOrdersTable', ['Order Date', 'Order ID', 'Customer', 'Item', 'Order Total', 'Payment Method', 'Order Status']);
             }
         });
-    } else {
-        const format = confirm('Choose format: OK = Excel, Cancel = PDF');
-        if (format) {
-            exportOrdersToExcel();
-        } else {
-            exportOrdersToPDF();
-        }
     }
 }
 
+// Payment Methods Report Export
 function exportPaymentReport() {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -811,25 +889,18 @@ function exportPaymentReport() {
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Excel',
-            cancelButtonText: 'PDF',
-            reverseButtons: true
+            cancelButtonText: 'PDF'
         }).then((result) => {
             if (result.isConfirmed) {
-                exportPaymentToExcel();
+                exportPaymentMethodsToExcel();
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                exportPaymentToPDF();
+                exportPaymentMethodsToPDF();
             }
         });
-    } else {
-        const format = confirm('Choose format: OK = Excel, Cancel = PDF');
-        if (format) {
-            exportPaymentToExcel();
-        } else {
-            exportPaymentToPDF();
-        }
     }
 }
 
+// Customer Analytics Report Export
 function exportCustomerReport() {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -838,339 +909,338 @@ function exportCustomerReport() {
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Excel',
-            cancelButtonText: 'PDF',
-            reverseButtons: true
+            cancelButtonText: 'PDF'
         }).then((result) => {
             if (result.isConfirmed) {
-                exportCustomerToExcel();
+                exportCustomerAnalyticsToExcel();
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                exportCustomerToPDF();
+                exportCustomerAnalyticsToPDF();
             }
         });
-    } else {
-        const format = confirm('Choose format: OK = Excel, Cancel = PDF');
-        if (format) {
-            exportCustomerToExcel();
-        } else {
-            exportCustomerToPDF();
+    }
+}
+
+// ==============================================
+// HELPER FUNCTIONS FOR INDIVIDUAL EXPORTS
+// ==============================================
+
+// Generic Single Section Excel Export
+function exportSingleSectionToExcel(sectionName, tableId, headers) {
+    try {
+        const data = getTableData(tableId, headers);
+        if (data.length <= 1) {
+            showAlert(`No ${sectionName.toLowerCase()} data to export`, 'warning');
+            return;
         }
-    }
-}
 
-// Individual Excel export functions
-function exportProductsToExcel() {
-    try {
-        const data = getProductsData();
-        const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Top Products');
-        XLSX.writeFile(wb, `top-products-report-${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Products Excel report exported!', 'success');
+        const ws = XLSX.utils.aoa_to_sheet([
+            [`CAMZONE ${sectionName} Report`],
+            [`Generated: ${new Date().toLocaleDateString('en-IN')}`],
+            [''],
+            ...data
+        ]);
+        
+        XLSX.utils.book_append_sheet(wb, ws, sectionName);
+        XLSX.writeFile(wb, `camzone-${sectionName.toLowerCase()}-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+        showAlert(`${sectionName} Excel report exported!`, 'success');
     } catch (error) {
-        showAlert('Error exporting products Excel report', 'error');
+        showAlert(`Error exporting ${sectionName.toLowerCase()} Excel report`, 'error');
     }
 }
 
-function exportOrdersToExcel() {
-    try {
-        const data = getOrdersData();
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Recent Orders');
-        XLSX.writeFile(wb, `orders-report-${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Orders Excel report exported!', 'success');
-    } catch (error) {
-        showAlert('Error exporting orders Excel report', 'error');
-    }
-}
-
-function exportPaymentToExcel() {
-    try {
-        const data = getPaymentData();
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Payment Methods');
-        XLSX.writeFile(wb, `payment-methods-report-${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Payment Excel report exported!', 'success');
-    } catch (error) {
-        showAlert('Error exporting payment Excel report', 'error');
-    }
-}
-
-function exportCustomerToExcel() {
-    try {
-        const data = getCustomerData();
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Customer Insights');
-        XLSX.writeFile(wb, `customer-insights-report-${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Customer Excel report exported!', 'success');
-    } catch (error) {
-        showAlert('Error exporting customer Excel report', 'error');
-    }
-}
-
-// Individual PDF export functions
-function exportProductsToPDF() {
+// Generic Single Section PDF Export
+function exportSingleSectionToPDF(sectionName, tableId, headers) {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
-        doc.text('Top Products Report', 20, 20);
+        doc.text(`CAMZONE ${sectionName} Report`, 20, 20);
 
         doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')} ${new Date().toLocaleTimeString('en-IN')}`, 20, 35);
 
-        const productsData = getProductsData();
-        if (productsData.length > 1) {
-            doc.autoTable({
-                head: [productsData[0]],
-                body: productsData.slice(1),
-                startY: 45,
-                theme: 'striped',
-                styles: { fontSize: 10 }
-            });
-        }
+        const data = getTableData(tableId, headers);
 
-        doc.save(`top-products-report-${new Date().toISOString().split('T')[0]}.pdf`);
-        showAlert('Products PDF report exported!', 'success');
-    } catch (error) {
-        showAlert('Error exporting products PDF report', 'error');
-    }
-}
-
-function exportOrdersToPDF() {
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l'); // Landscape for orders table
-
-        doc.setFontSize(20);
-        doc.setFont(undefined, 'bold');
-        doc.text('Recent Orders Report', 20, 20);
-
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
-
-        const ordersData = getOrdersData();
-        if (ordersData.length > 1) {
-            doc.autoTable({
-                head: [ordersData[0]],
-                body: ordersData.slice(1),
-                startY: 45,
-                theme: 'striped',
-                styles: { fontSize: 8 },
-                columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 30 },
-                    2: { cellWidth: 35 },
-                    3: { cellWidth: 50 },
-                    4: { cellWidth: 30 },
-                    5: { cellWidth: 30 },
-                    6: { cellWidth: 25 }
+        // Replace ₹ only in amount fields
+        const fixedData = data.map(row =>
+            row.map(cell => {
+                if (typeof cell === "string" && cell.includes("₹")) {
+                    // Convert "₹3,050" → "INR 3,050"
+                    return cell.replace(/₹/g, "INR ");
                 }
+                return cell;
+            })
+        );
+
+        if (fixedData.length > 1) {
+            doc.autoTable({
+                head: [fixedData[0]],
+                body: fixedData.slice(1),
+                startY: 50,
+                theme: 'striped',
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [64, 133, 126] }
             });
+        } else {
+            doc.text(`No ${sectionName.toLowerCase()} data available`, 20, 50);
         }
 
-        doc.save(`orders-report-${new Date().toISOString().split('T')[0]}.pdf`);
-        showAlert('Orders PDF report exported!', 'success');
+        doc.save(`camzone-${sectionName.toLowerCase().replace(' ', '-')}-report-${new Date().toISOString().split('T')[0]}.pdf`);
+        showAlert(`${sectionName} PDF report exported!`, 'success');
     } catch (error) {
-        showAlert('Error exporting orders PDF report', 'error');
+        showAlert(`Error exporting ${sectionName.toLowerCase()} PDF report`, 'error');
     }
 }
 
-function exportPaymentToPDF() {
+// Payment Methods Individual Export Functions
+function exportPaymentMethodsToExcel() {
+    try {
+        const data = getPaymentMethodsData();
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([
+            ['CAMZONE Payment Methods Report'],
+            [`Generated: ${new Date().toLocaleDateString('en-IN')}`],
+            [''],
+            ...data
+        ]);
+        
+        XLSX.utils.book_append_sheet(wb, ws, 'Payment Methods');
+        XLSX.writeFile(wb, `camzone-payment-methods-${new Date().toISOString().split('T')[0]}.xlsx`);
+        showAlert('Payment Methods Excel report exported!', 'success');
+    } catch (error) {
+        showAlert('Error exporting payment methods Excel report', 'error');
+    }
+}
+
+function exportPaymentMethodsToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
         doc.setFontSize(20);
-        doc.setFont(undefined, 'bold');
-        doc.text('Payment Methods Report', 20, 20);
-
+        doc.text('CAMZONE Payment Methods Report', 20, 20);
         doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
 
-        const paymentData = getPaymentData();
-        if (paymentData.length > 1) {
-            doc.autoTable({
-                head: [paymentData[0]],
-                body: paymentData.slice(1),
-                startY: 45,
-                theme: 'striped',
-                styles: { fontSize: 12 }
-            });
-        }
+        const data = getPaymentMethodsData();
+        doc.autoTable({
+            head: [data[0]],
+            body: data.slice(1),
+            startY: 50,
+            theme: 'striped',
+            styles: { fontSize: 12 },
+            headStyles: { fillColor: [64, 133, 126] }
+        });
 
-        doc.save(`payment-methods-report-${new Date().toISOString().split('T')[0]}.pdf`);
-        showAlert('Payment PDF report exported!', 'success');
+        doc.save(`camzone-payment-methods-${new Date().toISOString().split('T')[0]}.pdf`);
+        showAlert('Payment Methods PDF report exported!', 'success');
     } catch (error) {
-        showAlert('Error exporting payment PDF report', 'error');
+        showAlert('Error exporting payment methods PDF report', 'error');
     }
 }
 
-function exportCustomerToPDF() {
+// Customer Analytics Individual Export Functions
+function exportCustomerAnalyticsToExcel() {
+    try {
+        const data = getCustomerAnalyticsData();
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([
+            ['CAMZONE Customer Analytics Report'],
+            [`Generated: ${new Date().toLocaleDateString('en-IN')}`],
+            [''],
+            ...data
+        ]);
+        
+        XLSX.utils.book_append_sheet(wb, ws, 'Customer Analytics');
+        XLSX.writeFile(wb, `camzone-customer-analytics-${new Date().toISOString().split('T')[0]}.xlsx`);
+        showAlert('Customer Analytics Excel report exported!', 'success');
+    } catch (error) {
+        showAlert('Error exporting customer analytics Excel report', 'error');
+    }
+}
+
+function exportCustomerAnalyticsToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
         doc.setFontSize(20);
-        doc.setFont(undefined, 'bold');
-        doc.text('Customer Insights Report', 20, 20);
-
+        doc.text('CAMZONE Customer Analytics Report', 20, 20);
         doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 20, 35);
 
-        const customerData = getCustomerData();
-        if (customerData.length > 1) {
-            doc.autoTable({
-                head: [customerData[0]],
-                body: customerData.slice(1),
-                startY: 45,
-                theme: 'striped',
-                styles: { fontSize: 12 }
-            });
-        }
+        const data = getCustomerAnalyticsData();
+        doc.autoTable({
+            head: [data[0]],
+            body: data.slice(1),
+            startY: 50,
+            theme: 'striped',
+            styles: { fontSize: 12 },
+            headStyles: { fillColor: [64, 133, 126] }
+        });
 
-        doc.save(`customer-insights-report-${new Date().toISOString().split('T')[0]}.pdf`);
-        showAlert('Customer PDF report exported!', 'success');
+        doc.save(`camzone-customer-analytics-${new Date().toISOString().split('T')[0]}.pdf`);
+        showAlert('Customer Analytics PDF report exported!', 'success');
     } catch (error) {
-        showAlert('Error exporting customer PDF report', 'error');
+        showAlert('Error exporting customer analytics PDF report', 'error');
     }
 }
 
-// Helper functions for data extraction
-function getSummaryData() {
-    const totalOrdersEl = document.getElementById('totalOrders');
-    const totalRevenueEl = document.getElementById('totalRevenue');
-    const avgOrderValueEl = document.getElementById('avgOrderValue');
-    const growthRateEl = document.getElementById('growthRate');
+// ==============================================
+// UTILITY FUNCTIONS
+// ==============================================
 
-    return {
-        totalOrders: totalOrdersEl?.textContent || '0',
-        totalRevenue: totalRevenueEl?.textContent || '₹0',
-        averageOrderValue: avgOrderValueEl?.textContent || '₹0',
-        growthRate: growthRateEl?.textContent || '0%'
-    };
-}
-
-function getSummaryDataForExcel() {
-    const summary = getSummaryData();
-    return [
-        ['Metric', 'Value'],
-        ['Total Orders', summary.totalOrders],
-        ['Total Revenue', summary.totalRevenue],
-        ['Average Order Value', summary.averageOrderValue],
-        ['Growth Rate (7 days)', summary.growthRate],
-        ['', ''],
-        ['Report Generated', new Date().toLocaleDateString('en-IN')],
-        ['Report Time', new Date().toLocaleTimeString('en-IN')]
-    ];
-}
-
-function getSummaryDataForPDF() {
-    const summary = getSummaryData();
-    return [
-        { label: 'Total Orders', value: summary.totalOrders },
-        { label: 'Total Revenue', value: summary.totalRevenue },
-        { label: 'Average Order Value', value: summary.averageOrderValue },
-        { label: 'Growth Rate (7 days)', value: summary.growthRate }
-    ];
-}
-
-function getProductsData() {
-    const table = document.getElementById('topProductsTable');
+// Generic table data extraction
+function getTableData(tableId, headers) {
+    const table = document.getElementById(tableId);
     const rows = table?.querySelectorAll('tr') || [];
-
-    const headers = ['Rank', 'Product Name', 'Units Sold', 'Revenue', 'Growth'];
+    
     const data = [headers];
-
+    
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length > 0) {
-            data.push(Array.from(cells).map(cell => cell.textContent.trim()));
-        }
-    });
-
-    return data;
-}
-
-function getOrdersData() {
-    const table = document.getElementById('recentOrdersTable');
-    const rows = table?.querySelectorAll('tr') || [];
-
-    const headers = ['Order Date', 'Order ID', 'Customer', 'Item', 'Order Total', 'Payment Method', 'Order Status'];
-    const data = [headers];
-
-    rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            data.push(Array.from(cells).map(cell => {
-                // Remove status styling for export
+            const rowData = Array.from(cells).map(cell => {
                 const statusSpan = cell.querySelector('.status');
-                return statusSpan ? statusSpan.textContent.trim() : cell.textContent.trim();
-            }));
+                let text = statusSpan ? statusSpan.textContent.trim() : cell.textContent.trim();
+                return text.replace(/\s+/g, ' ');
+            });
+            data.push(rowData);
         }
     });
-
+    
     return data;
 }
 
-function getPaymentData() {
-    const codEl = document.getElementById('codPercentage');
-    const onlineEl = document.getElementById('onlinePercentage');
-    const walletEl = document.getElementById('walletPercentage');
-    const codCountEl = document.getElementById('codCount');
-    const onlineCountEl = document.getElementById('onlineCount');
-    const walletCountEl = document.getElementById('walletCount');
-
+// Payment methods data extraction
+function getPaymentMethodsData() {
     return [
         ['Payment Method', 'Percentage', 'Order Count'],
-        ['Cash on Delivery', codEl?.textContent || '0%', codCountEl?.textContent || '(0 orders)'],
-        ['Online Payment', onlineEl?.textContent || '0%', onlineCountEl?.textContent || '(0 orders)'],
-        ['Wallet', walletEl?.textContent || '0%', walletCountEl?.textContent || '(0 orders)']
+        ['Cash on Delivery', document.getElementById('codPercentage')?.textContent || '0%', document.getElementById('codCount')?.textContent?.replace(/[()]/g, '') || '0 orders'],
+        ['Online Payment', document.getElementById('onlinePercentage')?.textContent || '0%', document.getElementById('onlineCount')?.textContent?.replace(/[()]/g, '') || '0 orders'],
+        ['Wallet', document.getElementById('walletPercentage')?.textContent || '0%', document.getElementById('walletCount')?.textContent?.replace(/[()]/g, '') || '0 orders']
     ];
 }
 
-function getCustomerData() {
-    const newCustomersEl = document.getElementById('newCustomers');
-    const returningCustomersEl = document.getElementById('returningCustomers');
-    const retentionEl = document.getElementById('customerRetention');
-    const avgValueEl = document.getElementById('avgCustomerValue');
-
+// Customer analytics data extraction
+function getCustomerAnalyticsData() {
     return [
-        ['Metric', 'Value'],
-        ['New Customers (30 days)', newCustomersEl?.textContent || '0'],
-        ['Returning Customers', returningCustomersEl?.textContent || '0'],
-        ['Customer Retention Rate', retentionEl?.textContent || '0%'],
-        ['Average Customer Value', avgValueEl?.textContent || '₹0']
+        ['Metric', 'Value', 'Description'],
+        ['New Customers', document.getElementById('newCustomers')?.textContent || '0', 'Last 30 days'],
+        ['Returning Customers', document.getElementById('returningCustomers')?.textContent || '0', 'Multiple orders'],
+        ['Customer Retention', document.getElementById('customerRetention')?.textContent || '0%', 'Return rate'],
+        ['Average Customer Value', document.getElementById('avgCustomerValue')?.textContent || '₹0', 'Per customer']
     ];
 }
 
-// Keep CSV download function for backward compatibility
-function downloadCSV(data, filename) {
-    const csv = data.map(row =>
-        row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
+// PDF helper functions
+function addSectionToPDF(doc, title, data, yPosition, maxRows = null) {
+    if (typeof title !== 'string' || !title) {
+        console.error('Invalid title:', title);
+        throw new Error('Title must be a non-empty string');
+    }
+    if (typeof yPosition !== 'number' || isNaN(yPosition) || yPosition < 0) {
+        console.error('Invalid yPosition:', yPosition);
+        throw new Error('yPosition must be a valid number');
+    }
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const startY = yPosition;
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text(title, 20, yPosition);
+    
+    if (data && Array.isArray(data) && data.length > 1) {
+        const bodyData = maxRows ? data.slice(1, maxRows + 1) : data.slice(1);
+        doc.autoTable({
+            head: [data[0]],
+            body: bodyData,
+            startY: yPosition + 10,
+            theme: 'striped',
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [64, 133, 126] }
+        });
+        // Draw box around the section
+        const sectionHeight = doc.lastAutoTable.finalY - startY + 10;
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(64, 133, 126); // Match headStyles color
+        doc.rect(15, startY - 5, 180, sectionHeight, 'S'); // 'S' for stroke (border only)
+    } else {
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text(`No ${title.toLowerCase()} data available`, 20, yPosition + 15);
+        // Draw box around the "no data" message
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(64, 133, 126);
+        doc.rect(15, startY - 5, 180, 25, 'S'); // Fixed height for "no data"
+    }
 }
 
+function addPaymentMethodsToPDF(doc, yPosition) {
+    const startY = yPosition;
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Payment Methods Distribution', 20, yPosition);
+    
+    const data = getPaymentMethodsData();
+    doc.autoTable({
+        head: [data[0]],
+        body: data.slice(1),
+        startY: yPosition + 10,
+        theme: 'striped',
+        styles: { fontSize: 11 },
+        headStyles: { fillColor: [64, 133, 126] }
+    });
+
+    // Draw box around the section
+    const sectionHeight = doc.lastAutoTable.finalY - startY + 10;
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(64, 133, 126);
+    doc.rect(15, startY - 5, 180, sectionHeight, 'S');
+}
+
+function addCustomerAnalyticsToPDF(doc, yPosition) {
+    const startY = yPosition;
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Customer Analytics', 20, yPosition);
+    
+    const data = getCustomerAnalyticsData();
+    doc.autoTable({
+        head: [data[0]],
+        body: data.slice(1),
+        startY: yPosition + 10,
+        theme: 'striped',
+        styles: { fontSize: 11 },
+        headStyles: { fillColor: [64, 133, 126] }
+    });
+
+    // Draw box around the section
+    const sectionHeight = doc.lastAutoTable.finalY - startY + 10;
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(64, 133, 126);
+    doc.rect(15, startY - 5, 180, sectionHeight, 'S');
+}
+
+// Get current filter information
+function getFilterInfo() {
+    const reportType = document.getElementById('reportType')?.value || 'all';
+    switch (reportType) {
+        case 'daily': return 'Today';
+        case 'weekly': return 'Last 7 days';
+        case 'monthly': return 'Last 30 days';
+        case 'yearly': return 'Last 365 days';
+        case 'custom':
+            const startDate = document.getElementById('startDate')?.value;
+            const endDate = document.getElementById('endDate')?.value;
+            return startDate && endDate ? `${startDate} to ${endDate}` : 'Custom range';
+        default: return 'All time';
+    }
+}
+
+// Alert function
 function showAlert(message, type = 'info') {
     if (typeof Swal !== 'undefined') {
         const icon = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
@@ -1180,9 +1250,7 @@ function showAlert(message, type = 'info') {
             timer: 3000,
             toast: true,
             position: 'top-end',
-            showConfirmButton: false,
-            background: '#333',
-            color: '#fff'
+            showConfirmButton: false
         });
     } else {
         alert(message);

@@ -36,7 +36,7 @@
             <div class="order-tracking">
                 <h2>Order Tracking</h2>
                 <div class="tracking-progress">
-                    <div class="tracking-step <%= ['Pending','Processing','Shipped','Out for Delivery','Delivered','Confirmed'].includes(order.status) ? 'completed' : '' %>">
+                    <div class="tracking-step <%= ['Confirmed','Processing','Shipped','Out for Delivery','Delivered'].includes(order.status) ? 'completed' : '' %>">
                         <div class="step-icon"><i class="icon-order"></i></div>
                         <div class="step-content">
                             <h3>Order Placed</h3>
@@ -167,7 +167,7 @@
                 <% if(order.status === 'Delivered') { %>
                     <button class="btn btn-warning" onclick="openModal('return', '<%= order._id %>')">Return Order</button>
                 <% } %>
-                <% if( order.paymentMethod === 'Razorpay' && (order.razorpayStatus === 'Pending' || order.razorpayStatus === 'Failed')){ %>
+                <% if( order.paymentMethod === 'Razorpay' && (order.razorpayStatus === 'Failed' && order.status !== 'Cancelled') || order.paymentStatus === 'Pending' || order.razorpayStatus === 'Pending'){ %>
                     <button class="btn btn-warning" id="retryPayment">Retry Payment</button>
                 <%} %>
                 <% if (!['Cancelled', 'Returned'].includes(order.status)) { %>
@@ -242,7 +242,7 @@
           <div id="itemsList">
             <% if (order.orderedItems && order.orderedItems.length > 0) { %>
               <% order.orderedItems.forEach((item, index) => { %>
-                <% if (item.product && !['Cancelled', 'Returned'].includes(item.itemStatus)) { %>
+                <% if (item.product && !['Cancelled', 'Returned', 'Return Request'].includes(item.itemStatus)) { %>
                   <div class="item-card" onclick="toggleItem(this, 'item<%= item.product._id %>')">
                     <div class="item-content">
                       <div class="custom-checkbox">

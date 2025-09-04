@@ -14,7 +14,6 @@ const userSchema = new Schema({
     phone : {
         type : Number,
         required : false,
-        unique : false,
         sparse : true,
         default : null
     },
@@ -22,7 +21,7 @@ const userSchema = new Schema({
         type : String,
         unique : true
     },
-    password : {
+    password : { 
         type : String,
         required : false,
     },
@@ -74,6 +73,13 @@ const userSchema = new Schema({
         type : Schema.Types.ObjectId,
         ref : "User",
         // required : true
+    },
+    otp : {
+        type : Number,
+    },
+    otpTime : {
+        type : Date,
+        default : Date.now
     },
     searchHistory : [{
         category : {

@@ -1,3 +1,24 @@
+
+document.addEventListener('DOMContentLoaded', () => {
+    const regularPriceInput = document.getElementById('editRegularPrice');
+    const productOfferInput = document.getElementById('editProductOffer');
+    const salePriceInput = document.getElementById('editSalePrice');
+
+    productOfferInput.addEventListener('input', () => {
+        const regularPrice = parseFloat(regularPriceInput.value) || 0;
+        const productOffer = parseFloat(productOfferInput.value) || 0;
+
+        if (productOffer > 0) {
+            const calculatedSale = regularPrice - (regularPrice * productOffer) / 100;
+            salePriceInput.value = Math.round(calculatedSale);
+            salePriceInput.readOnly = true;  
+        } else {
+            salePriceInput.readOnly = false; 
+            salePriceInput.value = regularPrice;       
+        }
+    });
+})
+
 // Existing scripts from the original code
 const search = document.getElementById('search');
 const searchValue = search.value;
@@ -15,8 +36,6 @@ if (searchValue) {
     });
 }
 
-
-// New and modified script for handling multiple image upload
 let cropper;
 let currentImageIndex;
 let currentModalType;
@@ -378,6 +397,19 @@ function showEditProductModal(id, name, description, brand, category, regularPri
     document.getElementById('editBlockProduct').checked = isBlocked;
     document.getElementById('page').value = page
 
+    if (productOffer > 0) {
+        const calculatedSale = regularPrice - (regularPrice * productOffer) / 100;
+        const salePriceInput = document.getElementById('editSalePrice');
+        salePriceInput.value = Math.round(calculatedSale); 
+        salePriceInput.readOnly = true;
+    } else {
+        console.log("hi")
+        const salePriceInput = document.getElementById('editSalePrice');
+        salePriceInput.readOnly = false;
+        salePriceInput.value = salePrice;
+    }
+
+
     // Reset existing images and previews
     existingImages = Array(4).fill(null);
     clearImagePreviews('edit');
@@ -513,7 +545,7 @@ function validateForm(data) {
         errors.regularPrice = 'Regular Price should be a valid number!';
     }
 
-    if (!salePrice) {
+    if (!salePrice && !data.productOffer) {
         errors.salePrice = 'Sale Price is required!';
     } else if (!digit.test(salePrice)) {
         errors.salePrice = 'Sale Price should be a valid number!';

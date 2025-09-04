@@ -1,10 +1,28 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+
+    document.getElementById('openCouponModal').onclick = () => {
+    document.getElementById('couponModal').style.display = 'block';
+    };
+    document.getElementById('closeCouponModal').onclick = () => {
+    document.getElementById('couponModal').style.display = 'none';
+    };
+    document.querySelectorAll('.apply-coupon-btn').forEach(btn => {
+        btn.onclick = function() {
+            const code = this.getAttribute('data-code');
+            document.getElementById('couponCode').value = code;
+            document.getElementById('couponModal').style.display = 'none';
+            // Trigger applyCoupon logic here
+            document.getElementById('applyCoupon').click();
+        };
+    });
+
+
     const amountText = document.getElementById('totalAmount').innerText;
     const finalAmount = amountText.replace(/[₹]/, '').replaceAll(/,/g, '').trim()
 
-    console.log('Final amount:', finalAmount);
+    // console.log('Final amount:', finalAmount);
 
     if (finalAmount > 50000) {
         const codInput = document.querySelector('input[value="COD"]');
@@ -506,8 +524,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function handlePaymentDismiss(orderId, amount, user) {
         Swal.fire({
             icon: 'info',
-            title: 'Your order is saved.',
-            text: 'But it will be confirmed after completing your payment.',
+            title: 'Payment Failed.',
+            text: 'Your order will be placed after completing your payment.',
             showCancelButton: true,
             showDenyButton: true,
             confirmButtonText: 'Retry Payment',

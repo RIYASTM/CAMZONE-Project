@@ -27,10 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!data.success) {
                 Swal.fire('Error', data.message || 'Validation error', 'error')
             } else {
-                Swal.fire('Success', data.message || 'Signin Success', 'success')
-                    .then(() => {
-                        window.location.replace(data.redirectUrl)
-                    })
+                window.location.replace(data.redirectUrl)
             }
         } catch (error) {
             console.error('Signup error:', error);

@@ -157,7 +157,7 @@
     display: none;
     position: absolute;
     background: #333;
-    min-width: 120px;
+    min-width: 130px;
     z-index: 1;
 }
 .user-menu:hover .dropdown {
@@ -168,6 +168,14 @@
     padding: 10px;
     display: block;
     text-decoration: none;
+}
+
+.dropdown .name{
+    margin-left: 6px;
+}
+
+.dropdown img{
+    padding-right: 2px;
 }
 .dropdown a:hover {
     background: #444;

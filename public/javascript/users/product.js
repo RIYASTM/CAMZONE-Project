@@ -33,27 +33,26 @@ document.addEventListener('DOMContentLoaded', () => {
         quantityInput.value = quantity + 1;
     });
 
-    function addToCart(productId) {
+    async function addToCart(productId) {
         const quantity = document.querySelector('#quantity-input').value;
 
         if (quantity > 0) {
-            fetch('/addtocart', {
+            const response = await fetch('/addtocart', {
                 method: "POST",
                 body: JSON.stringify({ productId, quantity }),
                 headers: { 'Content-Type': 'application/json' }
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire('Success', data.message || 'Product added to cart successfully', 'success');
-                        window.location.replace(data.redirectUrl);
 
-                        const icon = document.querySelector(`.wishlist-btn`);
-                        if (icon) icon.classList.remove('active');
-                    } else {
-                        Swal.fire('Error', data.message || 'Product adding to cart failed', 'error');
-                    }
-                });
+            const data = await response.json()
+
+            if(data.success){
+                Swal.fire('Success', data.message || 'Product added to cart successfully', 'success');
+                window.location.replace(data.redirectUrl);
+                const icon = document.querySelector(`.wishlist-btn`);
+                if (icon) icon.classList.remove('active');
+            }else{
+                Swal.fire('Error', data.message || 'Product adding to cart failed', 'error');
+            }
         }
     }
 

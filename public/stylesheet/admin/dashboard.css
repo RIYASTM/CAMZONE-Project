@@ -262,11 +262,11 @@ body {
 }
 
 /* Top Products Section */
-.top-products-section {
+.top-section {
     margin-bottom: 20px;
 }
 
-.top-products-section .chart-header {
+.top-section .chart-header {
     margin-bottom: 15px;
 }
 
@@ -570,3 +570,4 @@ th, td {
         display: none !important;
     }
 }
+

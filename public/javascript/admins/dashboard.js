@@ -1,6 +1,6 @@
 let generatingReport = false;
 
-document.addEventListener('DOMContentLoaded', () => { 
+document.addEventListener('DOMContentLoaded', () => {
     try {
         const ordersElement = document.getElementById('salesReportData');
         const usersElement = document.getElementById('usersData');
@@ -45,7 +45,7 @@ function debounce(func, delay) {
     };
 }
 
-// FIX 2: Use debounced version of generateReport
+// FIX 2: Use debounced version of generateReport 
 const debouncedGenerateReport = debounce(() => {
     if (!generatingReport && window.orders) {
         generateReport();
@@ -95,9 +95,11 @@ function updateDashboard(filteredOrders) {
         return;
     }
 
-    updateSalesSummary(filteredOrders);
+    updateTopBrands(filteredOrders);
     updateTopProducts(filteredOrders);
+    updateSalesSummary(filteredOrders);
     updateRecentOrders(filteredOrders);
+    updateTopCategories(filteredOrders);
     updatePaymentMethods(filteredOrders);
 }
 
@@ -108,9 +110,11 @@ function updateSalesSummary(orders) {
     const totalRevenue = orders.reduce((sum, o) => sum + (o.finalAmount || 0), 0);
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const growthValue = calcGrowth(orders);
+    const activeUser = activeUsers(orders)
 
     const growthValueEl = document.getElementById('growthRate');
     const totalOrdersEl = document.getElementById('totalOrders');
+    const activeUsersEl = document.getElementById('activeUsers');
     const totalRevenueEl = document.getElementById('totalRevenue');
     const avgOrderValueEl = document.getElementById('avgOrderValue');
 
@@ -118,9 +122,9 @@ function updateSalesSummary(orders) {
     if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
     if (totalRevenueEl) totalRevenueEl.textContent = `₹${totalRevenue.toFixed(2)}`;
     if (avgOrderValueEl) avgOrderValueEl.textContent = `₹${avgOrderValue.toFixed(2)}`;
+    if (activeUsersEl) activeUsersEl.textContent = activeUser;
 }
 
-// FIX 3: Simplified growth calculation to prevent recursion
 function calcGrowth(orders) {
     if (!window.orders || !Array.isArray(window.orders)) return 0;
 
@@ -141,6 +145,26 @@ function calcGrowth(orders) {
 
     const growth = ((recentOrders.length - olderOrders.length) / olderOrders.length) * 100;
     return Math.round(growth * 100) / 100; // Round to 2 decimal places
+}
+
+function activeUsers(orders) {
+    if(!orders || !Array.isArray(orders)) return;
+
+    const users = window.users
+    const now = new Date()
+    const twoMonthsAgo = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000))
+
+    const recentOrders = orders.filter( order => {
+        const date = new Date(order.createdOn);
+        return date >= twoMonthsAgo && date <= now;
+    })
+
+    const userIds = recentOrders.map(order => order.userId);
+
+    const uniqeIds = [...new Set(userIds.map(id => id.toString()))]
+
+    return uniqeIds.length
+
 }
 
 function updateTopProducts(orders) {
@@ -182,7 +206,103 @@ function updateTopProducts(orders) {
                 <td>${i + 1}</td>
                 <td>${p.name}</td>
                 <td>${p.quantity}</td>
-                <td>₹${p.revenue.toFixed(2)}</td>
+                <td>₹ ${p.revenue.toFixed(2)}</td>
+                <td>--</td>
+            </tr>
+        `).join('');
+    }
+}
+
+function updateTopCategories(orders) {
+    if (!orders || !Array.isArray(orders)) return;
+
+    const categories = JSON.parse(document.getElementById('categoryData').value);
+    const categoryMap = {};
+
+    orders.forEach(order => {
+        if (!order.orderedItems || !Array.isArray(order.orderedItems)) return;
+
+        order.orderedItems.forEach(item => {
+            if (!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
+
+            const id = item.product?.category?._id || item.product?.category?.toString() || 'unknown';
+
+            // Initialize if not exists
+            if (!categoryMap[id]) {
+                const catObj = categories.find(c => c._id.toString() === id.toString());
+                categoryMap[id] = {
+                    name: catObj ? catObj.name : 'unknown',
+                    revenue: 0,
+                    quantity: 0
+                };
+            }
+
+            const price = item.productPrice || 0;
+            const quantity = item.quantity || 0;
+
+            categoryMap[id].revenue += price * quantity;
+            categoryMap[id].quantity += quantity;
+        });
+    });
+
+    const topCategories = Object.values(categoryMap)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5);
+
+    const tbody = document.getElementById('topCategoriesTable');
+    if (tbody) {
+        tbody.innerHTML = topCategories.map((c, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${c.name}</td>
+                <td>${c.quantity.toLocaleString()}</td>
+                <td>₹ ${c.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td>--</td>
+            </tr>
+        `).join('');
+    }
+}
+
+function updateTopBrands(orders){
+    if(!orders || !Array.isArray(orders)) return;
+
+    const brands = JSON.parse(document.getElementById('brandData').value);
+    const brandMap = {}
+
+    orders.forEach( order => {
+        if(!order.orderedItems || !Array.isArray(order.orderedItems)) return;
+
+        order.orderedItems.forEach( item => {
+            if(!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
+
+            const id = item.product?.brand?._id || item.product?.brand?.toString() || 'Unknown';
+            if(!brandMap[id]){
+                const brandObj = brands.find( brand => brand._id.toString() === id.toString());
+                brandMap[id] = {
+                    name : brandObj ? brandObj.brandName : 'Unknown',
+                    revenue : 0,
+                    quantity : 0
+                }
+            }
+
+            const price = item.productPrice || 0;
+            const quantity = item.quantity || 0;
+
+            brandMap[id].revenue += price * quantity;
+            brandMap[id].quantity += quantity
+        })
+    })
+
+    const topBrands = Object.values(brandMap).sort((a,b) => b.revenue - a.revenue ).slice(0,5);
+
+    const tbody = document.getElementById('topBrandsTable');
+    if(tbody){
+        tbody.innerHTML = topBrands.map((brand, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${brand.name}</td>
+                <td>${brand.quantity.toLocaleString()}</td>
+                <td>₹ ${brand.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 <td>--</td>
             </tr>
         `).join('');
@@ -215,7 +335,7 @@ function updateRecentOrders(orders) {
                 <td>${date}</td>
                 <td>${productName}</td>
                 <td>${customerName}</td>
-                <td>₹${amount.toFixed(2)}</td>
+                <td>₹ ${amount.toFixed(2)}</td>
                 <td>${status}</td>
             </tr>
         `;

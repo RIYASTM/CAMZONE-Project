@@ -18,6 +18,19 @@ const loadWallet = async (req,res) => {
         const cart = await Cart.findOne({userId})
         
         const userWallet = await Wallet.findOne({userId})
+
+        if(!userWallet){
+            return res.render('wallet',{
+                user,
+                cart,
+                search,
+                currentPage : 'Wallet',
+                wallet : {balance : 0},
+                transactions : [],
+                currentPages : 0,
+                totalPages : 1
+            })
+        }
         
         const transactions = userWallet.transactions.reverse() || []
         
@@ -28,20 +41,8 @@ const loadWallet = async (req,res) => {
 
         const totalPages = Math.ceil(totalTransaction / limit)
 
-        const userTransactions = transactions.slice(skip, skip + limit)
+        const userTransactions = transactions.slice(skip, skip + limit) || []
 
-        if(!userWallet){
-            return res.render('wallet',{
-                user,
-                cart,
-                search,
-                currentPage : 'Wallet',
-                wallet : {balance : 0},
-                transactions : [],
-                currentPages : page,
-                totalPages
-            })
-        }
         
         return res.render('wallet',{
             user,

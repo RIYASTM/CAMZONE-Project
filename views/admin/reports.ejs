@@ -25,6 +25,8 @@
                 <h1>Sales Reports</h1>
                 <input type="hidden" id="salesReportData" value='<%= JSON.stringify(orders).replace(/'/g, '&#39;') %>'>
                 <input type="hidden" id="usersData" value='<%= JSON.stringify(users).replace(/'/g, '&#39;') %>'>
+                <input type="hidden" id="categoryData" value="<%=JSON.stringify(categories)%>">
+                <input type="hidden" id="brandData" value="<%=JSON.stringify(brands)%>">
             </div>
             
             <!-- Report Filters -->
@@ -144,7 +146,7 @@
                 <div class="section-header">
                     <div class="section-title">
                         <span>Top Selling Categories</span>
-                        <div class="dropdown" id="categoryFilter" data-items="<%=JSON.stringify(categories)%>">
+                        <div class="dropdown" id="categoryFilter">
                             <span data-filter="all">All time</span>
                             <i class="fas fa-chevron-down"></i>
                             <div class="dropdown-menu" style="display: none;">
@@ -155,7 +157,7 @@
                         </div>
                     </div>
                     <div class="section-actions">
-                        <button class="action-btn" onclick="exportProductsReport()">
+                        <button class="action-btn" onclick="exportCategoryReport()">
                             <i class="fas fa-download"></i> Export
                         </button>
                     </div>
@@ -172,6 +174,45 @@
                             </tr>
                         </thead>
                         <tbody id="topCategoriesTable">
+                            <!-- Dynamic content will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Top Brands Section -->
+            <div class="report-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span>Top Selling Brands</span>
+                        <div class="dropdown" id="brandFilter">
+                            <span data-filter="all">All time</span>
+                            <i class="fas fa-chevron-down"></i>
+                            <div class="dropdown-menu" style="display: none;">
+                                <div class="dropdown-item" data-filter="week">This week</div>
+                                <div class="dropdown-item" data-filter="month">This month</div>
+                                <div class="dropdown-item" data-filter="all">All time</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="exportBrandReport()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Category Name</th>
+                                <th>Units Sold</th>
+                                <th>Revenue</th>
+                                <th>Growth</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBrandsTable">
                             <!-- Dynamic content will be populated here -->
                         </tbody>
                     </table>
@@ -305,26 +346,5 @@
 
     <script src="/javascript/admins/reports.js"></script>
 
-    <!-- <script>
-
-        function updateTopCategories(orders){
-            if(!orders || !Array.isArray(orders)) return;
-
-            const categories = document.getElementById('categoryFilter').dataset.items
-            console.log('categories : ', categories)
-
-            const categoryMap = {}
-
-            orders.forEach(order => {
-                if(!order.orderedItems || !Array.isArray(order.orderedItems)) return
-
-                order.orderedItems.forEach(item => {
-                    if(!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
-
-                })
-            })
-        }
-    
-    </script> -->
 </body>
 </html>

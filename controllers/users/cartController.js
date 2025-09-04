@@ -6,8 +6,86 @@ const Cart = require('../../model/cartModel')
 const WishList = require('../../model/wishlistModel')
 
 const {calculateDiscountedPrice} = require('../../helpers/productOffer')
+const Wishlist = require('../../model/wishlistModel')
 
 
+async function cartPrices(cart){
+    let cartItems = cart.items.filter(item => !item.isDeleted);
+    let subTotal = 0;
+
+    for (let item of cartItems) {
+        const product = await Products.findOne({ _id: item.productId, isBlocked: false })
+            .populate('category')
+            .populate('brand');
+
+        if (product) {
+
+            // Fallback logic
+            if (item.quantity >= product.quantity) {
+                console.log('Product Stock : ', product.quantity)
+                console.log('Item quantity before : ', item.quantity)
+                item.quantity = product.quantity;
+                cart.markModified('items');
+            }  
+
+            if (product.stock <= 0) {
+                item.isDeleted = true;
+                cart.markModified('items');
+                continue;
+            }
+
+            item.productId = product;
+
+            const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
+
+            item.itemPrice = product.regularPrice;
+            item.discount = totalOffer;
+            item.price = discountedPrice;
+            item.totalPrice = discountedPrice * item.quantity;
+            console.log('Total Price : ', item.totalPrice)
+            item.productGst = product.gst || Math.round(product.regularPrice * 0.18);
+
+            subTotal += item.totalPrice;
+
+        } else {
+            item.productId = null;
+        }
+    }
+
+    cartItems = cartItems.filter(item => item.productId !== null);
+
+    cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
+    cart.GST = (cart.totalAmount * 18 ) / 118;
+
+    await cart.save();
+
+    const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
+    const totalOfferedPrice = totalOfferPrice - cart.totalAmount;
+
+    return { 
+        cartItems,
+        subTotal,
+        totalOfferPrice,
+        totalOfferedPrice,
+        cartTotal : cart.totalAmount
+    }
+}
+
+
+const updateCart = async (req,res) => {
+    try {
+        
+        const userId = req.session.user
+        const cartDoc = await Cart.findOne({userId})
+
+        let cartItems = []
+        let subTotal = 0
+        let totalOfferedPrice = 0
+
+    } catch (error) {
+        
+    }
+}
 
 const loadCart = async (req, res) => {
     try {
@@ -15,7 +93,7 @@ const loadCart = async (req, res) => {
         const userId = req.session.user;
 
         const user = await User.findById(userId);
-        const cart = await Cart.findOne({ userId });
+        const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         let cartItems = [];
         let subTotal = 0;
@@ -23,43 +101,7 @@ const loadCart = async (req, res) => {
         let totalOfferedPrice = 0;
 
         if (cart && cart.items.length > 0) {
-            cartItems = cart.items.filter(item => !item.isDeleted);
-
-            for (let item of cartItems) {
-                const product = await Products.findOne({ _id: item.productId, isBlocked: false })
-                    .populate('category')
-                    .populate('brand');
-
-                if (product) {
-                    item.productId = product;
-
-                    const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
-                    console.log('total offer : ', totalOffer)
-                    console.log('item price : ',discountedPrice)
-
-                    item.itemPrice = product.regularPrice;
-                    item.discount = totalOffer;
-                    item.price = discountedPrice;
-                    item.totalPrice = discountedPrice * item.quantity;
-                    console.log('totalPrice : ',item.totalPrice)
-
-                    item.productGst = product.gst || Math.round(product.regularPrice * 0.18);
-                    subTotal += item.totalPrice;
-                } else {
-                    item.productId = null;
-                }
-            }
-
-            cartItems = cartItems.filter(item => item.productId !== null);
-
-            cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-            cart.GST = (cart.totalAmount * 18 ) / 118
-
-            await cart.save();
-
-            // Offer calculations
-            totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
-            totalOfferedPrice = totalOfferPrice - cart.totalAmount;
+            ({cartItems, subTotal, totalOfferPrice, totalOfferedPrice} = await cartPrices(cart))
         }
 
         return res.render('cart', {
@@ -198,7 +240,7 @@ const cartUpdate = async (req, res) => {
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found!!' });
+            return res.status(402).json({ success: false, message: 'User not found!!' });
         }
 
         const { productId, quantity } = req.body;
@@ -326,13 +368,108 @@ const removeItem = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Failed to update cart after deletion!' });
         }
 
-        return res.status(200).json({ success: true, message: 'Product removed successfully from cart!' });
+        let cartItems = [];
+        let subTotal = 0;
+        let cartTotal = 0
+        let totalOfferPrice = 0;
+        let totalOfferedPrice = 0;
+
+        if (cartDoc && cartDoc.items.length > 0) {
+            ({cartItems, subTotal, totalOfferPrice, totalOfferedPrice, cartTotal} = await cartPrices(cartDoc))
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Product removed successfully from cart!',
+            cartItems,
+            subTotal,
+            totalOfferedPrice,
+            cartTotal,
+            cartCount : cartDoc.items.length
+        });
 
     } catch (error) {
         console.error('Error while removing item from cart:', error);
         return res.status(500).json({ success: false, message: 'Internal server error while deleting item from cart!' });
     }
 };
+
+const cartToWishlist = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const productId = req.body.productId;
+
+        const product = await Products.findOne({ _id: productId, isDeleted: false, isBlocked: false });
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found!' });
+        }
+
+        const cartDoc = await Cart.findOne({ userId }).populate('items.productId');
+        if (!cartDoc) {
+            return res.status(404).json({ success: false, message: 'Cart not found!' });
+        }
+
+        const itemIndex = cartDoc.items.findIndex(item => item.productId._id.toString() === productId);
+        if (itemIndex === -1) {
+            return res.status(400).json({ success: false, message: 'Item not found in cart!' });
+        }
+
+        cartDoc.items.splice(itemIndex, 1);
+
+        cartDoc.totalAmount = cartDoc.items.reduce((sum, item) => sum + item.totalPrice, 0);
+        cartDoc.GST = cartDoc.items.reduce((total, item) => {
+            const gst = item.productId.gst || 0;
+            return total + (gst * item.quantity);
+        }, 0);
+
+        await cartDoc.save();
+
+        let wishlist = await Wishlist.findOne({ user: userId }).populate('items.product');
+
+        if (!wishlist) {
+            wishlist = new Wishlist({
+                user: userId,   
+                items: [{ product: product._id }]
+            });
+        } else {
+
+            const alreadyExist = wishlist.items.some(i => i.product._id.toString() === productId);
+            if (!alreadyExist) {
+                wishlist.items.push({ product: product._id });
+            }
+        }
+
+        
+        
+        
+        await wishlist.save();
+
+        let cartItems = [];
+        let subTotal = 0;
+        let cartTotal = 0
+        let totalOfferPrice = 0;
+        let totalOfferedPrice = 0;
+
+        if (cartDoc && cartDoc.items.length > 0) {
+            ({cartItems, subTotal, totalOfferPrice, totalOfferedPrice, cartTotal} = await cartPrices(cartDoc))
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Product successfully moved to Wish List.',
+            cartItems,
+            subTotal,
+            totalOfferedPrice,
+            cartTotal,
+            cartCount : cartDoc.items.length
+        });
+
+    } catch (error) {
+        console.log("Something went wrong when moving to wishlist: ", error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
+
 
 
 
@@ -341,4 +478,5 @@ module.exports = {
     addToCart,
     cartUpdate,
     removeItem,
+    cartToWishlist
 }

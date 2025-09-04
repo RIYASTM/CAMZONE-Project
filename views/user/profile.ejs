@@ -29,7 +29,7 @@
             <%- include('../partials/users/sideBar', {currentPage : 'My Profile'}) %>
 
             <!-- Profile Form -->
-            <div id="profile-section" class="profile-form">
+            <div id="profile-section" class="profile-form" data-user="<%=JSON.stringify(user)%>">
                 <h2>Update Profile</h2>
                 <button type="button" id="cancelProfileButton" class="btn-cancel" >&times;</button>
                 
@@ -39,17 +39,17 @@
                         <div class="form-fields">
                             <div class="form-group">
                                 <label for="name">Name <span class="required">*</span> :</label>
-                                <input type="text" id="name" name="name" value="<%= user.name || 'Alex' %>" disabled>
+                                <input type="text" id="name" name="name" value="<%= user.name || 'Your Name' %>" disabled>
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="form-group">
                                 <label for="phone">Phone No <span class="required">*</span> :</label>
-                                <input type="tel" id="phone" name="phone" value="<%= user.phone || '+91 8086508788' %>" disabled>
+                                <input type="tel" id="phone" name="phone" value="<%= user.phone || 'No Phone NO' %>" disabled>
                                 <div class="invalid-feedback"></div>
                             </div>
                             <div class="form-group">
                                 <label for="email">Email <span class="required">*</span> :</label>
-                                <input type="email" id="email" name="email" value="<%= user.email || 'johnalex@gmail.com' %>" disabled>
+                                <input type="email" id="email" name="email" value="<%= user.email || 'Your Email' %>" disabled>
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
@@ -70,8 +70,12 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="button" id="changePassword" class="btn-edit">Change Password</button>
-                        <button type="button" id="editProfileButton" form="profileForm" class="btn-edit">Edit</button>
+                        <% if(user.googleId) { %>
+                        <button type="button" id="changePassword" class="btn-edit" hidden >Change Password</button>
+                        <% } else { %>
+                        <button type="button" id="changePassword" class="btn-edit" >Change Password</button>
+                        <% } %>
+                        <button type="button" id="editProfileButton" form="profileForm" class="btn-edit" >Edit</button>
                     </div>
                 </form>
             </div>

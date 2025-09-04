@@ -132,7 +132,9 @@
         const resetCategory = document.getElementById('reset-category');
         const resetBrand = document.getElementById('reset-brand');
         const clearAllBtn = document.getElementById('clear-all');
-        const search = document.getElementById('search').value
+        const searchValue = document.getElementById('search').value
+
+        console.log('search : ', searchValue.toLowerCase().slice(0, -1))
 
         function applyFilters() {
             const selectedBrands = Array.from(brandCheckboxes)
@@ -170,8 +172,8 @@
                 queryParts.push(`sortQuantity=${encodeURIComponent(selectedStockSort)}`);
             }
 
-            if(search){
-                queryParts.push(`search=${encodeURIComponent(search)}`)
+            if(searchValue){
+                queryParts.push(`search=${encodeURIComponent(searchValue)}`)
             }
 
             // Preserve the current page if it exists
@@ -192,11 +194,28 @@
         }
 
         // Event Listeners for Filters and Sorting
-        brandCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
-        categoryCheckBoxes.forEach(cb => cb.addEventListener('change', applyFilters));
+        brandCheckboxes.forEach(cb => {
+            const labelName = cb.parentElement.textContent.trim().toLowerCase()
+            const search = searchValue.trim().toLowerCase()
+            if(labelName === search){
+                cb.checked = true
+            }
+            // if(search.toLowerCase() === cb) cb.checked = true
+            cb.addEventListener('change', applyFilters)
+        });
+        categoryCheckBoxes.forEach(cb => {
+            const labelName = cb.parentElement.textContent.trim().toLowerCase()
+            const search = searchValue.trim().toLowerCase()
+            if(labelName === search || search === labelName.slice(0, -1)){
+                cb.checked = true
+            }
+            cb.addEventListener('change', applyFilters)
+        });
         filterPrices.forEach(radio => radio.addEventListener('change', applyFilters));
         sortNames.forEach(radio => radio.addEventListener('change', applyFilters));
         stockSort.forEach(radio => radio.addEventListener('change', applyFilters));
+
+        
 
         // Reset Filter Handlers
         resetFilter.addEventListener('click', (e) => {
@@ -236,7 +255,8 @@
             document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
                 input.checked = false;
             });
-            window.location.href = '/shop';
+            const searches = searchValue ? `search=${encodeURIComponent(searchValue)}` : ''
+            window.location.href = `/shop?${searches}`;
         });
 
         // Parse URL query parameters and set the state of inputs

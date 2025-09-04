@@ -34,10 +34,6 @@
             <% } %>
         </div>
         <div class="nav-actions">
-            <!-- <a href="/account">
-                <img src="/images/icons/user.png" alt="Account" class="icon">
-                My Account
-            </a> -->
             <a href="/cart">
                 <img src="/images/icons/shopping-cart.png" alt="Cart" class="icon">
                 Cart <span class="cart-count"><%= cart ? (cart.items.length > 0 ? cart.items.length : 0) : 0 %></span>
@@ -53,12 +49,12 @@
                         <%= user.name %>
                     </a>
                     <div class="dropdown">
-                        <a href="/profile"><img src="/images/icons/user.png" alt="Profile" class="icon"> Profile</a>
-                        <a href="/myOrders"><img src="/images/icons/clipboard.png" alt="Orders" class="icon"> My Orders</a>
-                        <a href="/wallet"><img src="/images/icons/wallet.png" alt="Wallet" class="icon"> My Wallet</a>
-                        <a href="/wishList"><img src="/images/icons/heart.png" alt="WishList" class="icon">Wish List</a>
-                        <a href="#"><img src="/images/icons/rate.png" alt="Ratings" class="icon"> My Ratings</a>
-                        <a href="/signout"><img src="/images/icons/signout.png" alt="signout" class="icon"> Sign Out</a>
+                        <a href="/profile"><img src="/images/icons/user.png" alt="Profile" class="icon"><span class="name">Profile</span> </a>
+                        <a href="/myOrders"><img src="/images/icons/clipboard.png" alt="Orders" class="icon"><span class="name">My Orders</span> </a>
+                        <a href="/wallet"><img src="/images/icons/wallet.png" alt="Wallet" class="icon"><span class="name">My Wallet</span> </a>
+                        <a href="/wishList"><img src="/images/icons/heart.png" alt="WishList" class="icon"><span class="name">Wish List</span></a>
+                        <a href="#"><img src="/images/icons/rate.png" alt="Ratings" class="icon"><span class="name">My Ratings</span> </a>
+                        <a href="/signout"><img src="/images/icons/signout.png" alt="signout" class="icon"><span class="name">Sign Out</span> </a>
                     </div>
                 </div>
             <% } else { %>

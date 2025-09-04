@@ -173,7 +173,7 @@ const editAddress = async (req, res) => {
                 $set: {
                     "address.$.name": data.name,
                     "address.$.streetAddress": data.streetAddress,
-                    "address.$.landMark": data.apartment || '',
+                    "address.$.landMark": data.landMark || '',
                     "address.$.city": data.city,
                     "address.$.state": data.state,
                     "address.$.district": data.district,

@@ -12,6 +12,7 @@ const Products = require('../../model/productModel')
 const Category = require('../../model/categoryModel')
 const Cart = require('../../model/cartModel')
 const Wishlist = require('../../model/wishlistModel')
+const OTP = require('../../model/otpModal')
 
 //helper Functions
 const securePassword = require('../../helpers/hashPass')
@@ -92,7 +93,7 @@ const loadHomePage = async (req, res) => {
             .slice(0, 8);
 
         return res.render('home', {
-            user : user || '',
+            user: user || '',
             search,
             cart,
             currentPage: 'home',
@@ -269,7 +270,7 @@ const loadShop = async (req, res) => {
         const totalPages = Math.ceil((totalProducts >= 2 ? totalProducts : 1) / limit);
 
         return res.render('shop', {
-            user : user || '',
+            user: user || '',
             search,
             cart,
             brands,
@@ -299,9 +300,10 @@ const loadProduct = async (req, res) => {
 
         const userId = req.session.user
 
+        const user = await User.findById(userId)
+
         const cart = userId ? await Cart.findOne({ userId }) : 0
 
-        const user = await User.findOne({ email: usermail })
 
         const productId = req.query.id
 
@@ -336,15 +338,15 @@ const loadProduct = async (req, res) => {
         console.log('Product offer : ', productOffer)
 
         const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
-        
+
         //Offer Console
         const offers = {
-            Brand : brandOffer,
-            Category : categoryOffer,
-            Product : productOffer
+            Brand: brandOffer,
+            Category: categoryOffer,
+            Product: productOffer
         }
 
-        const maxKey = Object.keys(offers).reduce((a,b)=> {
+        const maxKey = Object.keys(offers).reduce((a, b) => {
             return offers[a] > offers[b] ? a : b
         })
 
@@ -355,7 +357,7 @@ const loadProduct = async (req, res) => {
         const relatedProducts = await Products.find({ category: findCategory })
 
         return res.render('product', {
-            user : user || '',
+            user: user || '',
             search,
             cart,
             brands: findBrand,
@@ -503,6 +505,14 @@ const signup = async (req, res) => {
         console.log(`OTP Generated to "${email}" : "${otp}"`);
         console.log('==================================================')
 
+        await OTP.deleteMany({ email });  
+
+        const signupOtp = new OTP({ otp, email })
+
+        await signupOtp.save()
+
+        req.session.usermail = email
+
         req.session.userOtp = otp;
 
         req.session.otpGenerated = Date.now()
@@ -556,28 +566,40 @@ const signout = async (req, res) => {
 //Email Verifying
 const loadVerifyEmail = async (req, res) => {
     try {
+
+        console.log('page loaded')
+
         const search = req.query.search || ''
 
-        const userId = req.session.user
+        const email = req.session.usermail
 
-        const otpGenerated = req.session.otpGenerated
+        const userOtp = await OTP.findOne({ email })
 
-        const expiryTime = 60 * 1000
+        if (userOtp) {
+            console.log('userOtp : ', userOtp)
+        }
+
+
+        const otpGenerated = userOtp?.createdAt || 0
+        console.log('otp generated : ', otpGenerated)
+
+        const expiryTime = 90 * 1000
 
         const now = Date.now()
 
-        // let remainingTime = Math.max(0,Math.floor((expiryTime - (now - otpGenerated)) / 1000))
+        console.log('now : ', now)
+
+
+        let remainingTime = 0
 
         if (otpGenerated) {
             remainingTime = Math.max(0, expiryTime - (now - otpGenerated));
         }
 
-        const cart = userId ? await Cart.findOne({ userId }) : 0
-
         return res.render('emailVerify', {
             currentPage: 'emailVerify',
             search,
-            cart,
+            cart: 0,
             remainingTime
         }
         )
@@ -591,62 +613,50 @@ const loadVerifyEmail = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
     try {
+        const { otp } = req.body;
+        const email = req.session.usermail;
 
-        const { otp } = req.body
+        const userOtp = await OTP.findOne({ email, otp });
 
-        console.log('from body : ', otp)
-        console.log('from session : ', req.session.userOtp)
-
-        const expiryTime = 60 * 1000
-
-        const now = Date.now()
-
-        const time = new Date(now)
-
-        const otpGenerated = req.session.otpGenerated
-
-        if (now - otpGenerated > expiryTime) {
-            req.session.userOtp = null
-            const time = new Date(now)
-            console.log('tiem  : ', time.toLocaleTimeString())
-            return res.status(400).json({ success: false, message: 'OTP has been expired!!' })
-        }
-
-        if (otp === req.session.userOtp) {
-            const user = req.session.userData
-            const passwordHash = await securePassword(user.password)
-            const saveUserData = new User({
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                password: passwordHash
-            })
-
-            await saveUserData.save()
-            req.session.user = saveUserData._id;
-            req.session.userData = saveUserData
-            req.session.userOtp = null
-
-            return res.status(200).json({
-                success: true,
-                message: "OTP Verification Success",
-                redirectUrl: "/"
-            });
-        } else {
-            return res.status(400).json({
+        if (!userOtp) {
+            return res.status(401).json({
                 success: false,
-                message: "Invalid OTP. Please try again!!"
-            })
+                message: 'Invalid OTP or OTP has been expired. Try Again...'
+            });
         }
+
+        const user = req.session.userData;
+        const passwordHash = await securePassword(user.password);
+
+        const saveUserData = new User({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            password: passwordHash
+        });
+
+        await saveUserData.save();
+
+        // 4. Setup session
+        req.session.user = saveUserData._id;
+        req.session.userData = saveUserData;
+
+        // 5. Cleanup OTP from DB
+        await OTP.deleteOne({ _id: userOtp._id });
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP Verification Success",
+            redirectUrl: "/"
+        });
+
     } catch (error) {
-
-        console.log('================================')
+        console.log("================================");
         console.log("Failed to load page!!", error);
-        console.log('================================')
-        res.status(500).json({ success: false, message: "An error occured" })
-
+        console.log("================================");
+        res.status(500).json({ success: false, message: "An error occured" });
     }
-}
+};
 
 //Resent OTP
 const resendOtp = async (req, res) => {
@@ -663,10 +673,13 @@ const resendOtp = async (req, res) => {
         }
 
         let otp = generateOtp();
+        await OTP.deleteMany({email})
+        const userOtp = new OTP({ otp, email })
+        await userOtp.save()
         req.session.userOtp = otp;
         req.session.otpGenerated = Date.now()
 
-        const remainingTime = 60 * 1000;
+        const remainingTime = 90 * 1000;
 
         const emailSent = await sendOTP(email, otp)
         if (!emailSent) {
@@ -859,22 +872,22 @@ const resetPassword = async (req, res) => {
 //cart
 const loadCart = async (req, res) => {
     try {
-        
+
         search = req.query.search || ''
-        
+
         const product = await Products.find({ isBlocked: false })
-        
+
         const userId = req.session.user
-        
+
         const cart = userId ? await Cart.findOne({ userId }) : 0
-        
+
         return res.render('cart', {
             currentPage: 'cart',
             product,
             search,
             cart
         })
-        
+
     } catch (error) {
         console.log('Failed to load the cart page : ', error)
     }
