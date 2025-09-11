@@ -16,7 +16,8 @@ const loadCoupons = async (req, res) => {
         if (search) {
             query.$or = [
                 { couponName: { $regex: search, $options: 'i' } },
-                { couponCode: { $regex: search, $options: 'i' } }
+                { couponCode: { $regex: search, $options: 'i' } },
+                { discountType: { $regex: search, $options : 'i'}}
             ];
         }
 

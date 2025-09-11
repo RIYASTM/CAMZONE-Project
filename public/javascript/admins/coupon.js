@@ -129,26 +129,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    searchBar.addEventListener('input', debounce(async () => {
-        currentPages = 1;
-        await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
-    }, 300));
+    // searchBar.addEventListener('input', debounce(async () => {
+    //     currentPages = 1;
+    //     await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
+    // }, 300));
 
     sortBy.addEventListener('change', async () => {
         currentPages = 1;
-        await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
+        await fetchCoupons({sort: sortBy.value, filter: filter.value, page: currentPages });
     });
 
     filter.addEventListener('change', async () => {
         currentPages = 1;
-        await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
+        await fetchCoupons({  sort: sortBy.value, filter: filter.value, page: currentPages });
     });
 
     if (clearButton) {
         clearButton.addEventListener('click', async () => {
             searchBar.value = '';
             currentPages = 1;
-            await fetchCoupons({ search: '', sort: sortBy.value, filter: filter.value, page: currentPages });
+            await fetchCoupons({ filter: filter.value, page: currentPages });
         });
     }
 
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    async function fetchCoupons({ search, sort, filter, page }) {
+    async function fetchCoupons({ sort, filter, page }) {
         try {
             let queryParts = []
 
