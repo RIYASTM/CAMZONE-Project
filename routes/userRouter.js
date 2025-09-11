@@ -114,6 +114,8 @@ router.patch('/cartRemove', userAuth, cartController.removeItem)
 
 router.patch('/cartTowishlist', userAuth , cartController.cartToWishlist)
 
+router.post('/toCheckout', userAuth, cartController.toCheckout)
+
 
 //Coupon
 

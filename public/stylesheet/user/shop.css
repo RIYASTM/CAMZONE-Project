@@ -74,6 +74,25 @@ nav a {
     margin-right: 5px;
 }
 
+/* Wish List */
+.wishlist-btn i {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #ccc;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.wishlist-btn.active i {
+    color: red;
+}
+
+.wishlist-btn:hover i {
+    color: rgb(255, 90, 90);
+}
+
 .product-grid {
     flex: 1;
     display: grid;

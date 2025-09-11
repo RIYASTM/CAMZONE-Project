@@ -24,7 +24,7 @@
             <div class="coupons-top-bar">
                 <div class="top-left">
                     <span>All Coupons |</span>
-                    <select class="sort-by filter" aria-label="Sort coupons">
+                    <select class="sort-by" aria-label="Sort coupons">
                         <option value="default">Sort by</option>
                         <option value="name">Name</option>
                         <option value="discount">Discount</option>
@@ -57,6 +57,7 @@
                             <th>Discount Type</th>
                             <th>Discount</th>
                             <th>Min Order</th>
+                            <th>Max Order</th>
                             <th>Valid From</th>
                             <th>Valid Upto</th>
                             <th>Limit</th>
@@ -71,15 +72,16 @@
                                     <td><%= coupon.couponName %></td>
                                     <td><%= coupon.couponCode %></td>
                                     <td><%= coupon.discountType.charAt(0).toUpperCase() + coupon.discountType.slice(1) %></td>
-                                    <td><%= coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount %></td>
-                                    <td>₹<%= coupon.minOrder %></td>
+                                    <td><%= coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹ ' + coupon.discount %></td>
+                                    <td>₹ <%= coupon.minOrder %></td>
+                                    <td>₹ <%= coupon.maxOrder %></td>
                                     <td><%= new Date(coupon.validFrom).toLocaleDateString() %></td>
                                     <td><%= new Date(coupon.validUpto).toLocaleDateString() %></td>
                                     <td><%= coupon.couponLimit || '0' %></td>
                                     <td><%= coupon.isList ? 'Active' : 'Inactive' %></td>
                                     <td>
                                         <a href="#" class="action-icon editCouponButton" data-coupon-id="<%= coupon.id %>" aria-label="Edit coupon"><i class="fas fa-edit"></i></a>
-                                        <a href="#" class="action-icon deleteCoupon" data-coupon-id="<%= coupon.id %>" aria-label="Delete coupon"><i class="fas fa-trash"></i></a>
+                                        <!-- <a href="#" class="action-icon deleteCoupon" data-coupon-id="<%= coupon.id %>" aria-label="Delete coupon"><i class="fas fa-trash"></i></a> -->
                                     </td>
                                 </tr>
                             <% }) %>
@@ -134,6 +136,11 @@
                     <div class="form-group">
                         <label for="minOrder">Min Order <span class="required">*</span></label>
                         <input type="number" id="minOrder" name="minOrder" class="minOrder" step="0.01" placeholder="Minimum Order" aria-required="true">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxOrder">Max Order <span class="required">*</span></label>
+                        <input type="number" id="maxOrder" name="maxOrder" class="maxOrder" step="0.01" placeholder="Maximum Order" value="700000" aria-required="true">
                         <div class="invalid-feedback"></div>
                     </div>
                     <div class="form-group">
@@ -207,6 +214,11 @@
                     <div class="form-group">
                         <label for="editMinOrder">Min Order <span class="required">*</span></label>
                         <input type="number" id="editMinOrder" name="minOrder" class="minOrder" step="0.01" placeholder="Minimum Order" aria-required="true">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMazOrder">Max Order <span class="required">*</span></label>
+                        <input type="number" id="editMaxOrder" name="maxOrder" class="maxOrder" step="0.01" placeholder="Maximum Order" aria-required="true">
                         <div class="invalid-feedback"></div>
                     </div>
                     <div class="form-group">

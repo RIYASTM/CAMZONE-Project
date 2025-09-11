@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showNotification('Product added to Your Cart!', 'success');
+                        showNotification(data.message || 'Product added to Your Cart!', 'success');
 
                         cartCount.textContent = data.cartCount
                         const icon = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
 
                     } else {
-                        showNotification('Product adding to cart failed!', 'error');
+                        showNotification(data.message || 'Product adding to cart failed!', 'error');
                     }
                 })
                 .catch(() => {
@@ -60,6 +60,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    const search = document.getElementById('search')
+    const clearButton = document.getElementById('clear-button')
+    
+    search.addEventListener('keypress', async (e)=> {
+
+        const searchValue = search.value.trim()
+
+        if( searchValue && e.key === 'Enter' ){
+            console.log('search : ',searchValue)
+            // window.location = `/shop?search=${searchValue}`
+            window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
+        }
+    })
+
 })
 
 
@@ -75,14 +89,17 @@ function addtoWishlist(productId) {
             if (data.success) {
 
                 // showNotification('Product added to Your Wishlist!', 'success');
-                const icon = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
+                const icons = document.querySelectorAll(`.wishlist-btn[data-id="${productId}"]`);
+                console.log(icons)
 
-                if (icon) {
-                    if (data.done === 'Added') {
-                        icon.classList.add('active');
-                    } else if (data.done === 'Removed') {
-                        icon.classList.remove('active')
-                    }
+                if (icons) {
+                    icons.forEach(icon => {
+                        if (data.done === 'Added') {
+                            icon.classList.add('active');
+                        } else if (data.done === 'Removed') {
+                            icon.classList.remove('active')
+                        }
+                    })
                 }
 
             } else {

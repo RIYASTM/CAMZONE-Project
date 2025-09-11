@@ -326,9 +326,15 @@ a {
 
 .product-price {
     font-size: 18px;
-    font-weight: bold;
+    /* font-weight: bold; */
     color: var(--accent-color);
     margin-bottom: 10px;
+}
+
+.product-price .original {
+    text-decoration: line-through;
+    color: #666;
+    margin-left: 10px;
 }
 
 .product-rating {

@@ -52,7 +52,14 @@
                                     </div>
                                     <div class="product-info">
                                         <h4><%= item.product.productName %></h4>
-                                        <div class="product-price">₹ <%= item.product.salePrice %></div>
+                                        <div class="product-price">
+                                            <% if ( item.product.salePrice < item.product.regularPrice || item.product.totalOffer) { %>
+                                                <span class="current">₹ <%= item.product.salePrice %></span>
+                                                <span class="original">₹ <%= item.product.regularPrice %></span>
+                                            <% } else { %>
+                                                <span class="current">₹ <%= item.product.regularPrice %></span>
+                                            <% } %>
+                                        </div> 
                                         <div class="product-rating">
                                             <% const rating = item.product.rating || 0; %>
                                             <% for(let i = 0; i < 5; i++) { %>

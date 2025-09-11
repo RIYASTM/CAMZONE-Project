@@ -45,6 +45,9 @@
                         <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
+                     <button class="sales-report-btn">
+                        <i class="fa-solid fa-chart-line"></i> Sales Report
+                    </button>
                 </div>
             </div>
             
@@ -202,7 +205,176 @@
         </div>
     </div>
 
+    <!-- Sales Report Modal -->
+    <div class="modal-overlay" id="salesReportModal">
+        <input type="hidden" id="orders" value="<%= JSON.stringify(orders)%>">
+        <div class="modal-content sales-report-modal">
+            <div class="modal-header">
+                Sales Report
+                <button class="close-btn close-btn-sales">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Filter Section -->
+                <div class="sales-filter-section">
+                    <h3>Generate Report</h3>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="reportType">Report Type:</label>
+                            <select id="reportType" class="sales-filter-select">
+                                <option value="daily" >Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group" id="customDateRange">
+                            <div class="date-inputs">
+                                <div>
+                                    <label for="startDate">From:</label>
+                                    <input type="date" id="startDate" class="date-input">
+                                </div>
+                                <div>
+                                    <label for="endDate">To:</label>
+                                    <input type="date" id="endDate" class="date-input">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <button class="generate-report-btn">
+                                <i class="fa-solid fa-chart-line"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales Summary Cards -->
+                <div class="sales-summary-grid" id="salesSummary">
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-shopping-cart"></i>
+                            <span>Total Orders</span>
+                        </div>
+                        <div class="card-value" id="totalOrders">0</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                            <span>Total Revenue</span>
+                        </div>
+                        <div class="card-value" id="totalRevenue">₹0</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-percentage"></i>
+                            <span>Average Order Value</span>
+                        </div>
+                        <div class="card-value" id="avgOrderValue">₹0</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-ban"></i>
+                            <span>Cancelled Orders</span>
+                        </div>
+                        <div class="card-value" id="cancelledOrders">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-ticket"></i>
+                            <span>Total Coupons Used</span>
+                        </div>
+                        <div class="card-value" id="totalCouponsUsed">0</div>
+                    </div>
+
+                    <!-- ✅ New field: Total Coupon Discount -->
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-tags"></i>
+                            <span>Total Coupon Discount</span>
+                        </div>
+                        <div class="card-value" id="totalCouponDiscount">₹0</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Sales Table -->
+                <div class="sales-table-section" id="salesTableSection">
+                    <h3>Detailed Sales Report</h3>
+                    <div class="sales-table-container">
+                        <div class="sales-filter-row">
+                            <select class="filter" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Returned">Returned</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Delevered">Delevered</option>
+                            </select>
+
+                            <select class="filter" id="paymentFilter">
+                                <option value="">All Payments</option>
+                                <option value="COD">Cash on Delivery</option>
+                                <option value="Razorpay">Razorpay</option>
+                                <option value="Wallet">Wallet</option>
+                            </select>
+
+                            <select class="filter" id="couponFilter">
+                                <option value="">All Orders</option>
+                                <option value="no">Without Coupon</option>
+                                <option value="yes">With Coupon</option>
+                            </select>
+                        </div>
+                        <table class="sales-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Products</th>
+                                    <th>Payment Method</th>
+                                    <th>Coupon</th>
+                                    <th>Total Dis</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <!-- Dynamic content will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="sales-chart-section" id="salesChartSection">
+                    <h3>Sales Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="modal-btn close">Close</button>
+                <button class="modal-btn" id="exportPdf">
+                    <i class="fa-solid fa-file-pdf"></i> Export PDF
+                </button>
+                <button class="modal-btn primary" id="exportExcel">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/javascript/admins/order.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="/javascript/admins/order.js"></script>
+    <script src="/javascript/admins/salesReport.js"></script>
 </body>
 </html>

@@ -24,9 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
             await openOrderModal(orderId);
         });
     });
+
 });
 
-async function openOrderModal(orderId) {
+
+async function openOrderModal(orderId) { 
     try {
         const response = await fetch(`/admin/order`, {
             method: 'POST',
@@ -294,3 +296,5 @@ document.addEventListener('keydown', function (e) {
         closeModal();
     }
 }); 
+
+

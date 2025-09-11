@@ -250,6 +250,13 @@ a{
     background: #e68900;
 }
 
+/* Error Highlight */
+.error-highlight {
+    border: 2px solid red;
+    background-color: #ffe6e6;
+    transition: background-color 0.5s ease;
+}
+
 @media (max-width: 576px) {
     .cart-actions {
         flex-direction: column;

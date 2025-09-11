@@ -55,7 +55,7 @@ const applyCoupon = async (req, res) => {
             return res.status(401).json({ success: false, message: 'User not found...' })
         }
 
-        const couponCode = req.body.couponCode
+        const {couponCode, shippingCharge} = req.body
 
         const coupon = await Coupon.findOne({ couponCode })
 
@@ -85,6 +85,10 @@ const applyCoupon = async (req, res) => {
             return res.status(401).json({ success: false, message: `This coupon needs minimum RS- ${coupon.minOrder} order...` })
         }
 
+        if(cart.totalAmount > coupon.maxOrder){
+            return res.status(401).jsoN({ success : false, message : `This order should under RS- ${coupon.maxOrder}..`})
+        }
+
         const today = new Date()
 
         if (coupon.validUpto < today) {
@@ -96,12 +100,12 @@ const applyCoupon = async (req, res) => {
         }
 
         const couponDiscount = coupon.discount
-        const totalAmount = cart.totalAmount
+        const totalAmount = cart.totalAmount + shippingCharge
         const discount = Math.floor(coupon.discountType === 'percentage' ? (totalAmount * couponDiscount) / 100 : couponDiscount)
 
         const finalAmount = Math.floor(totalAmount - discount)
 
-        const totalGst = (Math.floor(finalAmount * 18) / 118)
+        const totalGst = Math.floor((finalAmount * 18) / 118)
 
         req.session.appliedCoupon = {
             code: couponCode,
@@ -120,6 +124,8 @@ const applyCoupon = async (req, res) => {
 const removeCoupon = async (req, res) => {
     try {
 
+        const shippingCharge = req.body.shippingCharge
+
         const userId = req.session.user
         if (!userId) {
             return res.status(401).json({ success: false, message: 'User not authenticated..' })
@@ -137,9 +143,9 @@ const removeCoupon = async (req, res) => {
 
         req.session.appliedCoupon = null;
 
-        const finalAmount = cart.totalAmount
+        const finalAmount = cart.totalAmount + shippingCharge
 
-        const totalGst = cart.GST
+        const totalGst = Math.floor(cart.GST)
 
         return res.status(200).json({ success: true, message: 'Coupon successfully removed..', finalAmount, totalGst })
 

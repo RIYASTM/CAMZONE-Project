@@ -5,87 +5,71 @@ const Category = require('../../model/categoryModel')
 const Cart = require('../../model/cartModel')
 const WishList = require('../../model/wishlistModel')
 
-const {calculateDiscountedPrice} = require('../../helpers/productOffer')
-const Wishlist = require('../../model/wishlistModel')
+const {calculateDiscountedPrice, cartPrices} = require('../../helpers/productOffer')
 
 
-async function cartPrices(cart){
-    let cartItems = cart.items.filter(item => !item.isDeleted);
-    let subTotal = 0;
+// async function cartPrices(cart){
+//     let cartItems = cart.items.filter(item => !item.isDeleted);
+//     let subTotal = 0;
 
-    for (let item of cartItems) {
-        const product = await Products.findOne({ _id: item.productId, isBlocked: false })
-            .populate('category')
-            .populate('brand');
+//     for (let item of cartItems) {
+//         const product = await Products.findOne({ _id: item.productId, isBlocked: false })
+//             .populate('category')
+//             .populate('brand');
 
-        if (product) {
+//         if (product) {
 
-            // Fallback logic
-            if (item.quantity >= product.quantity) {
-                console.log('Product Stock : ', product.quantity)
-                console.log('Item quantity before : ', item.quantity)
-                item.quantity = product.quantity;
-                cart.markModified('items');
-            }  
+//             // Fallback logic
+//             if (item.quantity >= product.quantity) {
+//                 console.log('Product Stock : ', product.quantity)
+//                 console.log('Item quantity before : ', item.quantity)
+//                 item.quantity = product.quantity;
+//                 cart.markModified('items');
+//             }  
 
-            if (product.stock <= 0) {
-                item.isDeleted = true;
-                cart.markModified('items');
-                continue;
-            }
+//             if (product.stock <= 0) {
+//                 item.isDeleted = true;
+//                 cart.markModified('items');
+//                 continue;
+//             }
 
-            item.productId = product;
+//             item.productId = product;
 
-            const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
+//             const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
 
-            item.itemPrice = product.regularPrice;
-            item.discount = totalOffer;
-            item.price = discountedPrice;
-            item.totalPrice = discountedPrice * item.quantity;
-            console.log('Total Price : ', item.totalPrice)
-            item.productGst = product.gst || Math.round(product.regularPrice * 0.18);
+//             item.itemPrice = product.regularPrice;
+//             item.discount = totalOffer;
+//             item.price = discountedPrice;
+//             item.totalPrice = discountedPrice * item.quantity;
+//             console.log('Total Price : ', item.totalPrice)
+//             item.productGst = product.gst || Math.round(product.regularPrice * 0.18);
 
-            subTotal += item.totalPrice;
+//             subTotal += item.totalPrice;
 
-        } else {
-            item.productId = null;
-        }
-    }
+//         } else {
+//             item.productId = null;
+//         }
+//     }
 
-    cartItems = cartItems.filter(item => item.productId !== null);
+//     cartItems = cartItems.filter(item => item.productId !== null);
 
-    cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-    cart.GST = (cart.totalAmount * 18 ) / 118;
+//     cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
+//     cart.GST = (cart.totalAmount * 18 ) / 118;
 
-    await cart.save();
+//     await cart.save();
 
-    const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
-    const totalOfferedPrice = totalOfferPrice - cart.totalAmount;
+//     const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
+//     const totalOfferedPrice = totalOfferPrice - cart.totalAmount;
 
-    return { 
-        cartItems,
-        subTotal,
-        totalOfferPrice,
-        totalOfferedPrice,
-        cartTotal : cart.totalAmount
-    }
-}
+//     return { 
+//         cartItems,
+//         subTotal,
+//         totalOfferPrice,
+//         totalOfferedPrice,
+//         cartTotal : cart.totalAmount
+//     }
+// }
 
-
-const updateCart = async (req,res) => {
-    try {
-        
-        const userId = req.session.user
-        const cartDoc = await Cart.findOne({userId})
-
-        let cartItems = []
-        let subTotal = 0
-        let totalOfferedPrice = 0
-
-    } catch (error) {
-        
-    }
-}
 
 const loadCart = async (req, res) => {
     try {
@@ -93,6 +77,7 @@ const loadCart = async (req, res) => {
         const userId = req.session.user;
 
         const user = await User.findById(userId);
+        if (!user) return res.redirect('/login');
         const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         let cartItems = [];
@@ -137,13 +122,13 @@ const addToCart = async (req, res) => {
         const { productId, quantity } = req.body;
         const parsedQuantity = parseInt(quantity);
 
-        const wishList = await WishList.findOne({ user: userId }).populate('items.product');
+        const wishList = await WishList.findOne({userId }).populate('items.product');
         if (wishList) {
             const wishlistItem = wishList.items.find(
                 item => item.product._id.toString() === productId.toString()
             );
             if (wishlistItem) {
-                await WishList.updateOne({ user: userId }, { $pull: { items: { product: productId } } });
+                await WishList.updateOne({ userId }, { $pull: { items: { product: productId } } });
             }
         }
 
@@ -157,16 +142,14 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found!!' });
         }
 
+        if(product.status !== 'Available'){
+            return res.status(401).json({ success : false, message : 'This item is not available!!', productId})
+        }
+
         const stock = product.quantity;
 
         // Offer calculation
-        const productOffer = product.productOffer || 0;
-        const categoryOffer = product.category?.categoryOffer || 0;
-        const brandOffer = product.brand?.brandOffer || 0;
-        const totalOffer = productOffer + categoryOffer + brandOffer;
-
-        const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
-
+        const {discountedPrice, totalOffer} = calculateDiscountedPrice(product)
         const gstValue = +(product.gst * parsedQuantity).toFixed(2);
 
         const newCartItem = { 
@@ -424,11 +407,11 @@ const cartToWishlist = async (req, res) => {
 
         await cartDoc.save();
 
-        let wishlist = await Wishlist.findOne({ user: userId }).populate('items.product');
+        let wishlist = await WishList.findOne({userId }).populate('items.product');
 
         if (!wishlist) {
-            wishlist = new Wishlist({
-                user: userId,   
+            wishlist = new WishList({
+                userId,   
                 items: [{ product: product._id }]
             });
         } else {
@@ -470,13 +453,42 @@ const cartToWishlist = async (req, res) => {
     }
 };
 
+const toCheckout = async (req,res) => {
+    try {
+        
+        const userId = req.session.user
 
+        const cart = await Cart.findOne({userId}).populate('items.productId')
+
+        const cartItems = cart.items
+
+        if(cartItems.length < 1){
+            return res.status(401).json({ success : false, message : 'Your cart is empty!!'})
+        }
+
+        for( let item of cartItems){
+            if(item.quantity < 1){
+                return res.status(401).json({ success : false, message : 'One of item is Not available...', productId : item.productId._id})
+            }
+        }
+
+        return res.status(200).json({
+            success : true, 
+            redirectUrl : '/checkout'
+        })
+
+    } catch (error) {
+        console.log('Something went wrong while proceeding to checkout...', error)
+        return res.status(500).json({success : false, message : 'Something went wrong while proceeding to checkout...'})
+    }
+}
 
 
 module.exports = {
     loadCart,
     addToCart,
+    toCheckout,
     cartUpdate,
     removeItem,
-    cartToWishlist
+    cartToWishlist,
 }

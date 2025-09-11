@@ -1,19 +1,82 @@
-
 document.addEventListener("DOMContentLoaded", () => {
 
+    const totalAmountEl = document.getElementById('totalAmount')
+    const savedAmountEl = document.getElementById('saved')
+    const subtotalEl = document.getElementById('subtotal')
+
+    const totalAmount = Number(totalAmountEl.textContent.replace(/[₹,\s]/g, ''))
+    const savedAmount = Number(savedAmountEl.textContent.replace(/[-₹,\s]/g, ''))
+    const subtotal = Number(subtotalEl.textContent.replace(/[₹,\s]/g, ''))
+
+    if (savedAmount) {
+        const total = totalAmount + savedAmount
+        subtotalEl.textContent = `₹ ${total.toLocaleString('en-IN')}`
+    }
+
+    const addressInput = document.querySelectorAll('input[name="address"]')
+    console.log("addresses : ", addressInput)
+    const shippingInput = document.getElementById('shipping')
+    const addresses = JSON.parse(document.querySelector('.address-list').dataset.address)
+    const gstEl = document.getElementById('gst')
+    const couponEl = document.getElementById('couponDiscount')
+
+    const couponAmount = Number(couponEl.textContent.replace(/[-₹,\s]/g, '')) || 0
+
+    addressInput.forEach(input => {
+        input.addEventListener('change', () => {
+            const selectedId = document.querySelector('input[name="address"]:checked').value;
+
+            const selectedAddress = addresses.find(add => add._id.toString() === selectedId.toString())
+
+            let shippingCharge = 0
+            let shippingGst = 0
+
+            if (selectedAddress) {
+                if (selectedAddress.country.toString().trim().toLowerCase() === 'india') {
+                    if (selectedAddress.state.toString().trim().toLowerCase() !== 'kerala') {
+                        shippingCharge = 250
+                    }
+                } else {
+                    shippingCharge = 12500
+                }
+                shippingGst = Math.floor((shippingCharge * 18) / 118)
+            }
+
+            const total = couponAmount ? totalAmount + shippingCharge - couponAmount : totalAmount + shippingCharge
+            const totalGst = Math.floor((total * 18) / 118)
+
+            shippingInput.textContent = `₹ ${shippingCharge.toLocaleString('en-IN')}`
+            gstEl.textContent = `₹ ${totalGst.toLocaleString('en-IN')}`
+            totalAmountEl.textContent = `₹ ${total.toLocaleString('en-IN')}`
+
+        })
+    })
+
+    if (couponAmount) {
+        const total = totalAmount - couponAmount
+        const totalGst = Math.floor((total * 18) / 118)
+
+        gstEl.textContent = `₹ ${totalGst.toLocaleString('en-IN')}`
+        totalAmountEl.textContent = `₹ ${total.toLocaleString('en-IN')}`
+    }
+
+    const newAddressButton = document.getElementById('newAddressBtn')
+    if(addressInput.length > 3 && newAddressButton ){
+        // newAddressButton.disabled = true
+        newAddressButton.style.display = 'none'
+    }
 
     document.getElementById('openCouponModal').onclick = () => {
-    document.getElementById('couponModal').style.display = 'block';
+        document.getElementById('couponModal').style.display = 'block';
     };
     document.getElementById('closeCouponModal').onclick = () => {
-    document.getElementById('couponModal').style.display = 'none';
+        document.getElementById('couponModal').style.display = 'none';
     };
-    document.querySelectorAll('.apply-coupon-btn').forEach(btn => {
-        btn.onclick = function() {
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.onclick = function () {
             const code = this.getAttribute('data-code');
             document.getElementById('couponCode').value = code;
             document.getElementById('couponModal').style.display = 'none';
-            // Trigger applyCoupon logic here
             document.getElementById('applyCoupon').click();
         };
     });
@@ -22,7 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const amountText = document.getElementById('totalAmount').innerText;
     const finalAmount = amountText.replace(/[₹]/, '').replaceAll(/,/g, '').trim()
 
-    // console.log('Final amount:', finalAmount);
 
     if (finalAmount > 50000) {
         const codInput = document.querySelector('input[value="COD"]');
@@ -58,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    //Retry Payment Modal
     const razorpayButton = document.getElementById('razorpayButton')
     const codButton = document.getElementById('codButton')
     const walletButton = document.getElementById('walletButton')
@@ -67,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const note = document.createElement('small')
         note.style.marginLeft = '4px'
         note.style.color = 'red'
-        note.textContent = 'Not availabe for orders above 50,000'
+        note.textContent = 'Not available for orders above 50,000'
     }
 
     if (finalAmount > 500000) {
@@ -75,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const note = document.createElement('small')
         note.style.marginLeft = '4px'
         note.style.color = 'red'
-        note.textContent = 'Not availabe for orders above 5,00,000'
+        note.textContent = 'Not available for orders above 5,00,000'
     }
 
 
@@ -102,16 +165,16 @@ document.addEventListener("DOMContentLoaded", () => {
     //Coupons
     const applyButton = document.getElementById('applyCoupon')
     const couponInput = document.getElementById('couponCode')
-
+    const shippingEl = document.getElementById('shipping')
     applyButton.addEventListener('click', (e) => {
         e.preventDefault()
 
+        const shippingCharge = Number(shippingEl.textContent.replace(/[-₹,]/g, '')) || 0
         const couponCode = couponInput.value || 0
-        console.log('couponCode : ', couponCode)
         if (applyButton.textContent.trim() === 'Apply') {
-            applyCoupon(couponCode)
+            applyCoupon(couponCode, shippingCharge)
         } else {
-            removeCoupon(couponCode)
+            removeCoupon(shippingCharge)
         }
 
     })
@@ -235,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
             editAddressModal.setAttribute('aria-hidden', 'false');
             document.body.classList.add('modal-open');
             document.getElementById('editPhone').focus();
-
             document.getElementById('editAddressId').value = addressData._id;
             document.getElementById('editName').value = addressData.name || '';
             document.getElementById('editPhone').value = addressData.phone ? addressData.phone.replace('+91', '') : '';
@@ -260,14 +322,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add Address Button Handling
     addAddressBtn.addEventListener('click', async () => {
-        const errors = validateAddressForm(addressForm);
-        if (errors) {
-            displayFormErrors(addressForm, errors);
-            return;
-        }
 
         const formData = Object.fromEntries(new FormData(addressForm));
-        console.log('Address data : ', formData)
         const mode = formData.formMode;
         delete formData.formMode;
 
@@ -276,11 +332,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (formData.altPhone) {
             formData.altPhone = `${countryCode}${formData.altPhone}`;
         }
+        const errors = validateAddressForm(formData);
+        if (errors) {
+            displayFormErrors(addressForm, errors);
+            return;
+        }
 
         addAddressBtn.disabled = true;
         addAddressBtn.textContent = 'Adding...';
-        // const URL = '/addAddress'
-
 
         try {
             const response = await fetch('/addAddress', {
@@ -320,11 +379,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update Address Button Handling
     updateAddressBtn.addEventListener('click', async () => {
-        const errors = validateAddressForm(editAddressForm);
-        if (errors) {
-            displayFormErrors(editAddressForm, errors);
-            return;
-        }
 
         const formData = Object.fromEntries(new FormData(editAddressForm));
         const mode = formData.formMode;
@@ -336,21 +390,24 @@ document.addEventListener("DOMContentLoaded", () => {
             formData.altPhone = `${countryCode}${formData.altPhone}`;
         }
 
+        const errors = validateAddressForm(formData);
+        if (errors) {
+            displayFormErrors(editAddressForm, errors);
+            return;
+        }
+
         updateAddressBtn.disabled = true;
         updateAddressBtn.textContent = 'Updating...';
 
         try {
-            const response = await fetch('editAddress', {
+            const response = await fetch('/editAddress', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
             const data = await response.json();
+
             if (data.success) {
                 closeEditModal();
                 window.location.reload();
@@ -449,7 +506,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 if (verifyData.success) {
                                     window.location.href = `/orderSuccess`;
                                 } else {
-                                    console.log('Razorpay responses : ', response)
                                     Swal.fire({
                                         icon: 'error',
                                         title: 'Payment Verification failed!!',
@@ -563,9 +619,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function handleRetryPayment(method, orderId, oldMethod, amount, user) {
-        console.log('Payment Method:', method);
-        console.log('orderId:', orderId);
-        console.log('Old Method:', oldMethod);
 
         if (method === 'COD' && amount > 10000) {
             Swal.fire({
@@ -725,73 +778,89 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+
+    //Validations
     function validateAddressForm(form) {
-        const formData = Object.fromEntries(new FormData(form));
         const namePattern = /^[a-zA-Z\s]+$/;
-        const phonePatterns = {
-            India: /^\d{10}$/,
-            USA: /^\d{10}$/,
-            UK: /^\d{10}$/
+        const phonePattern = {
+            'USA': /^\+1[2-9]\d{2}[2-9]\d{6}$/,
+            'India': /^\+91[6-9]\d{9}$/,
+            'UK': /^\+44\d{10}$/,
+            'UAE': /^\+971\d{8,9}$/,
+            'SAUDI ARABIA': /^\+966\d{8,9}$/
         };
         const pincodePatterns = {
-            India: /^\d{6}$/,
-            USA: /^\d{5}$/,
-            UK: /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/
+            'India': /^\d{6}$/,
+            'USA': /^\d{5}$/,
+            'UK': /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/,
+            'UAE': /^\d{3,6}$/,
+            'SAUDI ARABIA': /^[1-8]\d{4}$/
         };
 
         let errors = {};
+        console.log('name : ', form.name, '  ', form.name.length)
 
-        if (!formData.name) {
+        if (!form.name) {
             errors.name = "Name is required!";
-        } else if (!namePattern.test(formData.name)) {
+        } else if (!namePattern.test(form.name)) {
             errors.name = "Name can only contain letters and spaces!";
         }
 
-        if (!formData.phone) {
-            errors.phone = "Phone number is required!";
-        } else if (formData.country && phonePatterns[formData.country]) {
-            if (!phonePatterns[formData.country].test(formData.phone)) {
-                errors.phone = `Phone number must be exactly 10 digits for ${formData.country}!`;
+        // Phone
+        if (form.phone) {
+            if (form.country && phonePattern[form.country]) {
+                if (!phonePattern[form.country].test(form.phone)) {
+                    errors.phone = "Invalid phone number format!";
+                }
+            } else {
+                errors.phone = "Unsupported country for phone validation!";
             }
         } else {
-            errors.phone = "Phone number format not supported for this country!";
+            errors.phone = "Phone number 1 is required!";
         }
 
-        if (formData.altPhone && formData.country && phonePatterns[formData.country]) {
-            if (!phonePatterns[formData.country].test(formData.altPhone)) {
-                errors.altPhone = `Alternate phone number must be exactly 10 digits for ${formData.country}!`;
+        // Alternate Phone
+        if (form.altPhone) {
+            if (form.country && phonePattern[form.country]) {
+                if (!phonePattern[form.country].test(form.altPhone)) {
+                    errors.altPhone = "Invalid phone number format!";
+                }
+            } else {
+                errors.altPhone = "Unsupported country for phone validation!";
             }
+        } else {
+            errors.altPhone = "Phone number 2 is required!";
         }
 
-        if (!formData.country) {
+        if (!form.country) {
             errors.country = "Country is required!";
         }
 
-        if (!formData.landMark) {
+        if (!form.landMark) {
             errors.landMark = 'Apartment or LandMark is required!'
         }
 
-        if (!formData.city) {
+        if (!form.city) {
             errors.city = "Town/City is required!";
         }
 
-        if (!formData.streetAddress) {
+        if (!form.streetAddress) {
             errors.streetAddress = "Street address is required!";
         }
 
-        if (!formData.state) {
+        if (!form.state) {
             errors.state = "State is required!";
         }
 
-        if (!formData.district) {
+        if (!form.district) {
             errors.district = "District is required!";
         }
 
-        if (!formData.pincode) {
+        if (!form.pincode) {
             errors.pincode = "Pincode is required!";
-        } else if (formData.country && pincodePatterns[formData.country]) {
-            if (!pincodePatterns[formData.country].test(formData.pincode)) {
-                errors.pincode = `Invalid pincode format for ${formData.country}!`;
+        } else if (form.country && pincodePatterns[form.country]) {
+            if (!pincodePatterns[form.country].test(form.pincode)) {
+                errors.pincode = `Invalid pincode format for ${form.country}!`;
             }
         } else {
             errors.pincode = "Pincode format not supported for this country!";
@@ -821,7 +890,9 @@ document.addEventListener("DOMContentLoaded", () => {
         form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
     }
 
-    async function applyCoupon(couponCode) {
+
+    //Coupon Sections
+    async function applyCoupon(couponCode, shippingCharge) {
         Swal.fire({
             title: 'Applying Coupon...',
             allowOutsideClick: false,
@@ -836,7 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ couponCode })
+                body: JSON.stringify({ couponCode, shippingCharge })
             });
 
             const data = await response.json();
@@ -874,7 +945,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function removeCoupon() {
+    async function removeCoupon(shippingCharge) {
         Swal.fire({
             title: 'Removing Coupon...',
             allowOutsideClick: false,
@@ -888,7 +959,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ shippingCharge })
             });
 
             const data = await response.json();
@@ -928,6 +1000,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+
+    const search = document.getElementById('search')
+    const clearButton = document.getElementById('clear-button')
+    
+    search.addEventListener('keypress', async (e)=> {
+
+        const searchValue = search.value.trim()
+
+        if( searchValue && e.key === 'Enter' ){
+            console.log('search : ',searchValue)
+            // window.location = `/shop?search=${searchValue}`
+            window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
+        }
+    })
 
 
 });

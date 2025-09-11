@@ -134,7 +134,7 @@ const editAddress = async (req, res) => {
         let errors = validateAddress(data)
 
         if(errors){
-            return res.status(401).json({ success : false , message : 'Validation error', errors })
+            return res.status(401).json({ success : false , message : 'Validation error', errors})
         }
 
         const addressDoc = await Address.findOne({ userId });
@@ -179,8 +179,8 @@ const editAddress = async (req, res) => {
                     "address.$.district": data.district,
                     "address.$.country": data.country,
                     "address.$.pincode": data.pincode,
-                    "address.$.phone": data.phone1,
-                    "address.$.altPhone": data.phone,
+                    "address.$.phone": data.phone,
+                    "address.$.altPhone": data.altPhone,
                     "address.$.addressType": data.addressType || 'home'
                 }
             }

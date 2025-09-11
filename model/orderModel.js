@@ -41,10 +41,6 @@ const orderSchema = new Schema ({
             type : String,
             required : false
         },
-        shipping : {
-            type : Number,
-            default : 0
-        }
     }],
     totalPrice : {
         type : Number,

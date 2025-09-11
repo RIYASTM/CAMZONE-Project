@@ -84,7 +84,7 @@ const loadHomePage = async (req, res) => {
             };
         });
 
-        const wishList = await Wishlist.findOne({ user: userId }).populate('items.product')
+        const wishList = await Wishlist.findOne({userId }).populate('items.product')
 
         let wishlistItems = wishList ? wishList.items.map(item => item.product._id.toString()) : []
 
@@ -267,6 +267,10 @@ const loadShop = async (req, res) => {
             ...query
         });
 
+        const wishList = await Wishlist.findOne({userId }).populate('items.product')
+
+        let wishlistItems = wishList ? wishList.items.map(item => item.product._id.toString()) : []
+
         const totalPages = Math.ceil((totalProducts >= 2 ? totalProducts : 1) / limit);
 
         return res.render('shop', {
@@ -279,7 +283,8 @@ const loadShop = async (req, res) => {
             currentPage: 'shop',
             currentPages: page,
             totalPages,
-            finalQuery
+            finalQuery,
+            wishlistItems
         });
 
     } catch (error) {
@@ -313,7 +318,7 @@ const loadProduct = async (req, res) => {
             return res.status(400).json({ success: false, message: 'This products is blocked or unavailable' })
         }
 
-        const wishList = await Wishlist.findOne({ user: userId }).populate('items.product')
+        const wishList = await Wishlist.findOne({userId }).populate('items.product')
 
         let wishlistItems = []
 
@@ -378,6 +383,9 @@ const loadProduct = async (req, res) => {
 //Sign In
 const loadSignin = async (req, res) => {
     try {
+
+        if(req.session.user) return res.redirect('/')
+
         const userId = req.session.user
 
         const cart = userId ? await Cart.findOne({ userId }) : 0
@@ -399,6 +407,7 @@ const loadSignin = async (req, res) => {
 const signin = async (req, res) => {
 
     try {
+
         const { email, password } = req.body
 
         const isUser = await User.findOne({ email })
@@ -461,6 +470,9 @@ const signin = async (req, res) => {
 //Account Creating
 const loadSignup = async (req, res) => {
     try {
+
+        if(req.session.user) return res.redirect('/')
+
         const search = req.query.search || ''
 
         const userId = req.session.user
@@ -482,6 +494,7 @@ const loadSignup = async (req, res) => {
 
 const signup = async (req, res) => {
     try {
+
         const { name, email, phone, password, confirmPassword } = req.body;
 
         const findUser = await User.findOne({ email });
@@ -566,6 +579,8 @@ const signout = async (req, res) => {
 //Email Verifying
 const loadVerifyEmail = async (req, res) => {
     try {
+
+        if(req.session.user) return res.redirect('/')
 
         console.log('page loaded')
 

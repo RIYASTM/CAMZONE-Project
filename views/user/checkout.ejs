@@ -29,7 +29,7 @@
             <!-- Delivery Address Selection -->
             <div class="address-selection">
                 <h3>Delivery Address</h3>
-                <div class="address-list">
+                <div class="address-list" data-address="<%=JSON.stringify(address)%>">
                     <% address.forEach(addr => { %>
                         <div class="address-item">
                             <label class="address-option">
@@ -41,7 +41,7 @@
                             <button type="button" class="edit-address-btn" data-address='<%= JSON.stringify(addr) %>'>Edit</button>
                         </div>
                     <% }) %>
-                    <label class="address-option">
+                    <label class="address-option" id="newAddressBtn">
                         <input type="radio" name="address" id="newAddressRadio" class="address-radio" aria-label="Add a new address">
                         <span class="address-details">Add a New Address</span>
                     </label>
@@ -307,38 +307,32 @@
         <section class="order-summary" aria-labelledby="order-summary-heading">
             <h3 id="order-summary-heading">Order Summary</h3>
             <div class="summary-details"> 
-                <p>Subtotal: <span>₹<%= cart.totalAmount.toLocaleString('en-IN') %></span></p> 
-                <p>Shipping: <span>₹<%= (cart.shippingCost || 0).toLocaleString('en-IN') %></span></p>
-                <p>Saved: <span>-₹<%= totalOfferedPrice.toLocaleString('en-IN') %></span></p>
+                <p>Subtotal: <span id="subtotal">₹<%= cart.totalAmount.toLocaleString('en-IN') %></span></p> 
+                <p>Shipping: <span id="shipping">₹<%= (cart.shippingCost || 0).toLocaleString('en-IN') %></span></p>
+                <p>Saved: <span id="saved">-₹<%= totalOfferedPrice.toLocaleString('en-IN') %></span></p>
                 
                 <!-- Enhanced Coupon Section -->
                 <div class="coupon-section">
                     <div class="coupon-header">
                         <h4 class="coupon-title">Have a Coupon?</h4>
-                        <!-- <a href="/coupon" class="browse-coupons-link">
-                            Coupons <i class="fas fa-chevron-right"></i>
-                        </a> -->
-                        <!-- Coupon Modal Trigger -->
-                        <button type="button" class="browse-coupons-link" id="openCouponModal">Browse Coupons</button>
+                        <button type="button" class="browse-coupons-link" id="openCouponModal">Browse Coupons<i class="fas fa-chevron-right"></i></button>
                     </div>
                     
                     <div class="coupon-input-container">
-                        <input type="password" id="couponCode" placeholder="Enter coupon code" class="coupon-input" aria-label="Enter coupon code">
+                        <input type="text"id="couponCode"  placeholder="Enter coupon code" class="coupon-input" aria-label="Enter coupon code">
                         <button id="applyCoupon" class="apply-coupon-btn">Apply</button>
                     </div>
-                    
                     <div id="couponMessage" class="coupon-message" style="display: none;"></div>
-                    
                     <% if (locals.appliedCoupon) { %>
-                    <div class="applied-coupon">
-                        <div class="coupon-info">
-                            <span class="coupon-code"><%= appliedCoupon.code %></span>
-                            <span class="coupon-discount">-₹<%= appliedCoupon.discount.toLocaleString('en-IN') %></span>
+                        <div class="applied-coupon">
+                            <div class="coupon-info">
+                                <span class="coupon-code"><%= appliedCoupon.code %></span>
+                                <span class="coupon-discount">-₹<%= appliedCoupon.discount.toLocaleString('en-IN') %></span>
+                            </div>
+                            <button id="removeCoupon" class="remove-coupon-btn" aria-label="Remove coupon">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                        <button id="removeCoupon" class="remove-coupon-btn" aria-label="Remove coupon">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
                     <% } %>
                 </div>
                 
@@ -346,9 +340,6 @@
                 <p>GST (18%): <span id="gst">₹ <%= Number(Math.floor(cart.GST.toFixed(2))).toLocaleString('en-IN') %></span></p>
                 <h4>Total: <span id="totalAmount">₹ <%= Math.floor(cart.totalAmount).toLocaleString('en-IN') %></span></h4>
             </div>
-
-
-            
 
             <!-- Divider -->
             <hr class="section-divider">
@@ -392,71 +383,69 @@
     </div>
 
     <!-- Coupon Modal -->
-<!-- Coupon Modal -->
-<div class="modal" id="couponModal" style="display:none;" role="dialog" aria-labelledby="couponModalLabel" aria-hidden="true">
-  <div class="modal-content">
-    <header class="modal-header">
-      <h3 id="couponModalLabel">Coupons Available</h3>
-      <button type="button" class="modal-close-btn" id="closeCouponModal" aria-label="Close modal">×</button>
-    </header>
-    
-    <section class="coupon-list">
-      <% if (coupons && coupons.length > 0) { %>
-        <% coupons.forEach((coupon, idx) => { %>
-          <article class="coupon-card <%= coupon.discountType %>">
-            <div class="coupon-header-section">
-              <div class="coupon-title">
-                <h3><%= coupon.couponName %></h3>
-                <p class="coupon-subtitle">Special discount just for you!</p>
-              </div>
-              <div class="coupon-discount">
-                <span class="discount-value">
-                  <%= coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount %>
-                </span>
-                <span class="discount-label">
-                  <%= coupon.discountType === 'percentage' ? 'OFF' : 'Flat OFF' %>
-                </span>
-              </div>
+    <div class="modal" id="couponModal" style="display:none;" role="dialog" aria-labelledby="couponModalLabel" aria-hidden="true">
+    <div class="modal-content">
+        <header class="modal-header">
+        <h3 id="couponModalLabel">Coupons Available</h3>
+        <button type="button" class="modal-close-btn" id="closeCouponModal" aria-label="Close modal">×</button>
+        </header>
+        
+        <section class="coupon-list">
+        <% if (coupons && coupons.length > 0) { %>
+            <% coupons.forEach((coupon, idx) => { %>
+                <article class="coupon-card <%= coupon.discountType %>">
+                    <div class="coupon-header-section">
+                        <div class="coupon-title">
+                            <h3><%= coupon.couponName %></h3>
+                            <p class="coupon-subtitle">Special discount just for you!</p>
+                        </div>
+                        <div class="coupon-discount">
+                            <span class="discount-value">
+                            <%= coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount %>
+                            </span>
+                            <span class="discount-label">
+                            <%= coupon.discountType === 'percentage' ? 'OFF' : 'Flat OFF' %>
+                            </span>
+                        </div>
+                    </div>
+                    <dl class="coupon-details">
+                        <div class="detail-item">
+                            <span class="detail-icon"><i class="fas fa-shopping-cart"></i></span>
+                            <span class="detail-text">Min Order: <span class="detail-value">₹<%= coupon.minOrder %></span></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon"><i class="fas fa-sync-alt"></i></span>
+                            <span class="detail-text">Uses Left: <span class="detail-value"><%= coupon.couponLimit %></span></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon"><i class="fas fa-calendar-alt"></i></span>
+                            <span class="detail-text">Valid Until: <span class="detail-value"><%= coupon.validUpto ? coupon.validUpto.toLocaleDateString() : 'No Expiry' %></span></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon"><i class="fas fa-tag"></i></span>
+                            <span class="detail-text">Status: <span class="detail-value status">Active</span></span>
+                        </div>
+                    </dl>
+                    <div class="coupon-code-section">
+                        <div class="coupon-code" id="coupon-<%= idx %>">
+                            <span class="code-text"><%= coupon.couponCode %></span>
+                        </div>
+                        <div class="coupon-code-actions">
+                            <button class="copy-btn" data-limit="<%= coupon.couponLimit %>" data-code="<%= coupon.couponCode %>" data-dateupto="<%= coupon.validUpto.toISOString() %>"> Choose</button>
+                        </div>
+                    </div>
+                </article>
+            <% }); %>
+        <% } else { %>
+            <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-ticket-alt"></i></div>
+            <h3>No Coupons Available</h3>
+            <p>You don't have any coupons at the moment. Check back soon for exciting offers!</p>
             </div>
-            <dl class="coupon-details">
-              <div class="detail-item">
-                <span class="detail-icon"><i class="fas fa-shopping-cart"></i></span>
-                <span class="detail-text">Min Order: <span class="detail-value">₹<%= coupon.minOrder %></span></span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon"><i class="fas fa-sync-alt"></i></span>
-                <span class="detail-text">Uses Left: <span class="detail-value"><%= coupon.couponLimit %></span></span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon"><i class="fas fa-calendar-alt"></i></span>
-                <span class="detail-text">Valid Until: <span class="detail-value"><%= coupon.validUpto ? coupon.validUpto.toLocaleDateString() : 'No Expiry' %></span></span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon"><i class="fas fa-tag"></i></span>
-                <span class="detail-text">Status: <span class="detail-value status">Active</span></span>
-              </div>
-            </dl>
-            <div class="coupon-code-section">
-              <div class="coupon-code hidden" id="coupon-<%= idx %>">
-                <span class="code-text"><%= coupon.couponCode %></span>
-              </div>
-              <div class="coupon-code-actions">
-                <button class="show-btn" onclick="toggleCouponCode('<%= idx %>')"><i class="fas fa-eye"></i></button>
-                <button class="copy-btn" data-limit="<%= coupon.couponLimit %>" data-code="<%= coupon.couponCode %>" data-dateupto="<%= coupon.validUpto.toISOString() %>"><i class="fas fa-copy"></i> Copy</button>
-              </div>
-            </div>
-          </article>
-        <% }); %>
-      <% } else { %>
-        <div class="empty-state">
-          <div class="empty-icon"><i class="fas fa-ticket-alt"></i></div>
-          <h3>No Coupons Available</h3>
-          <p>You don't have any coupons at the moment. Check back soon for exciting offers!</p>
-        </div>
-      <% } %>
-    </section>
-  </div>
-</div>
+        <% } %>
+        </section>
+    </div>
+    </div>
 
 
 

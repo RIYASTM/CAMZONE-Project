@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const filter = document.querySelector('.filter');
     const clearButton = document.getElementById('clear-button');
 
+    const couponMaxOrderInput = document.getElementById('maxOrder')
+    const maxOrderValue = couponMaxOrderInput.value ? Number(couponMaxOrderInput.value) : 700000;
+    couponMaxOrderInput.value = maxOrderValue
+
     let currentPages = 1;
 
     // Modal close on outside click or Escape key
@@ -37,6 +41,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+    const searchValue = searchBar.value
+
+    document.getElementById('search').addEventListener('keypress', function (e) {
+        const searchValue = search.value
+
+        if (e.key === 'Enter') {
+            window.location.href = `?search=${searchValue}`
+        }
+    })
+
+    if (searchValue) {
+
+        document.getElementById('clear-button').addEventListener('click', function (e) {
+
+            window.location.href = `/admin/coupons`
+        })
+    }
 
     // Event Listeners
     addCouponButton.addEventListener('click', () => {
@@ -78,7 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     editCouponForm.querySelector('#editCouponDescription').value = coupon.description;
                     editCouponForm.querySelector('#editDiscountType').value = coupon.discountType;
                     editCouponForm.querySelector('#editDiscount').value = coupon.discount;
-                    editCouponForm.querySelector('#editMinOrder').value = coupon.minOrder;
+                    editCouponForm.querySelector('#editMinOrder').value = coupon.minOrder || 100000;
+                    editCouponForm.querySelector('#editMaxOrder').value = coupon.maxOrder || 700000;
                     editCouponForm.querySelector('#editValidFrom').value = new Date(coupon.validFrom).toISOString().split('T')[0];
                     editCouponForm.querySelector('#editValidUpto').value = new Date(coupon.validUpto).toISOString().split('T')[0];
                     editCouponForm.querySelector('#editCouponLimit').value = coupon.couponLimit || '';
@@ -318,6 +341,13 @@ document.addEventListener('DOMContentLoaded', () => {
             errors.minOrder = 'Minimum order amount is required and must be positive';
         }
 
+        const maxOrder = parseFloat(data.maxOrder)
+        if (isNaN(maxOrder)){
+            errors.maxOrder = 'Maximum order amount is required'
+        } else if ( maxOrder <= minOrder){
+            errors.maxOrder = 'Maximum order must be greater than Minimum Order'
+        }
+
         const validFrom = new Date(data.validFrom);
         const validUpto = new Date(data.validUpto);
         const today = new Date();
@@ -356,7 +386,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchCoupons({ search, sort, filter, page }) {
         try {
-            const response = await fetch(`/admin/coupon?search=${encodeURIComponent(search)}&sort=${sort}&filter=${filter}&page=${page}`);
+            let queryParts = []
+
+            if(sort){
+                queryParts.push(`sort=${sort}`)
+            }
+            if(filter){
+                queryParts.push(`filter=${filter}`)
+            }
+            if(page){
+                queryParts.push(`page=${page}`)
+            }
+
+            console.log('fetching with:', { search, sort, filter, page });
+
+            const finalQuery = queryParts.join('&');
+            
+            const response = await fetch(`/admin/coupon?${finalQuery}`);
             const result = await response.json();
             if (result.success) {
                 updateCouponTable(result.coupons);
@@ -384,13 +430,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         coupons.forEach(coupon => {
-            const tr = document.createElement('tr');
+            const tr = document.createElement('tr'); 
             tr.innerHTML = `
                 <td>${coupon.couponName}</td>
                 <td>${coupon.couponCode}</td>
                 <td>${coupon.discountType.charAt(0).toUpperCase() + coupon.discountType.slice(1)}</td>
-                <td>${coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount}</td>
-                <td>₹${coupon.minOrder}</td>
+                <td>${coupon.discountType === 'percentage' ? coupon.discount + '%' : '₹ ' + coupon.discount}</td>
+                <td>₹ ${coupon.minOrder}</td>
+                <td>₹ ${coupon.maxOrder}</td>
                 <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
                 <td>${new Date(coupon.validUpto).toLocaleDateString()}</td>
                 <td>${coupon.couponLimit || 'N/A'}</td>
@@ -403,4 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.appendChild(tr);
         });
     }
+
+
+    
+
 });

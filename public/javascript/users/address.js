@@ -189,17 +189,31 @@ document.addEventListener('DOMContentLoaded', () => {
             errors.name = "Name can only contain letters and spaces!";
         }
 
-        if (!data.phone1) {
-            errors.phone1 = "Phone number 1 is required!";
-        } else if (!phonePattern.test(data.phone1)) {
-            errors.phone1 = "Invalid phone number format!";
-        }
+        // Phone
+            if (data.phone) {
+                if (data.country && phonePattern[data.country]) {
+                    if (!phonePattern[data.country].test(data.phone)) {
+                        errors.phone = "Invalid phone number format!";
+                    }
+                } else {
+                    errors.phone = "Unsupported country for phone validation!";
+                }
+            } else {
+                errors.phone = "Phone number 1 is required!";
+            }
 
-        if (!data.phone) {
-            errors.phone = "Phone number 2 is required!";
-        } else if (!phonePattern.test(data.phone)) {
-            errors.phone = "Invalid phone number format!";
-        }
+            // Alternate Phone
+            if (data.altPhone) {
+                if (data.country && phonePattern[data.country]) {
+                    if (!phonePattern[data.country].test(data.altPhone)) {
+                        errors.altPhone = "Invalid phone number format!";
+                    }
+                } else {
+                    errors.altPhone = "Unsupported country for phone validation!";
+                }
+            } else {
+                errors.altPhone = "Phone number 2 is required!";
+            }
 
         if (!data.country) {
             errors.country = "Country is required!";
@@ -229,4 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return Object.keys(errors).length > 0 ? errors : null;
     }
+
+    const search = document.getElementById('search')
+    const clearButton = document.getElementById('clear-button')
+    
+    search.addEventListener('keypress', async (e)=> {
+
+        const searchValue = search.value.trim()
+
+        if( searchValue && e.key === 'Enter' ){
+            console.log('search : ',searchValue)
+            // window.location = `/shop?search=${searchValue}`
+            window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
+        }
+    })
+
 });

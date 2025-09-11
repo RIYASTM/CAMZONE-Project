@@ -32,7 +32,7 @@ async function calculateAmounts(couponCode,totalAmount, cartItems){
 
             
             const finalAmount = Math.floor(totalAmount - couponDiscount);
-            const totalGST = (finalAmount * 18) / 118
+            const totalGST = Math.floor((finalAmount * 18) / 118)
             const priceWithoutGST = Math.floor(finalAmount - totalGST);
 
             const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
@@ -54,12 +54,15 @@ const loadCheckout = async (req, res) => {
         const search = req.query.search || '';
         const userId = req.session.user;
 
+        if(req.session.appliedCoupon) {
+            delete req.session.appliedCoupon
+        }
+
         if (!userId) {
             return res.status(401).json({ success: false, message: 'User not authenticated!' });
         }
 
-        const coupons = await Coupon.find() || []
-        console.log('coupon : ', coupons)
+        const coupons = await Coupon.find({isList : true}) || []
 
         const user = await User.findById(userId);
         if (!user) {
@@ -97,7 +100,6 @@ const loadCheckout = async (req, res) => {
 
     } catch (error) {
         console.log('Failed to load the checkout page:', error);
-        // res.status(500).send('Something went wrong while loading checkout page.');
         return res.redirect('/pageNotFound')
     }
 };
@@ -145,15 +147,30 @@ const checkout = async (req, res) => {
 
         for (let item of cartItems) {
             const product = await Products.findById(item.productId._id);
+            if(product.status !== 'Available'){
+                return res.status(401).json({ success : false, message : 'One of items is not available'})
+            }
             if (item.quantity > product.quantity) {
                 return res.status(400).json({ success: false, message: 'Not available in this quantity!' });
             }
         }
 
+        let shippingCharge = 0
+
+        if(orderAddress){
+            if(orderAddress.country === 'India'){
+                if(orderAddress.state !== 'Kerala'){
+                    shippingCharge = 250
+                }
+            }else{
+                shippingCharge = 12500
+            } 
+        }
+
         //Order ID
         const orderId = await createOrderId()
 
-        let totalAmount = 0;
+        let totalAmount = shippingCharge ? shippingCharge : 0
 
         for (let item of cartItems) {
             const product = item.productId;
@@ -191,7 +208,8 @@ const checkout = async (req, res) => {
             GST: totalGST,
             razorpayStatus : paymentMethod === 'Razorpay' ? 'Pending' : null,
             couponCode: coupon?.couponCode || null,
-            couponApplied : coupon ? true : false
+            couponApplied : coupon ? true : false,
+            shipping : shippingCharge
         });
 
         if(paymentMethod === 'Razorpay'){
@@ -266,10 +284,6 @@ const checkout = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Your order failed to complete!' });
     } catch (error) {
         console.log('Failed to confirm the order: ', error);
-        // res.status(500).json({
-        //     success: false,
-        //     message: 'An error occurred while confirming the order!'
-        // });
         return res.redirect('/pageNotFound')
     }
 }; 
@@ -344,8 +358,6 @@ const retryPayment = async (req, res) => {
         const user = await User.findById(userId)
         const { orderId, method } = req.body;
 
-        console.log('orderId : ', orderId)
-
         const order = await Order.findOne({orderId});
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
@@ -357,7 +369,6 @@ const retryPayment = async (req, res) => {
             if(order.paymentMethod === 'Razorpay' && finalAmount > 500000){
                 return res.status(400).json({ success : false, message : 'Razorpay is not available for the amount 500000 & above'})
             }
-            // console.log('Payment method:', method);
             const razorpayOrder = await generateRazorpayCheckout(finalAmount);
             order.razorpayOrderId = razorpayOrder.id;
             
@@ -449,7 +460,7 @@ const retryPayment = async (req, res) => {
 
     } catch (error) {
         console.log('Something went wrong with Repayment:', error);
-        res.status(500).json({ success: false, message: 'Something went wrong...' });
+        // res.status(500).json({ success: false, message: 'Something went wrong...' });
         return res.redirect('/pageNotFound')
     }
 };

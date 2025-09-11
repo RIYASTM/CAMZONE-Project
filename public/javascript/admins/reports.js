@@ -143,8 +143,6 @@ function calcGrowth(orders) {
     return Math.round(growth * 100) / 100;
 }
 
-
-
 function updateTopCategories(orders) {
     if (!orders || !Array.isArray(orders)) return;
 

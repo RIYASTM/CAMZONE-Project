@@ -2,25 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>CAMZONE</title>
     <link rel="stylesheet" href="/stylesheet/user/home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        .wishlist-btn i {
-            color: #ccc; 
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .wishlist-btn.active i {
-            color: red;
-        }
-        .wishlist-btn:hover i {
-            color: rgb(255, 90, 90);
-        }
-    </style>
 </head>
 <body>
 
@@ -86,7 +71,7 @@
                             <% if (product.productImage && product.productImage.length > 0) { %>
                                 <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
                             <% } else { %>
-                                <span>No Image</span>
+                                <span>No Image</span> 
                             <% } %>
                         </div>
                         <h3><%= product.productName.slice(0,23) %></h3>

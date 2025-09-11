@@ -70,6 +70,21 @@ document.addEventListener("DOMContentLoaded", () => {
         form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
         form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
     }
+
+    const search = document.getElementById('search')
+            const clearButton = document.getElementById('clear-button')
+            
+            search.addEventListener('keypress', async (e)=> {
+
+                const searchValue = search.value.trim()
+
+                if( searchValue && e.key === 'Enter' ){
+                    console.log('search : ',searchValue)
+                    // window.location = `/shop?search=${searchValue}`
+                    window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
+                }
+            })
+
 });
 
 function validateUser(data) {

@@ -1,39 +1,59 @@
 const Coupons = require('../../model/couponModel');
 const { v4: uuidv4 } = require('uuid');
-const {validateCoupon} = require('../../helpers/validations')
+const { validateCoupon } = require('../../helpers/validations')
 
 const loadCoupons = async (req, res) => {
     try {
         const { search = '', sort = 'default', filter = 'all', page = 1 } = req.query;
+        
+        console.log('query : ', req.query)
+        console.log('sort : ', sort)
+
         const limit = 10;
         let query = {};
 
+        // 🔎 Search
         if (search) {
-            query.couponName = { $regex: search, $options: 'i' };
+            query.$or = [
+                { couponName: { $regex: search, $options: 'i' } },
+                { couponCode: { $regex: search, $options: 'i' } }
+            ];
         }
 
+        // 🎯 Filter
         if (filter === 'active') {
             query.isList = true;
+            query.validUpto = { $gte: new Date() };
         } else if (filter === 'expired') {
             query.validUpto = { $lt: new Date() };
         }
 
-        let sortOption = {};
-        if (sort === 'name') {
-            sortOption.couponName = 1;
-        } else if (sort === 'discount') {
-            sortOption.discount = 1;
-        } else if (sort === 'validity') {
-            sortOption.validUpto = 1;
-        }
+        // 🔃 Sorting
+        let sortOption = { createOn: -1 };
+        if (sort === 'name') sortOption = { couponName: 1 };
+        if (sort === 'discount') sortOption = { discount: -1 };
+        if (sort === 'validity') sortOption = { validUpto: 1 };
 
+        // 📄 Pagination + data fetch
         const coupons = await Coupons.find(query)
             .sort(sortOption)
             .skip((page - 1) * limit)
             .limit(limit);
+
         const totalCoupons = await Coupons.countDocuments(query);
         const totalPages = Math.ceil(totalCoupons / limit);
 
+        // 📤 JSON for fetch requests
+        if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.status(200).json({
+                success: true,
+                coupons,
+                totalPages,
+                currentPage: parseInt(page)
+            });
+        }
+
+        // 🖥️ Render page for normal navigation
         return res.render('coupons', {
             pageTitle: 'Coupons',
             currentPage: 'coupons',
@@ -46,14 +66,19 @@ const loadCoupons = async (req, res) => {
 
     } catch (error) {
         console.error('Failed to load coupons:', error);
-        res.status(500).send('Server Error');
+        res.status(500).render('error', {
+            pageTitle: 'Error',
+            message: 'Failed to load coupons',
+            iconClass: 'fa-exclamation-triangle'
+        });
     }
 };
+
 
 const getCoupon = async (req, res) => {
     try {
         const coupon = await Coupons.findById(req.params.id);
-        console.log('coupons : ', coupon)
+        // console.log('coupons : ', coupon)
         if (!coupon) {
             return res.status(404).json({ success: false, message: 'Coupon not found' });
         }
@@ -67,6 +92,7 @@ const getCoupon = async (req, res) => {
                 discountType: coupon.discountType,
                 discount: coupon.discount,
                 minOrder: coupon.minOrder,
+                maxOrder: coupon.maxOrder,
                 validFrom: coupon.validFrom,
                 validUpto: coupon.validUpto,
                 couponLimit: coupon.couponLimit,
@@ -109,6 +135,7 @@ const addCoupon = async (req, res) => {
             discountType: data.discountType,
             discount: parseFloat(data.discount),
             minOrder: parseFloat(data.minOrder),
+            maxOrder: parseFloat(data.maxOrder),
             validFrom: new Date(data.validFrom),
             validUpto: new Date(data.validUpto),
             couponLimit: data.couponLimit ? parseInt(data.couponLimit) : undefined,
@@ -128,6 +155,7 @@ const addCoupon = async (req, res) => {
                 discountType: savedCoupon.discountType,
                 discount: savedCoupon.discount,
                 minOrder: savedCoupon.minOrder,
+                maxOrder: savedCoupon.maxOrder,
                 validFrom: savedCoupon.validFrom,
                 validUpto: savedCoupon.validUpto,
                 couponLimit: savedCoupon.couponLimit,
@@ -169,6 +197,7 @@ const updateCoupon = async (req, res) => {
         coupon.discountType = data.discountType;
         coupon.discount = parseFloat(data.discount);
         coupon.minOrder = parseFloat(data.minOrder);
+        coupon.maxOrder = parseFloat(data.maxOrder)
         coupon.validFrom = new Date(data.validFrom);
         coupon.validUpto = new Date(data.validUpto);
         coupon.couponLimit = data.couponLimit ? parseInt(data.couponLimit) : undefined;
@@ -187,6 +216,7 @@ const updateCoupon = async (req, res) => {
                 discountType: updatedCoupon.discountType,
                 discount: updatedCoupon.discount,
                 minOrder: updatedCoupon.minOrder,
+                maxOrder: updatedCoupon.maxOrder,
                 validFrom: updatedCoupon.validFrom,
                 validUpto: updatedCoupon.validUpto,
                 couponLimit: updatedCoupon.couponLimit,

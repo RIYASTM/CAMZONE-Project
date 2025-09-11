@@ -41,6 +41,9 @@ const couponSchema = new Schema ({
         type : Number,
         required : true
     },
+    maxOrder : {
+        type : Number,
+    },
     isList : {
         type : Boolean,
         default : true

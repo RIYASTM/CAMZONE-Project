@@ -177,7 +177,8 @@ function validateProfile(data) {
     const namepattern = /^[A-Za-z\s]+$/;
     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
     const digit = /\d/
-    const phonePattern = /^\+?\d{1,4}[\s-]?\d{6,14}$/;
+    const phonePattern = /^\d{10}$/
+;
 
     let error = {}
 
@@ -192,7 +193,7 @@ function validateProfile(data) {
         }
     }
     if(data.phone){
-        if(data.phone.length < 10 || data.phone.length > 10){
+        if(!phonePattern.test(data.phone)){
             error.phone = 'Invalid Phone Number!!'
         }
     }
@@ -201,6 +202,8 @@ function validateProfile(data) {
 
 function validateAddress(data){
 
+    console.log("phone 1 : ",data.phone)
+    console.log("altPhone : ", data.altPhone)
             const phonePattern = {
                 'USA' : /^\+1[2-9]\d{2}[2-9]\d{6}$/,
                 'India' : /^\+91[6-9]\d{9}$/,
@@ -208,7 +211,14 @@ function validateAddress(data){
                 'UAE' : /^\+971\d{8,9}$/,
                 'KSA' : /^\+966\d{8,9}$/
             };
-            const pincodePattern = /^6[0-9]{5}$/;
+            const pincodePattern = {
+                'India': /^\d{6}$/,
+                'USA': /^\d{5}$/,
+                'UK': /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/,
+                'UAE' : /^\d{3,6}$/,
+                'SAUDI ARABIA' : /^[1-8]\d{4}$/,
+                'KSA' : /^[1-8]\d{4}$/
+            };
             const namePattern = /^[a-zA-Z\s]+$/;
             let errors = {};
     
@@ -233,9 +243,17 @@ function validateAddress(data){
             if (!data.country) {
                 errors.country = "Country is required.";
             }
-            if (!data.pincode || !pincodePattern.test(data.pincode)) {
-                errors.pincode = "Valid pincode is required 6 digits).";
+
+            if (!data.pincode) {
+                errors.pincode = "Pincode is required!";
+            } else if (data.country && pincodePattern[data.country]) {
+                if (!pincodePattern[data.country].test(data.pincode)) {
+                    errors.pincode = `Invalid pincode format for ${data.country}!`;
+                }
+            } else {
+                errors.pincode = "Pincode format not supported for this country!";
             }
+
             // Phone
             if (data.phone) {
                 if (data.country && phonePattern[data.country]) {
