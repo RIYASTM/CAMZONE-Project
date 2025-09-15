@@ -19,9 +19,9 @@
 
     <section>
         
-        <div class="breadcrumb">
+        <!-- <div class="breadcrumb">
             <a href="/">Home</a> > <span>Sign In</span> > <span>Forgot Password</span>
-        </div>
+        </div> -->
 
         <main class="signin-page">
             <div class="signin-container">
@@ -88,7 +88,7 @@
                 const data = await response.json()
 
                 if (!data.success) {
-                displayFormErrors(signupForm, data.errors);
+                displayFormErrors(emailForm, data.errors);
                 Swal.fire(' ', data.message || 'Validation error!', 'error');
                 } else {
                     Swal.fire('Success',data.message || 'Signup successful', 'success')

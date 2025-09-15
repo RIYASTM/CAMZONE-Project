@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.product-card').forEach(btn => {
@@ -14,24 +13,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartButton = document.getElementById('addtoCart');
 
     // Add to Cart Button
-    cartButton.addEventListener('click', () => {
-        const productId = cartButton.dataset.id;
-        addToCart(productId);
-    });
+    if (cartButton) {
+        cartButton.addEventListener('click', () => {
+            const productId = cartButton.dataset.id;
+            addToCart(productId);
+        });
+    }
 
     // Quantity decrease
-    minusBtn.addEventListener('click', () => {
-        let quantity = parseInt(quantityInput.value);
-        if (quantity > 1) {
-            quantityInput.value = quantity - 1;
-        }
-    });
+    if (minusBtn) {
+        minusBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantityInput.value);
+            if (quantity > 1) {
+                quantityInput.value = quantity - 1;
+            }
+        });
+    }
 
     // Quantity increase
-    plusBtn.addEventListener('click', () => {
-        let quantity = parseInt(quantityInput.value);
-        quantityInput.value = quantity + 1;
-    });
+    if (plusBtn) {
+        plusBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantityInput.value);
+            quantityInput.value = quantity + 1;
+        });
+    }
 
     async function addToCart(productId) {
         const quantity = document.querySelector('#quantity-input').value;
@@ -56,27 +61,128 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
-    const mainImage = document.getElementById('mainImage');
+    // Thumbnail Carousel Logic
+    const thumbnailWrapper = document.getElementById('thumbnailWrapper');
     const thumbnails = document.querySelectorAll('.thumbnail');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const mainImage = document.getElementById('mainImage');
+    
+    let currentOffset = 0;
+    let activeIndex = 0;
+    const visibleThumbnails = 3;
+    const thumbnailWidth = 130; // 120px width + 10px gap
+
+    // Initialize carousel
+    if (thumbnails.length > 0) {
+        initializeThumbnailCarousel();
+    }
+
+    function initializeThumbnailCarousel() {
+        // Show only 3 thumbnails initially
+        updateCarouselPosition();
+        
+        // Add event listeners to thumbnails
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', () => {
+                selectThumbnail(index);
+            });
+        });
+
+        // Navigation buttons (only if more than 3 images)
+        if (thumbnails.length > visibleThumbnails) {
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    navigateCarousel(-1);
+                });
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    navigateCarousel(1);
+                });
+            }
+        }
+    }
+
+    function selectThumbnail(index) {
+        // Remove active class from all thumbnails
+        thumbnails.forEach(t => t.classList.remove('active'));
+        
+        // Add active class to selected thumbnail
+        thumbnails[index].classList.add('active');
+        
+        // Update main image
+        const newSrc = thumbnails[index].getAttribute('data-src');
+        mainImage.src = newSrc;
+        
+        // Update active index
+        activeIndex = index;
+        
+        // Adjust carousel position to keep selected image centered
+        adjustCarouselForActiveImage();
+    }
+
+    function adjustCarouselForActiveImage() {
+        if (thumbnails.length <= visibleThumbnails) {
+            return; // No need to adjust if all images are visible
+        }
+
+        let newOffset = currentOffset;
+
+        // If active image is the first one, show from beginning
+        if (activeIndex === 0) {
+            newOffset = 0;
+        }
+        // If active image is the last one, show last 3 images
+        else if (activeIndex === thumbnails.length - 1) {
+            newOffset = thumbnails.length - visibleThumbnails;
+        }
+        // Otherwise, try to center the active image
+        else {
+            newOffset = Math.max(0, Math.min(activeIndex - 1, thumbnails.length - visibleThumbnails));
+        }
+
+        currentOffset = newOffset;
+        updateCarouselPosition();
+        updateNavigationButtons();
+    }
+
+    function navigateCarousel(direction) {
+        const maxOffset = Math.max(0, thumbnails.length - visibleThumbnails);
+        
+        currentOffset += direction;
+        currentOffset = Math.max(0, Math.min(currentOffset, maxOffset));
+        
+        updateCarouselPosition();
+        updateNavigationButtons();
+    }
+
+    function updateCarouselPosition() {
+        if (thumbnailWrapper) {
+            const translateX = -currentOffset * thumbnailWidth;
+            thumbnailWrapper.style.transform = `translateX(${translateX}px)`;
+        }
+    }
+
+    function updateNavigationButtons() {
+        if (!prevBtn || !nextBtn || thumbnails.length <= visibleThumbnails) {
+            return;
+        }
+
+        const maxOffset = thumbnails.length - visibleThumbnails;
+        
+        prevBtn.disabled = currentOffset === 0;
+        nextBtn.disabled = currentOffset >= maxOffset;
+        
+        prevBtn.style.opacity = currentOffset === 0 ? '0.3' : '0.8';
+        nextBtn.style.opacity = currentOffset >= maxOffset ? '0.3' : '0.8';
+    }
+
+    // Zoom functionality
     const mainImageContainer = document.querySelector('.main-image-container');
     const zoomLens = document.getElementById('zoomLens');
-    const zoomResult = document.getElementById('zoomResult');
 
-    // Thumbnail switching
-    thumbnails.forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
-            const newSrc = thumbnail.getAttribute('data-src');
-            mainImage.src = newSrc;
-
-            thumbnails.forEach(t => t.classList.remove('active'));
-            thumbnail.classList.add('active');
-
-            zoomResult.style.backgroundImage = `url('${newSrc}')`;
-        });
-    });
-
-    // Zoom setup
     // Zoom Lens (magnifier following cursor)
     if (mainImage && zoomLens) {
         const zoomRatio = 2; // zoom level
@@ -117,31 +223,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-
+    // Tab functionality
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
             tab.classList.add('active');
-            document.getElementById(tab.dataset.tab).classList.add('active');
+            const tabContent = document.getElementById(tab.dataset.tab);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
         });
     });
 
+    // Search functionality
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
     
-    search.addEventListener('keypress', async (e)=> {
+    if (search) {
+        search.addEventListener('keypress', async (e)=> {
+            const searchValue = search.value.trim()
 
-        const searchValue = search.value.trim()
-
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
-            // window.location = `/shop?search=${searchValue}`
-            window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
-        }
-    })
+            if( searchValue && e.key === 'Enter' ){
+                console.log('search : ',searchValue)
+                window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
+            }
+        })
+    }
 
 }); // DOMContentLoaded Ends
 

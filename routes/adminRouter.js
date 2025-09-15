@@ -9,10 +9,7 @@ const adminController = require("../controllers/admins/adminController")
 const dashboardController = require("../controllers/admins/dashboarController")
 const customerController = require("../controllers/admins/customerController")
 const productController = require("../controllers/admins/productController")
-const settingsController = require("../controllers/admins/settingsController")
 const reportsController = require('../controllers/admins/reportsController')
-const bannersController = require('../controllers/admins/bannersController')
-const offersController = require('../controllers/admins/offersController')
 const ordersController = require('../controllers/admins/ordersController')
 const categoryController = require('../controllers/admins/categoryController')
 const couponsController = require('../controllers/admins/couponController')
@@ -25,9 +22,11 @@ router.get('/',adminController.loadSignin)
 
 router.post('/signin',adminController.signin)
 
+
 //Logout
 
 router.get('/logout',adminController.logout)
+
 
 //Error Page
 
@@ -51,12 +50,9 @@ router.post('/addCategory', adminAuth, handleMulterError(uploadCategory), catego
 
 router.post('/editCategory', adminAuth, handleMulterError(uploadCategory), categoryController.editCategory);
 
-// router.post('/deleteCategory', adminAuth, categoryController.deleteCategory);
-
 router.post('/addCategoryOffer', adminAuth, categoryController.addCategoryOffer);
 
 router.post('/removeCategoryOffer', adminAuth, categoryController.removeCategoryOffer);
-
 
 router.post('/add-category', (req, res) => res.redirect('/admin/addCategory'));
 
@@ -93,16 +89,6 @@ router.get('/dashboard',adminAuth,dashboardController.loadDashboard)
 router.get('/reports',adminAuth,reportsController.loadReports)
 
 
-//Banner Mangement
-
-router.get('/banners',adminAuth,bannersController.loadBanners)
-
-
-//Admin Settings 
-
-router.get('/settings',adminAuth,settingsController.loadSettings)
-
-
 //Orders Management
 
 router.get('/orders',adminAuth,ordersController.loadOrders)
@@ -112,11 +98,6 @@ router.post('/updateStatus', adminAuth , ordersController.updateStatus)
 router.post('/handleStatus', adminAuth , ordersController.returnOrder)
 
 router.post('/order', adminAuth , ordersController.currentOrder)
-
-
-//Offer Management
-
-router.get('/offers',adminAuth,offersController.loadOffers)
 
 
 //Coupon Mangement

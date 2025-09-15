@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openSalesReportModal() {
         salesReportModal.classList.add('active');
+        generateReport(orders)
     }
 
     function closeSalesReportModal() {
@@ -36,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
             closeSalesReportModal();
         }
     });
+
+
 
     const reportTypeSelect = document.getElementById('reportType');
     const customDateRange = document.getElementById('customDateRange');
@@ -124,6 +127,7 @@ async function generateReport(orders) {
         const endInput = endDateInput?.value
 
         let startDate, endDate
+        let today = new Date()
 
         switch (reportType) {
             case 'daily':
@@ -133,7 +137,6 @@ async function generateReport(orders) {
                 break;
             case 'weekly':
                 {
-                    let today = new Date();
                     let dayOfWeek = today.getDay();
                     let diffToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
 
@@ -146,14 +149,12 @@ async function generateReport(orders) {
                 break;
             case 'monthly':
                 {
-                    let today = new Date();
                     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                 }
                 break;
             case 'yearly':
                 {
-                    let today = new Date();
                     startDate = new Date(today.getFullYear(), 0, 1);
                     endDate = new Date(today.getFullYear(), 11, 31);
                 }
@@ -174,6 +175,14 @@ async function generateReport(orders) {
                         console.log("Start Date cannot be greater than End Date")
                         showNotification('Start should lessthan End Date..', 'error')
                         return;
+                    }
+
+                    if (startDate > today) {
+                        console.log('Start date over than today!!')
+                        // console.log("Cannot generate the future report!!")
+                        // showNotification("Cannot generate the future report!!")
+                        showNotification('Start date should lessthatn today..')
+                        return
                     }
                 } else {
                     console.error('Custom date range requires both start and end dates')
@@ -407,10 +416,10 @@ function generatePdfReport() {
     let startDate, endDate;
     const today = new Date();
 
-    switch(reportType) {
+    switch (reportType) {
         case "daily":
             startDate = new Date(today);
-            startDate.setHours(0,0,0,0);
+            startDate.setHours(0, 0, 0, 0);
             endDate = new Date(today);
             reportLabel = `${startDate.toLocaleDateString('en-IN')}`;
             break;
@@ -452,19 +461,19 @@ function generatePdfReport() {
     }
 
     // Use this in PDF
-    
-    
+
+
     console.log('report Type : ', reportType)
     console.log('report Laber : ', reportLabel)
-    
+
     // return
-    
-    
+
+
     // Header
     doc.setFontSize(20);
     doc.setFont(undefined, "bold");
     doc.text("SALES REPORT", 120, 15);
-    
+
     doc.setFontSize(12);
     doc.setFont(undefined, "normal");
     doc.text(`Report Range : ${reportLabel}`, 15, 30);
@@ -593,10 +602,10 @@ function generateExcelReport() {
     let startDate, endDate;
     const today = new Date();
 
-    switch(reportType) {
+    switch (reportType) {
         case "daily":
             startDate = new Date(today);
-            startDate.setHours(0,0,0,0);
+            startDate.setHours(0, 0, 0, 0);
             endDate = new Date(today);
             reportLabel = `${startDate.toLocaleDateString('en-IN')}`;
             break;

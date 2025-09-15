@@ -332,15 +332,9 @@ const loadProduct = async (req, res) => {
 
         const categoryOffer = findCategory?.categoryOffer || 0
 
-        console.log('Category offer : ', categoryOffer)
-
         const brandOffer = findBrand?.brandOffer || 0
 
-        console.log('Brand offer : ', brandOffer)
-
         const productOffer = product.productOffer || 0
-
-        console.log('Product offer : ', productOffer)
 
         const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
 
@@ -354,8 +348,6 @@ const loadProduct = async (req, res) => {
         const maxKey = Object.keys(offers).reduce((a, b) => {
             return offers[a] > offers[b] ? a : b
         })
-
-        console.log(`Offer : ${maxKey} Offer - ${offers[maxKey]}`)
 
         product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
 

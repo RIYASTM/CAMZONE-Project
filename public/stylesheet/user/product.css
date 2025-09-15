@@ -71,23 +71,76 @@ nav a {
     display: block;
 }
 
-.thumbnail-images {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+/* Thumbnail Container with Carousel */
+.thumbnail-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
-.thumbnail-images img {
-    width: 215px;
-    height: 215px;
+.thumbnail-wrapper {
+    display: flex;
+    gap: 39px;
+    transition: transform 0.3s ease;
+    width: max-content;
+}
+
+.thumbnail-wrapper img {
+    width: 150px;
+    height: 150px;
     object-fit: cover;
     cursor: pointer;
     border: 2px solid transparent;
     transition: border 0.3s ease;
+    flex-shrink: 0;
 }
 
-.thumbnail-images img.active {
+.thumbnail-wrapper img.active {
     border: 2px solid var(--accent-color);
+}
+
+/* Navigation Arrows */
+.thumbnail-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 10;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.thumbnail-nav:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.thumbnail-nav.prev {
+    left: -15px;
+}
+
+.thumbnail-nav.next {
+    right: -15px;
+}
+
+.thumbnail-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Hide navigation if 3 or fewer images */
+.thumbnail-container:has(.thumbnail-wrapper img:nth-child(-n+3):last-child) .thumbnail-nav {
+    display: none;
 }
 
 /* Zoom Lens Effect */
@@ -103,7 +156,6 @@ nav a {
     background-size: 200%;
     background-position: center;
 }
-
 
 .product-info {
     flex: 1;
@@ -306,7 +358,6 @@ nav a {
   transform: translateX(-90%);
 }
 
-
 /*Related Price & Offer */
 .relatedprice .current {
     font-size: 1em;
@@ -327,7 +378,6 @@ nav a {
     border-radius: 4px;
     font-size: 0.9em;
 }
-
 
 .product-card .rating {
     font-size: 0.9em;
@@ -354,9 +404,9 @@ nav a {
     .main-image-container {
         height: 250px;
     }
-    .thumbnail-images img {
-        width: 60px;
-        height: 60px;
+    .thumbnail-wrapper img {
+        width: 80px;
+        height: 80px;
     }
     .product-card {
         flex: 0 0 150px;
@@ -370,9 +420,9 @@ nav a {
     .main-image-container {
         height: 200px;
     }
-    .thumbnail-images img {
-        width: 50px;
-        height: 50px;
+    .thumbnail-wrapper img {
+        width: 60px;
+        height: 60px;
     }
     .product-card {
         flex: 0 0 150px;
@@ -450,12 +500,12 @@ nav a {
     cursor: pointer;
     font-size: 24px;
     color: #555;
-  }
+}
   
-  .wishlist-btn.active {
+.wishlist-btn.active {
     color: red;
-  }
+}
 
-  .caegory .offer{
+.category .offer{
     color: var(--border-color);
-  }
+}

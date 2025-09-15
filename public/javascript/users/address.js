@@ -1,5 +1,4 @@
 const addressData = '<%- JSON.stringify(address || []) %>';
-console.log('Address Data : ', addressData)
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('addressModal');
@@ -43,13 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const isUpdate = saveAddressBtn.textContent === 'Update Address'
-        const url = isUpdate ? '/editAddress' : '/addAddress'
-        const method = isUpdate ? 'PATCH' : 'POST'
+        const isUpdate = saveAddressBtn.textContent === 'Update Address';
+        const url = isUpdate ? '/editAddress' : '/addAddress';
+        const method = isUpdate ? 'PATCH' : 'POST';
 
         try {
             const response = await fetch(url, {
-                method: method,
+                method,
                 body: JSON.stringify(jsonData),
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -59,22 +58,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.errors) {
                     displayFormErrors(addressForm, data.errors);
                 } else {
-                    Swal.fire('Error', data.message || `Failed to ${isUpdate ? 'update' : 'add'} address.`, 'error');
+                    showNotification(
+                        data.message || `Failed to ${isUpdate ? 'update' : 'add'} address.`,
+                        'error'
+                    );
                 }
                 return;
             }
 
-            Swal.fire('Success', data.message || `Address ${isUpdate ? 'updated' : 'added'} successfully!`, 'success')
-                .then(() => {
-                    modal.classList.remove('active');
-                    addressForm.reset();
-                    window.location.reload();
-                });
+            const tBody = document.getElementById('addressTable');
+            const noRow = tBody.querySelector('tr td');
+            if (noRow && noRow.innerText.includes('No Address')) {
+                tBody.innerHTML = '';
+            }
+
+            if (isUpdate) {
+
+                const existingRow = tBody.querySelector(`tr[data-id="${data.address._id}"]`);
+                if (existingRow) {
+                    existingRow.innerHTML = `
+                        <td>
+                            ${data.address.name}, ${data.address.streetAddress}, 
+                            ${data.address.city}, ${data.address.state}, 
+                            ${data.address.country}, ${data.address.pincode}
+                        </td>
+                        <td class="action-buttons">
+                            <button class="btn-icon edit-btn" 
+                                title="Edit" 
+                                data-id="${data.address._id}" 
+                                data-address='${JSON.stringify([data.address])}'>✏️</button>
+                            <button class="btn-icon delete-btn" 
+                                title="Delete" 
+                                onclick="deleteAddress('${data.address._id}')">🗑️</button>
+                        </td>
+                    `;
+                }
+            } else {
+
+                const newRow = document.createElement('tr');
+                newRow.setAttribute('data-id', data.address._id);
+                newRow.innerHTML = `
+                    <td>
+                        ${data.address.name}, ${data.address.streetAddress}, 
+                        ${data.address.city}, ${data.address.state}, 
+                        ${data.address.country}, ${data.address.pincode}
+                    </td>
+                    <td class="action-buttons">
+                        <button class="btn-icon edit-btn" 
+                            title="Edit" 
+                            data-id="${data.address._id}" 
+                            data-address='${JSON.stringify([data.address])}'>✏️</button>
+                        <button class="btn-icon delete-btn" 
+                            title="Delete" 
+                            onclick="deleteAddress('${data.address._id}')">🗑️</button>
+                    </td>
+                `;
+                tBody.appendChild(newRow);
+            }
+
+            showNotification(
+                data.message || `Address ${isUpdate ? 'updated' : 'added'} successfully!`,
+                'success'
+            );
+
+            modal.classList.remove('active');
+            addressForm.reset();
         } catch (error) {
             console.error(`Error ${isUpdate ? 'updating' : 'adding'} address:`, error);
-            Swal.fire('Error', `Something went wrong while ${isUpdate ? 'updating' : 'adding'} the address.`, 'error');
         }
-    })
+    });
+
 
     function displayFormErrors(form, errors) {
         clearErrors(form);
@@ -129,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addressTypeRadio.checked = true;
             }
         } else {
-            Swal.fire('Error', 'Address not found.', 'error');
+            showNotification('Address is not found.', 'error')
             return;
         }
 
@@ -156,17 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (!data.success) {
-                    Swal.fire('Error', data.message || 'Failed to delete address.', 'error');
+                    showNotification(data.message || 'Failed to delete.', 'error')
                     return;
                 }
 
-                Swal.fire('Deleted!', data.message || 'Address deleted successfully.', 'success')
-                    .then(() => {
-                        window.location.reload();
-                    });
+                const row = document.querySelector(`tr[data-id=${id}]`)
+                if(row){
+                    row.remove()
+                }
+                showNotification(data.message || 'Address deleted', 'success')
             } catch (error) {
                 console.error('Error deleting address:', error);
-                Swal.fire('Error', 'Something went wrong while deleting the address.', 'error');
             }
         }
     };
@@ -253,9 +306,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if( searchValue && e.key === 'Enter' ){
             console.log('search : ',searchValue)
-            // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })
 
 });
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

@@ -84,7 +84,7 @@
                                 <td><%= '₹ ' + product.regularPrice %></td>
                                 <td><%= '₹ ' + product.salePrice%></td>
                                 <td><%= product.quantity + ' Pcs' %></td>
-                                <td><%= product.productOffer ? product.productOffer + '%' : '-' %></td>
+                                <td><%= product.productOffer ? product.productOffer + ' %' : '-' %></td>
                                 <td><%= product.isBlocked ? 'Blocked' : 'Active' %></td>
                                 <td>
                                     <a href="#" class="action-icon editProductButton" 
@@ -182,7 +182,7 @@
                     <!-- Modified Image Upload Section -->
                     <div class="form-group image-group" style="grid-column: span 2;">
                         <label for="productImages">Product Images <span class="required">*</span> (Up to 4 images)</label>
-                        <input type="file" id="productImages" accept="image/*" class="productImage" hidden multiple>
+                        <input type="file" id="productImages" name="productImage" accept="image/*" class="productImage" hidden multiple>
                         <div class="invalid-feedback"></div>
                         
                         <div class="image-preview-container" id="imagePreviewContainer">
@@ -203,6 +203,12 @@
                                     <option value="1.33">4:3</option>
                                     <option value="0.75">3:4</option>
                                     <option value="1.78">16:9</option>
+                                    <option value="0.56">9:16</option>
+                                    <option value="1.25">5:4</option>
+                                    <option value="0.8">4:5</option>
+                                    <option value="2.35">21:9 (Cinematic)</option>
+                                    <option value="3">3:1 (Panorama)</option>
+                                    <option value="0">Free (No Constraint)</option>
                                 </select>
                             </div>
                             <div class="cropper-buttons">
@@ -292,14 +298,14 @@
                     <!-- Modified Image Upload Section for Edit -->
                     <div class="form-group image-group" style="grid-column: span 2;">
                         <label for="editProductImages">Product Images (Up to 4 images)</label>
-                        <input type="file" id="editProductImages" accept="image/*" class="productImage" multiple>
+                        <input type="file" id="editProductImages" accept="image/*" class="productImage" hidden multiple>
                         <div class="invalid-feedback"></div>
                         
                         <div class="image-preview-container" id="editImagePreviewContainer">
                             <div class="image-preview-box" data-index="0" onclick="triggerEditFileInput()"></div>
-                            <div class="image-preview-box" data-index="1"></div>
-                            <div class="image-preview-box" data-index="2"></div>
-                            <div class="image-preview-box" data-index="3"></div>
+                            <div class="image-preview-box" data-index="1" onclick="triggerEditFileInput()"></div>
+                            <div class="image-preview-box" data-index="2" onclick="triggerEditFileInput()"></div>
+                            <div class="image-preview-box" data-index="3" onclick="triggerEditFileInput()"></div>
                         </div>
                     </div>
                     
@@ -313,6 +319,12 @@
                                     <option value="1.33">4:3</option>
                                     <option value="0.75">3:4</option>
                                     <option value="1.78">16:9</option>
+                                    <option value="0.56">9:16</option>
+                                    <option value="1.25">5:4</option>
+                                    <option value="0.8">4:5</option>
+                                    <option value="2.35">21:9 (Cinematic)</option>
+                                    <option value="3">3:1 (Panorama)</option>
+                                    <option value="0">Free (No Constraint)</option>
                                 </select>
                             </div>
                             <div class="cropper-buttons">

@@ -29,23 +29,25 @@
             </div>
         </div>
         <div class="hero-image">
-            <img src="<%= locals.heroImage || '/images/Products/Canon/Camera/Canon Mark II.png' %>" alt="Canon Camera">
+            <img src="<%= locals.heroImage || '/images/Products/Canon/Camera/EOS RS 5 MARK II/Canon RS 5.webp' %>" alt="Canon Camera">
             <div class="price-tag">Only ₹5,05,995</div>
         </div>
     </section>
 
     <section class="categories">
         <% category.forEach(category => { %>
-        <div class="category-card">
-            <div class="category-info">
-            <div class="name-image-row">
-                <h3><%= category.name %></h3>
-                <% if (category.categoryImage) { %>
-                <img src="/uploads/category/<%= category.categoryImage %>" alt="<%= category.name %>">
-                <% } %>
-            </div>
-            <p>(<%= category.length ? category.length : 0 %> items)</p>
-            </div>
+        <div class="category-card"> 
+            <a href="/shop?category=<%=category._id%>">
+                <div class="category-info">
+                    <div class="name-image-row">
+                        <h3><%= category.name %></h3>
+                        <% if (category.categoryImage) { %>
+                        <img src="/uploads/category/<%= category.categoryImage %>" alt="<%= category.name %>">
+                        <% } %>
+                    </div>
+                    <p>(<%= category.length ? category.length : 0 %> items)</p>
+                </div>
+            </a>
         </div>
         <% }) %>
 

@@ -66,7 +66,7 @@ function calculateDiscountedPrice(product) {
     const totalOffer = Math.max(productOffer, categoryOffer, brandOffer);
     const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
     
-    return { discountedPrice, totalOffer };
+    return { discountedPrice, totalOffer }; 
 }
 
 module.exports = {

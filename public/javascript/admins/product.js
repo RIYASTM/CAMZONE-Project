@@ -11,10 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (productOffer > 0) {
             const calculatedSale = regularPrice - (regularPrice * productOffer) / 100;
             salePriceInput.value = Math.round(calculatedSale);
-            salePriceInput.readOnly = true;  
+            salePriceInput.readOnly = true;
         } else {
-            salePriceInput.readOnly = false; 
-            salePriceInput.value = regularPrice;       
+            salePriceInput.readOnly = false;
+            salePriceInput.value = regularPrice;
         }
     });
 })
@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const stock = button.dataset.stock;
             const isBlocked = button.dataset.listed === 'true';
             const images = JSON.parse(button.dataset.images || '[]');
+            console.log('images : ', images)
             const page = button.dataset.page
 
             showEditProductModal(id, productName, description, brand, category, regularPrice, salePrice, productOffer, stock, images, isBlocked, page);
@@ -176,17 +177,36 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Add existing images info to the form data
+        // FIXED: Prepare final images array combining existing and new images
+        const finalImages = [];
+
+        // Add existing images that are still present
         existingImages.forEach((img, index) => {
-            if (img) {
-                formData.append('existingImages', img);
+            if (img && img !== null) {
+                finalImages.push(img);
             }
         });
 
-        // Append cropped images to FormData
+        // Add new cropped images
         Object.keys(croppedBlobs).forEach(index => {
             formData.append('productImage', croppedBlobs[index], `product-image-${index}.png`);
         });
+
+        // Send existing images info - only non-null images
+        finalImages.forEach(img => {
+            formData.append('existingImages', img);
+        });
+
+        // FIXED: Check minimum image requirement
+        const totalImages = finalImages.length + Object.keys(croppedBlobs).length;
+        if (totalImages < 3) {
+            Swal.fire('Error', 'At least 3 product images are required!', 'error');
+            return;
+        }
+
+        console.log('Existing images being sent:', finalImages);
+        console.log('New images being sent:', Object.keys(croppedBlobs));
+        console.log('Total images:', totalImages);
 
         try {
             const response = await fetch('/admin/editProduct', {
@@ -201,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Swal.fire('Success', data.message || 'Product edited successfully', 'success').then(() => {
                 window.location.replace(data.redirectUrl);
             });
+            hideEditProductModal();
         } catch (error) {
             Swal.fire('Error', 'Something went wrong while editing product: ' + error.message, 'error');
         }
@@ -213,6 +234,31 @@ document.addEventListener('DOMContentLoaded', () => {
 // Helper functions for multiple image handling
 function triggerFileInput() {
     const fileInput = document.getElementById(currentModalType === 'add' ? 'productImages' : 'editProductImages');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+function triggerEditFileInput() {
+    const fileInput = document.getElementById('editProductImages');
+
+    // Find the first available slot
+    const previewContainer = document.getElementById('editImagePreviewContainer');
+    let availableSlot = -1;
+
+    for (let i = 0; i < 4; i++) {
+        const box = previewContainer.querySelector(`.image-preview-box[data-index="${i}"]`);
+        if (!box.querySelector('img')) {
+            availableSlot = i;
+            break;
+        }
+    }
+
+    if (availableSlot === -1) {
+        Swal.fire('Info', 'Maximum 4 images allowed. Please remove an image first.', 'info');
+        return;
+    }
+
     if (fileInput) {
         fileInput.click();
     }
@@ -332,9 +378,11 @@ function removeImage(modalType, index) {
     // Remove the blob from storage
     delete croppedBlobs[index];
 
-    // For edit mode, mark the image as removed
-    if (modalType === 'edit' && existingImages[index]) {
-        existingImages[index] = null;
+    // FIXED: For edit mode, properly mark the image as removed
+    if (modalType === 'edit') {
+        existingImages[index] = null; // Mark as removed but keep array structure
+        console.log('Image removed at index:', index);
+        console.log('Updated existing images:', existingImages);
     }
 }
 
@@ -395,28 +443,26 @@ function showEditProductModal(id, name, description, brand, category, regularPri
     document.getElementById('editProductOffer').value = productOffer;
     document.getElementById('editProductStock').value = stock;
     document.getElementById('editBlockProduct').checked = isBlocked;
-    document.getElementById('page').value = page
+    document.getElementById('page').value = page;
 
     if (productOffer > 0) {
         const calculatedSale = regularPrice - (regularPrice * productOffer) / 100;
         const salePriceInput = document.getElementById('editSalePrice');
-        salePriceInput.value = Math.round(calculatedSale); 
+        salePriceInput.value = Math.round(calculatedSale);
         salePriceInput.readOnly = true;
     } else {
-        console.log("hi")
         const salePriceInput = document.getElementById('editSalePrice');
         salePriceInput.readOnly = false;
         salePriceInput.value = salePrice;
     }
 
-
-    // Reset existing images and previews
+    // FIXED: Reset state properly
     existingImages = Array(4).fill(null);
     clearImagePreviews('edit');
     croppedBlobs = {};
     currentModalType = 'edit';
 
-    // Display existing images
+    // FIXED: Display existing images with proper indexing
     const previewContainer = document.getElementById('editImagePreviewContainer');
     images.forEach((image, index) => {
         if (index < 4 && image) {
@@ -439,13 +485,15 @@ function showEditProductModal(id, name, description, brand, category, regularPri
             previewBox.appendChild(img);
             previewBox.appendChild(removeBtn);
 
-            // Store existing image reference
+            // FIXED: Store existing image reference properly
             existingImages[index] = image;
         }
     });
 
+    console.log('Initial existing images:', existingImages);
     editProductModal.style.display = 'block';
 }
+
 
 function hideEditProductModal() {
     editProductModal.style.display = 'none';
@@ -480,9 +528,8 @@ async function deleteProduct(productId) {
 
         const data = await response.json();
         if (response.ok && data.success) {
-            Swal.fire('Product Removed', 'The product has been removed', 'success').then(() => {
-                // location.reload();
-            });
+            Swal.fire('Product Removed', 'The product has been removed', 'success')
+            hideDeleteProductModal()
         } else {
             Swal.fire('Failed', data.message || 'Product removal failed', 'error');
         }

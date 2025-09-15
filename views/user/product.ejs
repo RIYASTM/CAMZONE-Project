@@ -38,15 +38,27 @@
                     <div class="zoom-lens" id="zoomLens"></div>
                 </div>
 
-                <!-- Thumbnail Images -->
-                <div class="thumbnail-images">
-                    <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length>1) { %>
-                        <% product.productImage.slice(1).forEach((image, index)=> { %>
-                            <img src="/uploads/products/<%= image %>"
-                                alt="<%= product.productName %> Thumbnail <%= index + 1 %>"
-                                class="thumbnail <%= index === 0 ? 'active' : '' %>"
-                                data-src="/uploads/products/<%= image %>">
-                        <% }) %>
+                <!-- Thumbnail Images with Carousel -->
+                <div class="thumbnail-container">
+                    <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 1) { %>
+                        <div class="thumbnail-wrapper" id="thumbnailWrapper">
+                            <% product.productImage.forEach((image, index)=> { %>
+                                <img src="/uploads/products/<%= image %>"
+                                    alt="<%= product.productName %> Thumbnail <%= index %>"
+                                    class="thumbnail <%= index === 0 ? 'active' : '' %>"
+                                    data-src="/uploads/products/<%= image %>"
+                                    data-index="<%= index %>">
+                            <% }) %>
+                        </div>
+                        <!-- Navigation arrows (only show if more than 3 images) -->
+                        <% if (product.productImage.length > 4) { %>
+                            <button class="thumbnail-nav prev" id="prevBtn">
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
+                            <button class="thumbnail-nav next" id="nextBtn">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
+                        <% } %>
                     <% } else { %>
                         <span>No Thumbnails Available</span>
                     <% } %>

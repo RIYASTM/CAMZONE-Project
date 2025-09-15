@@ -86,7 +86,7 @@ const applyCoupon = async (req, res) => {
         }
 
         if(cart.totalAmount > coupon.maxOrder){
-            return res.status(401).jsoN({ success : false, message : `This order should under RS- ${coupon.maxOrder}..`})
+            return res.status(401).json({ success : false, message : `This order should under RS- ${coupon.maxOrder}..`})
         }
 
         const today = new Date()

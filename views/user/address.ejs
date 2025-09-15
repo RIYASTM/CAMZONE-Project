@@ -283,10 +283,10 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="addressTable">
                             <% if (user && address && address.length > 0) { %>
                                 <% address.forEach(addr => { %>
-                                    <tr>
+                                    <tr data-id="<%=addr._id%>">
                                         <td><%= addr.name %>, <%= addr.streetAddress %>, <%= addr.city %>, <%= addr.state %>, <%= addr.country %>, <%= addr.pincode %></td>
                                         <td class="action-buttons">
                                             <button class="btn-icon edit-btn" title="Edit" data-id="<%= addr._id %>" data-address='<%- JSON.stringify(address) %>'>✏️</button>

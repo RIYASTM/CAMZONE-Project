@@ -151,6 +151,11 @@ body {
     text-decoration: none;
 }
 
+/* Errors */
+.invalid-feedback{
+    color: red;
+}
+
 /* Responsive Design (Sign-in Content) */
 @media (max-width: 1024px) {
     .signin-container {

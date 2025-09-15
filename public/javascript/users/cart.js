@@ -191,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if( searchValue && e.key === 'Enter' ){
             console.log('search : ',searchValue)
-            // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })
