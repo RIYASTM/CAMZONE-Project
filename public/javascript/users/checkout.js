@@ -357,20 +357,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 closeAddModal();
                 window.location.reload();
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Failed',
-                    text: data.message || `Failed to add address.`
-                });
+                showNotification(data.message || 'Failed to add address', 'error')
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: navigator.onLine
-                    ? `Error adding address: ${error.message}`
-                    : 'No internet connection. Please check your network and try again.'
-            });
+            console.error('Something went wrong : ', error)
         } finally {
             addAddressBtn.disabled = false;
             addAddressBtn.textContent = 'Add Address';
@@ -514,11 +504,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             } catch (error) {
                                 console.error('Payment verification error:', error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Verification Error',
-                                    text: 'Failed to verify payment. Please contact support.'
-                                });
+                                // Swal.fire({
+                                //     icon: 'error',
+                                //     title: 'Verification Error',
+                                //     text: 'Failed to verify payment. Please contact support.'
+                                // });
                             }
                         },
                         modal: {
@@ -557,11 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.href = data.redirectUrl || '/orderSuccess';
                 }
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Order Failed',
-                    text: data.message || 'Failed to place order.'
-                });
+                showNotification(data.message || 'Failed to place order.')
             }
         } catch (error) {
             Swal.fire({
@@ -707,13 +693,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             const verifyData = await verifyRes.json();
                             if (verifyData.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success',
-                                    text: verifyData.message || 'Payment completed successfully!'
-                                }).then(() => {
-                                    window.location.href = '/orderSuccess';
-                                });
+                                // Swal.fire({
+                                //     icon: 'success',
+                                //     title: 'Success',
+                                //     text: verifyData.message || 'Payment completed successfully!'
+                                // }).then(() => {
+                                //     window.location.href = '/orderSuccess';
+                                // });
+                                showNotification(verifyData.message || 'Payment completed successfully!')
+                                window.location.href = '/orderSuccess'
                             } else {
                                 Swal.fire({
                                     icon: 'error',
@@ -723,11 +711,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         } catch (verifyError) {
                             console.error('Retry payment verification error:', verifyError);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Verification Error',
-                                text: 'Failed to verify payment. Please contact support.'
-                            });
                         }
                     },
                     prefill: {
@@ -770,11 +753,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error('Retry payment error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Unexpected error occurred during retry payment.'
-            });
         }
     }
 
@@ -913,11 +891,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: data.message || 'Coupon applied successfully...'
-                })
+                showNotification(data.message || 'Coupon applied successfully..', 'success')
 
 
                 const discount = data.discount || 0;
@@ -930,18 +904,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 applyButton.textContent = 'Remove'
 
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Coupon applying failed.'
-                })
+                showNotification(data.message || 'Coupon applying failed', 'error')
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'Something went wrong..'
-            })
+            console.log('something went wrong : ', error)
         }
     }
 
@@ -966,11 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Coupon Removed',
-                    text: data.message || 'Coupon has been removed.'
-                });
+                showNotification(data.message || 'Coupon has been removed!!', 'success')
 
                 const finalAmount = data.finalAmount || 0;
                 const gst = data.totalGst || 0;
@@ -984,19 +946,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 applyButton.textContent = 'Apply';
 
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Failed to remove coupon.'
-                });
+                showNotification(data.message || 'Failed to remove coupon', 'error')
             }
 
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'Something went wrong.'
-            });
+            console.error('Something went wrong : ', error)
         }
     }
 
@@ -1017,3 +971,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 });
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
