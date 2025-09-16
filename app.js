@@ -30,48 +30,50 @@ app.set('views', [
 
 
 // app.use(morgan('dev'))
+connectDB().then(() => {
 
-app.use(nocache())
-app.use(session({
-    secret : process.env.SESSION_SECRET,
-    resave : false,
-    saveUninitialized : true,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI, 
-        collectionName: 'sessions',
-        ttl: 72 * 60 * 60 
-  }),
-    cookie : {
-        secure : false,
-        httpOnly :true,
-        maxAge : 72*60*60*1000
-    }
-}))
-app.use(express.static(path.join(__dirname,'public')))
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
-
-app.use(express.json())
-app.use(express.urlencoded({extended : true}))
-
-
-app.use('/admin',adminRouter)
-app.use('/',userRouter)
-
-app.use(passport.initialize())
-app.use(passport.session())
-
-connectDB()
-
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-app.listen(port,()=>{
     
-    console.log("=======================================================")
-    console.log(`\x1b[36m Server is running on ${port} - http://localhost:${port} \x1b[0m`)
-    console.log("=======================================================")
+    app.use(nocache())
+    app.use(session({
+        secret : process.env.SESSION_SECRET,
+        resave : false,
+        saveUninitialized : false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGODB_URI, 
+            collectionName: 'sessions',
+            ttl: 72 * 60 * 60 
+        }),
+        cookie : {
+            secure : process.env.NODE_ENV === 'production',
+            httpOnly :true,
+            maxAge : 72*60*60*1000
+        }
+    }))
+    app.use(express.static(path.join(__dirname,'public')))
+    app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
     
+    
+    app.use(express.json())
+    app.use(express.urlencoded({extended : true}))
+    
+    
+    app.use('/admin',adminRouter)
+    app.use('/',userRouter)
+    
+    app.use(passport.initialize())
+    app.use(passport.session())
+    
+    
+    
+    process.on('unhandledRejection', (reason, promise) => {
+        console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    });
+    
+    app.listen(port,()=>{
+        
+        console.log("=======================================================")
+        console.log(`\x1b[36m Server is running on ${port} - http://localhost:${port} \x1b[0m`)
+        console.log("=======================================================")
+        
+    })
 })
