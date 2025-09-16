@@ -45,18 +45,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/addtocart', {
                 method: "POST",
                 body: JSON.stringify({ productId, quantity }),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
 
             const data = await response.json()
 
             if(data.success){
-                Swal.fire('Success', data.message || 'Product added to cart successfully', 'success');
+                showNotification(data.message || 'Prduct added to  cart successfully', 'success')
                 window.location.replace(data.redirectUrl);
                 const icon = document.querySelector(`.wishlist-btn`);
                 if (icon) icon.classList.remove('active');
             }else{
-                Swal.fire('Error', data.message || 'Product adding to cart failed', 'error');
+                showNotification(data.message || 'Product adding to cart failed!!', 'error')
             }
         }
     }
@@ -258,7 +262,11 @@ function addtoWishlist(productId) {
     fetch('/addtowishlist', {
         method: 'POST',
         body: JSON.stringify({ productId }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
     })
         .then(res => res.json())
         .then(data => {
@@ -269,10 +277,77 @@ function addtoWishlist(productId) {
                     else if (data.done === 'Removed') icon.classList.remove('active');
                 }
             } else {
-                Swal.fire('Oops', data.message || 'Something went wrong', 'error');
+                // Swal.fire('Oops', data.message || 'Something went wrong', 'error');
+                showNotification(data.message || 'Failed to add to wish list', 'error')
             }
         })
         .catch(() => {
             Swal.fire('Oops', 'Request failed', 'error');
+            console.error ('Request failed :  ', error)
         });
+}
+
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }

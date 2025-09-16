@@ -29,6 +29,10 @@ const loadWishList = async (req, res) => {
 
 const addtoWishlist = async (req, res) => {
     try {
+        console.log(req.body)
+        if(!req.session.user){
+            return res.status(401).json({ success : false, message : 'You must log in first!!'})
+        }
         const userId = req.session.user;
 
         const user = await User.findById(userId);
@@ -90,6 +94,7 @@ const addtoWishlist = async (req, res) => {
         }
 
         wishlist.items.push({ product: product._id });
+
         await wishlist.save();
 
         return res.status(200).json({

@@ -332,6 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const discount = parseFloat(data.discount);
         if (isNaN(discount) || discount <= 0) {
             errors.discount = 'Discount is required and must be a positive number';
+        } else if(discount > 2000000) {
+            errors.discount = 'Discount should under 20,00,000!!'
         } else if (data.discountType === 'percentage' && (discount <= 0 || discount > 100)) {
             errors.discount = 'Percentage discount must be between 1 and 100';
         }

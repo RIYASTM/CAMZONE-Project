@@ -1,24 +1,36 @@
 const User = require('../model/userModel')
 
-const userAuth = (req,res,next)=> {
-    if(req.session.user){
+const userAuth = (req, res, next) => {
+    if (req.session.user) {
         User.findById(req.session.user)
-        .then(data => {
-            if(data && !data.isBlocked){
-                next()
-            }else{
-                req.session.destroy(() => {
-                    res.redirect('/')
-                })
-            }
-        })
-        .catch(error => {
-            console.log('Error in userAuth Middleware ',error)
-            res.status(500).send('Internal server error')
-        })
-    }else{
-        res.redirect('/')
+            .then(data => {
+                if (data && !data.isBlocked) {
+                    return next();
+                } else {
+                    req.session.destroy(() => {
+                        if (req.xhr || req.headers.accept.includes('application/json')) {
+                            return res.status(403).json({
+                                success: false,
+                                message: 'Your account is blocked. Please contact support.'
+                            });
+                        }
+                        return res.redirect('/');
+                    });
+                }
+            })
+            .catch(error => {
+                console.log('Error in userAuth Middleware ', error);
+                if (req.xhr || req.headers.accept.includes('application/json')) {
+                    return res.status(500).json({ success: false, message: 'Internal server error' });
+                }
+                return res.status(500).send('Internal server error');
+            });
+    } else {
+        if (req.xhr || req.headers.accept.includes('application/json')) {
+            return res.status(401).json({ success: false, message: 'You must signin in first.' });
+        }
+        return res.redirect('/signin');
     }
-}
+};
 
-module.exports = userAuth
+module.exports = userAuth;

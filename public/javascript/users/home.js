@@ -27,7 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: "POST",
                 body: JSON.stringify({ productId, quantity }),
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' 
                 }
             })
                 .then(response => response.json())
@@ -77,37 +79,43 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 
-function addtoWishlist(productId) {
-    fetch('/addtowishlist', {
-        method: 'POST',
-        body: JSON.stringify({ productId }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(response => response.json())
-        .then(data => {
-            if (data.success) {
+async function addtoWishlist(productId) {
 
-                // showNotification('Product added to Your Wishlist!', 'success');
-                const icons = document.querySelectorAll(`.wishlist-btn[data-id="${productId}"]`);
-                console.log(icons)
-
-                if (icons) {
-                    icons.forEach(icon => {
-                        if (data.done === 'Added') {
-                            icon.classList.add('active');
-                        } else if (data.done === 'Removed') {
-                            icon.classList.remove('active')
-                        }
-                    })
-                }
-
-            } else {
-                showNotification(data.message || 'Failed to add to wishlist!', 'error');
+    try {
+        
+        const response = await fetch('/addtowishlist', {
+            method: 'POST',
+            body: JSON.stringify({ productId }),
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest' 
             }
-        }).catch(() => {
-            showNotification('Request failed!', 'error');
-        });
+        })
+
+        const data = await response.json()
+
+        console.log("data : ", data)
+
+        if(data.success){
+            const icons = document.querySelectorAll(`.wishlist-btn[data-id="${productId}"]`);
+            console.log(icons)
+
+            if (icons) {
+                icons.forEach(icon => {
+                    if (data.done === 'Added') {
+                        icon.classList.add('active');
+                    } else if (data.done === 'Removed') {
+                        icon.classList.remove('active')
+                    }
+                })
+            }
+        }else{
+            showNotification(data.message || 'Failed to add to wishlist!', 'error');
+        }
+    } catch (error) {
+        console.log("something went wrong : ", error)
+    }
 }
 
 
