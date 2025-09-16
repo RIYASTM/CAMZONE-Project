@@ -34,21 +34,27 @@ connectDB().then(() => {
 
     
     app.use(nocache())
-    app.use(session({
-        secret : process.env.SESSION_SECRET,
-        resave : false,
-        saveUninitialized : false,
-        store: MongoStore.create({
-            mongoUrl: process.env.MONGODB_URI, 
-            collectionName: 'sessions',
-            ttl: 72 * 60 * 60 
-        }),
-        cookie : {
-            secure : process.env.NODE_ENV === 'production',
-            httpOnly :true,
-            maxAge : 72*60*60*1000
-        }
-    }))
+    app.use(
+        session({
+            secret: process.env.SESSION_SECRET,
+            resave: false,
+            saveUninitialized: false,
+            store: MongoStore.create({
+            mongoUrl: process.env.MONGODB_URI,
+            crypto: {
+                secret: process.env.SESSION_SECRET
+            },
+            autoRemove: 'interval',
+            autoRemoveInterval: 10 // minutes
+            }),
+            cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 // 1 day
+            }
+        })
+    );
+
     app.use(express.static(path.join(__dirname,'public')))
     app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
     
