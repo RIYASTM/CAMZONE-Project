@@ -136,6 +136,14 @@ const addProduct = async (req, res) => {
             salePrice = regularPrice
         }
 
+        const brand = await Brands.findById(data.brand) || ''
+        const category = await Category.findById(data.category) || ''
+
+        const brandOffer = brand?.brandOffer || 0
+        const categoryOffer = category?.categoryOffer || 0
+
+        const totalOffer = Math.max(productOffer, brandOffer, categoryOffer)
+
         const newProduct = new Products({
             productName: data.productName,
             description: data.description,
@@ -147,7 +155,8 @@ const addProduct = async (req, res) => {
             quantity: parseInt(data.stock),
             productImage: productImages,
             gst,
-            isBlocked: data.isBlocked === 'on'
+            isBlocked: data.isBlocked === 'on',
+            totalOffer
         });
 
 
@@ -174,7 +183,7 @@ const editProduct = async (req, res) => {
         const productId = data.id;
         const page = data.currentPages;
 
-        const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } });
+        const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } }).populate('category').populate('brand');
 
         if (existProduct) {
             return res.status(401).json({ success: false, message: 'Product already exists with this name!' });
@@ -240,6 +249,15 @@ const editProduct = async (req, res) => {
             salePrice = regularPrice;
         }
 
+        const product = await Products.findById(data.productId).populate('brand').populate('category')
+
+        // Find Total OFfer
+        const categoryOffer = parseFloat(product?.category?.categoryOffer) || 0
+        console.log('category: ', categoryOffer)
+        const brandOffer = parseFloat(product?.brand?.brandOffer) || 0
+
+        const totalOffer = Math.max(productOffer, categoryOffer, brandOffer)
+
         // Prepare update data
         const updateData = {
             productName: data.productName,
@@ -252,7 +270,8 @@ const editProduct = async (req, res) => {
             gst,
             quantity: parseInt(data.stock),
             isBlocked: data.isBlocked === 'on',
-            productImage: finalImages  // Always update with the final images array
+            productImage: finalImages,
+            totalOffer
         };
 
         console.log('Update data:', updateData);

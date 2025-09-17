@@ -2,6 +2,8 @@ const Wishlist = require('../../model/wishlistModel')
 const Product = require('../../model/productModel')
 const User = require('../../model/userModel')
 const Cart = require('../../model/cartModel')
+const Category = require('../../model/categoryModel')
+const Brand = require('../../model/brandModel')
 
 
 
@@ -9,16 +11,60 @@ const loadWishList = async (req, res) => {
     try {
         const userId = req.session.user;
         const user = await User.findById(userId);
-        if (!user) return res.redirect('/login');
+        if (!user) return res.redirect('/signin');
 
-        const cart = await Cart.findOne({ userId }).populate('items.productId') || { items: [] }
-        const wishList = await Wishlist.findOne({ userId }).populate('items.product');
+        const cart = await Cart.findOne({ userId }).populate('items.productId') || { items: [] };
+
+        const wishList = await Wishlist.findOne({ userId }).populate({
+            path: 'items.product',
+            populate: [
+                { path: 'brand' },
+                { path: 'category' }
+            ]
+        });
+
+        if (!wishList) {
+            return res.render('wishList', {
+                currentPage: 'WishList',
+                user,
+                cart,
+                search: req.query.search || '',
+                wishlistItems: []
+            });
+        }
+
+        const productsWithOffers = wishList.items.map(item => {
+            const product = item.product;
+
+            const productOffer = product.productOffer || 0;
+            const brandOffer = product.brand?.brandOffer || 0;
+            const categoryOffer = product.category?.categoryOffer || 0;
+
+            const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
+
+            const salePrice = Math.round(
+                product.regularPrice - (product.regularPrice / 100 * totalOffer)
+            );
+
+            return {
+                ...item._doc,
+                product: {
+                    ...product._doc,
+                    salePrice,
+                    totalOffer,
+                    productOffer,
+                    brandOffer,
+                    categoryOffer
+                }
+            };
+        });
+
         return res.render('wishList', {
             currentPage: 'WishList',
             user,
             cart,
             search: req.query.search || '',
-            wishlistItems: wishList?.items || []
+            wishlistItems: productsWithOffers
         });
 
     } catch (error) {
@@ -26,6 +72,7 @@ const loadWishList = async (req, res) => {
         return res.status(500).redirect('/pageNotFound');
     }
 };
+
 
 const addtoWishlist = async (req, res) => {
     try {

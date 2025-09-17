@@ -39,7 +39,7 @@
                     
                     <div class="product-grid">
                         <% if (wishlistItems && wishlistItems.length > 0) { %>
-                            <% wishlistItems.forEach(function(item) { %>
+                            <% wishlistItems.forEach(item => { %>
                                 <div class="product-card">
                                     <a href="/product?id=<%=item.product._id%>">
                                     <div class="product-image">
@@ -53,7 +53,7 @@
                                     <div class="product-info">
                                         <h4><%= item.product.productName %></h4>
                                         <div class="product-price">
-                                            <% if ( item.product.salePrice < item.product.regularPrice || item.product.totalOffer) { %>
+                                            <% if ( item.product.salePrice < item.product.regularPrice) { %>
                                                 <span class="current">₹ <%= item.product.salePrice %></span>
                                                 <span class="original">₹ <%= item.product.regularPrice %></span>
                                             <% } else { %>

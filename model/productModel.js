@@ -63,6 +63,10 @@ const productSchema = new Schema ({
     gst : {
         type : Number,
         required : false
+    },
+    totalOffer : {
+        type : Number,
+        default : 0
     }
 },{Timestamp : true})
 

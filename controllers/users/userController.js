@@ -68,8 +68,8 @@ const loadHomePage = async (req, res) => {
 
         const productsWithOffers = products.map(product => {
             const productOffer = product.productOffer || 0;
-            let brandOffer = product.brand?.brandOffer || 0;
-            let categoryOffer = product.category?.categoryOffer || 0;
+            const brandOffer = product.brand?.brandOffer || 0;
+            const categoryOffer = product.category?.categoryOffer || 0;
 
             const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
 
@@ -260,13 +260,14 @@ const loadShop = async (req, res) => {
 
         const productsWithOffers = products.map(product => {
             const productOffer = product.productOffer || 0;
-            let brandOffer = product.brand?.brandOffer || 0;
-            let categoryOffer = product.category?.categoryOffer || 0;
+            const brandOffer = product.brand?.brandOffer || 0;
+            const categoryOffer = product.category?.categoryOffer || 0;
 
             const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
+            product.totalOffer = totalOffer
 
             product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
-
+            
             return {
                 ...product._doc,
                 productOffer,
