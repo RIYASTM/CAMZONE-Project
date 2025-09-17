@@ -883,6 +883,7 @@ document.addEventListener("DOMContentLoaded", () => {
             didOpen: () => {
                 Swal.showLoading();
             },
+            // timeOut : 1500
         });
 
         try {
