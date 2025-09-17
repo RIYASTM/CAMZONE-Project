@@ -121,20 +121,12 @@ nav a {
     transform: translateY(-10px);
 }
 
-/* .product-card img {
-    display: flex;
-    justify-self: center;
-    align-self: center;
-    width: 100%;
-    object-fit: contain;
-    margin-bottom: 15px;
-} */
-
 .product-card img {
     display: block;
     margin: 0 auto 15px;
     width: 100%;
     object-fit: contain;
+    min-height: 245px;
 }
 
 .product-card h3 {

@@ -258,6 +258,24 @@ const loadShop = async (req, res) => {
             .limit(limit)
             .exec();
 
+        const productsWithOffers = products.map(product => {
+            const productOffer = product.productOffer || 0;
+            let brandOffer = product.brand?.brandOffer || 0;
+            let categoryOffer = product.category?.categoryOffer || 0;
+
+            const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
+
+            product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
+
+            return {
+                ...product._doc,
+                productOffer,
+                brandOffer,
+                categoryOffer,
+                totalOffer
+            };
+        });
+
         const brands = await Brands.find({ isDeleted: false, isBlocked: false });
         const categories = await Category.find({ isListed: true });
 
@@ -279,7 +297,7 @@ const loadShop = async (req, res) => {
             cart,
             brands,
             category: categories,
-            products: products || [],
+            products: productsWithOffers || [],
             currentPage: 'shop',
             currentPages: page,
             totalPages,
