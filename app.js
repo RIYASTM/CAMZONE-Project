@@ -1,85 +1,113 @@
 const express = require('express')
 const app = express()
-const doteenv = require('dotenv').config()
+require('dotenv').config()
 const path = require('path')
 const ejs = require('ejs')
 const nocache = require('nocache')
 const session = require('express-session')
 const port = process.env.PORT || 3000
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo')
 const connectDB = require('./config/db')
 const Razorpay = require('razorpay')
-
-
-//Morgan
 const morgan = require('morgan')
+const passport = require('./config/passport')
+const mongoose = require('mongoose')
 
-
-
+// Routers
 const userRouter = require('./routes/userRouter')
 const adminRouter = require('./routes/adminRouter')
 
-const passport = require('./config/passport')
+// ====== GLOBAL ERROR HANDLERS ======
+process.on("uncaughtException", (err) => {
+    if (err.message.includes("Unable to find the session to touch") || 
+        err.message.includes("session")) {
+        console.warn("Session issue encountered:", err.message);
+        return;
+    }
+    console.error("Uncaught Exception:", err);
+    process.exit(1);
+});
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    if (reason && reason.message && reason.message.includes("session")) {
+        console.warn("Session-related promise rejection, continuing...");
+        return;
+    }
+    // In production better to exit so PM2/Docker restarts app
+    process.exit(1);
+});
 
-app.set('view engine','ejs')
+// ====== VIEW ENGINE ======
+app.set('view engine', 'ejs')
 app.set('views', [
     path.join(__dirname, 'views/user'),
     path.join(__dirname, 'views/admin')
 ])
 
-
-// app.use(morgan('dev'))
+// ====== DATABASE CONNECT ======
 connectDB().then(() => {
+    // ====== MIDDLEWARES ======
+    // app.use(morgan('dev')) // enable only in dev
 
-    
-    app.use(nocache())
-    app.use(
-        session({
-            secret: process.env.SESSION_SECRET,
-            resave: false,
-            saveUninitialized: false,
-            store: MongoStore.create({
+    // No-cache only for sensitive routes, not static assets
+    app.use('/admin', nocache())
+    app.use('/user', nocache())
+
+    app.use(session({
+        secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({
             mongoUrl: process.env.MONGODB_URI,
+            touchAfter: 24 * 3600, 
             crypto: {
-                secret: process.env.SESSION_SECRET
+                secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
             },
-            autoRemove: 'interval',
-            autoRemoveInterval: 10 // minutes
-            }),
-            cookie: {
+            autoRemove: 'native',
+            collectionName: 'sessions'
+        }),
+        cookie: {
             secure: process.env.NODE_ENV === 'production',
             httpOnly: true,
             maxAge: 1000 * 60 * 60 * 24 // 1 day
-            }
-        })
-    );
+        }
+    }))
 
-    app.use(express.static(path.join(__dirname,'public')))
-    app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-    
-    
-    app.use(express.json())
-    app.use(express.urlencoded({extended : true}))
-    
-    
-    app.use('/admin',adminRouter)
-    app.use('/',userRouter)
-    
     app.use(passport.initialize())
     app.use(passport.session())
-    
-    
-    
-    process.on('unhandledRejection', (reason, promise) => {
-        console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    });
-    
-    app.listen(port,()=>{
-        
+
+    // Static files with caching
+    app.use(express.static(path.join(__dirname, 'public'), {
+        maxAge: '1d', // cache static assets for 1 day
+        etag: true
+    }))
+    app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))
+
+    app.use(express.json())
+    app.use(express.urlencoded({ extended: true }))
+
+    // ====== ROUTES ======
+    app.use('/admin', adminRouter)
+    app.use('/', userRouter)
+
+    // ====== START SERVER ======
+    app.listen(port, () => {
         console.log("=======================================================")
         console.log(`\x1b[36m Server is running on ${port} - http://localhost:${port} \x1b[0m`)
         console.log("=======================================================")
-        
     })
+})
+
+// ====== GRACEFUL SHUTDOWN ======
+process.on('SIGINT', async () => {
+    console.log("Shutting down gracefully...")
+    await mongoose.connection.close()
+    process.exit(0)
+})
+
+process.on('SIGTERM', async () => {
+    console.log("Process terminated. Closing DB...")
+    await mongoose.connection.close()
+    process.exit(0)
 })
