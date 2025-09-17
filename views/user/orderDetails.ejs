@@ -170,7 +170,7 @@
                 <% if( order.paymentMethod === 'Razorpay' && (order.razorpayStatus === 'Failed' && order.status !== 'Cancelled') || order.paymentStatus === 'Pending' || order.razorpayStatus === 'Pending'){ %>
                     <button class="btn btn-warning" id="retryPayment">Retry Payment</button>
                 <%} %>
-                <% if (!['Cancelled', 'Returned'].includes(order.status)) { %>
+                <% if (!['Cancelled', 'Returned'].includes(order.status) && order.paymentStatus === 'Paid') { %>
                     <button class="btn btn-primary" onclick="downloadInvoice('<%= order._id %>')">Download Invoice</button>
                 <% } %>
                 <a href="/myOrders" class="btn btn-secondary">Back to Orders</a>
