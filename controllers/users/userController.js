@@ -245,7 +245,7 @@ const loadShop = async (req, res) => {
         }
 
         const page = parseInt(req.query.page) || 1;
-        const limit = 20;
+        const limit = 12;
         const skip = (page - 1) * limit;
 
 
@@ -267,7 +267,7 @@ const loadShop = async (req, res) => {
             product.totalOffer = totalOffer
 
             product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
-            
+
             return {
                 ...product._doc,
                 productOffer,
