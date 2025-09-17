@@ -438,9 +438,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: 'Please select a delivery address.'
             });
             placeOrderBtn.disabled = true;
+            setTimeout(()=>{
+                placeOrderBtn.disabled = false
+            },2000)
             return;
         }
-
+        
         if (!paymentMethod) {
             Swal.fire({
                 icon: 'warning',
@@ -448,6 +451,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: 'Please select a payment method.'
             });
             placeOrderBtn.disabled = true;
+            setTimeout(()=>{
+                placeOrderBtn.disabled = false
+            },2000)
             return;
         }
 
@@ -889,6 +895,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
+            Swal.close()
 
             if (data.success) {
                 showNotification(data.message || 'Coupon applied successfully..', 'success')
@@ -907,6 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showNotification(data.message || 'Coupon applying failed', 'error')
             }
         } catch (error) {
+            Swal.close()
             console.log('something went wrong : ', error)
         }
     }
@@ -931,6 +939,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
 
+            Swal.close()
+
             if (data.success) {
                 showNotification(data.message || 'Coupon has been removed!!', 'success')
 
@@ -950,6 +960,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         } catch (error) {
+            Swal.close()
             console.error('Something went wrong : ', error)
         }
     }
