@@ -94,10 +94,10 @@ function populateModal(order) {
                             ${item.product.productName}
                         </div>
                     </td>
-                    <td>₹${item.price.toFixed(2)}</td>
+                    <td>₹${item.productPrice.toFixed(2)}</td>
                     <td>${item.quantity}</td>
                     <td>${item.itemStatus || '-'}</td>
-                    <td>₹${(item.price * item.quantity).toFixed(2)}</td>
+                    <td>₹${item.price.toFixed(2)}</td>
                 `;
         orderItemsContainer.appendChild(row);
 
