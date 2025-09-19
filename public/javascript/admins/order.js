@@ -1,9 +1,7 @@
 
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const search = document.getElementById('search');
-    const searchValue = search.value;
+    let searchValue = search.value;
 
     document.getElementById('search').addEventListener('keypress', function (e) {
         const searchValue = search.value;
@@ -14,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (searchValue) {
         document.getElementById('clear-button').addEventListener('click', function (e) {
-            window.location.href = `/admin/orders`;
+            searchValue = ''
+            window.location.href = `?search=${searchValue}`;
         });
     }
 
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-
 async function openOrderModal(orderId) { 
     try {
         const response = await fetch(`/admin/order`, {
@@ -38,10 +36,6 @@ async function openOrderModal(orderId) {
             body: JSON.stringify({ orderId })
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch order details');
-        }
-
         const { success, order } = await response.json();
         populateModal(order);
 
@@ -49,7 +43,7 @@ async function openOrderModal(orderId) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     } catch (error) {
-        Swal.fire('error', 'Error loading order details: ' + error.message);
+        console.error('Error loading order detailes : ', error.message)
     }
 }
 
@@ -215,20 +209,16 @@ async function updateOrderStatus() {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
         const data = await response.json();
         if (data.success) {
-            Swal.fire('success', 'Order status updated successfully!');
+            showNotification('Order status updated!!', 'success')
             closeModal();
             window.location.reload();
         } else {
-            Swal.fire('error', data.message || 'Failed to update status!');
+            showNotification(data.message || 'Failed to update status!!', 'error')
         }
     } catch (error) {
-        Swal.fire('error', 'Error updating status: ' + error.message);
+        console.error('Error on updating status : ', error+message)
     }
 }
 
@@ -242,20 +232,16 @@ async function handleReturnDecision(orderId, productId, newStatus, reason) {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
         const data = await response.json();
         if (data.success) {
-            Swal.fire('success', `Order status updated to ${newStatus} successfully!`)
+            showNotification(`Order status updated to ${newStatus} successfully!`, 'success')
             closeModal();
             window.location.reload();
         } else {
-            Swal.fire('error', data.message || 'Failed to update status!');
+            showNotification( data.message || 'Failed to update status!', 'error')
         }
     } catch (error) {
-        Swal.fire('error', 'Error updating status: ' + error.message);
+        console.error('Error on update :  ', error.message)
     }
 }
 
@@ -297,4 +283,66 @@ document.addEventListener('keydown', function (e) {
     }
 }); 
 
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
 
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

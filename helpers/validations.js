@@ -13,6 +13,10 @@ function validateUser(data) {
         error.name = "Name can only contain Alphabets and spaces!!"
     } else if(!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())){
         error.name = "Name can't allow multiple spaces!!"
+    } else if (data.name.trim().length > 15){
+        error.name = 'Name is too long!!'
+    } else if (data.name.trim().length < 4){
+        error.name = 'Name should contains min 4 charectors!!'
     }
 
     if (!data.email) {
@@ -68,11 +72,17 @@ function validateCategoryForm(data) {
     } else if (!namePattern.test(data.categoryName)) {
         const fieldName = data.categoryName !== undefined ? 'categoryName' : 'name';
         error.categoryName = 'Name includes only alphabets';
+    } else if (data.categoryName.trim().length < 4){
+        error.categoryName = 'Name should contains min 4 charectors!!'
+    } else if (data.categoryName.trim().length > 10){
+        error.categoryName = 'Name is too long!!'
     }
 
     if (!data.categoryDescription) {
         const fieldName = data.categoryDescription !== undefined ? 'categoryDescription' : 'description';
         error.categoryDescription = 'Please enter the description';
+    } else if (data.categoryDescription.trim().length > 50){
+        error.categoryDescription = 'Description is too long!!'
     }
 
     if (data.offerPrice !== 0 && data.offerPrice !== '') {
@@ -98,6 +108,10 @@ function validateProductForm(data) {
 
     if (!data.productName) {
         errors.productName = 'Name is required!';
+    } else if (data.productName.trim().length > 30){
+        errors.productName = 'Name is too long!!'
+    }else if (data.productName.trim().length < 4){
+        errors.productName = 'Name should contain min 4 charecters!!'
     }
 
     if (!data.description) {
@@ -154,10 +168,16 @@ function ValidateBrand(data){
         error.brandName = 'Brand name is required!!'
     }else if(!namePattern.test(data.brandName)){
         error.brandName = 'Brand name only included with Alphabets'
+    } else if(data.brandName.trim().length < 4){
+        error.brandName = 'Brand name should contain min 4 characters!!'
+    } else if (data.brandName.trim().length > 10){
+        error.brandName = 'Invalid name!!'
     }
 
     if(!data.description){
         error.description = 'Brand description is required!!'
+    } else if(data.description.trim().length > 50){
+        error.description = 'Description is too long!!'
     }
 
     if(data.brandOffer){
@@ -177,7 +197,7 @@ function validateProfile(data) {
     const namepattern = /^[A-Za-z\s]+$/;
     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
     const digit = /\d/
-    const phonePattern = /^\d{10}$/
+    const phonePattern = /^\[6-9]\d{9}$/
 ;
 
     let error = {}
@@ -186,6 +206,10 @@ function validateProfile(data) {
         error.name = 'Name is required!!'
     }else if(!namepattern.test(data.name)){
         error.name = "Name should contains only alphabets!!"
+    } else if (data.name.trim().length < 4){
+        error.name = 'Name should contains 4 characters!!'
+    } else if (data.name.trim().length > 15){
+        error.name = 'Invalid Name'
     }
     if(data.email){
         if(!emailPattern.test(data.email)){
@@ -224,21 +248,33 @@ function validateAddress(data){
     
             if (!data.name || !namePattern.test(data.name)) {
                 errors.name = "Valid name is required (letters and spaces only).";
+            } else if(data.name.trim().length < 4){
+                errors.name = 'Name should contains min 4 characters!!'
+            } else if (data.name.trim().length > 15){
+                errors.name = 'Invalid Name!!'
             }
             if (!data.streetAddress) {
                 errors.streetAddress = "Street address is required.";
+            } else if (data.streetAddress.trim().length > 30){
+                errors.streetAddress = 'Invalid entry!!'
             }
             if (!data.city) {
                 errors.city = "Town/City is required.";
+            } else if (data.city.trim().length > 15){
+                errors.city = 'Invalid city'
             }
             if (!data.state) {
                 errors.state = "State is required.";
             }
             if(!data.landMark){
                 errors.landMark = "LandMark or Apartmetn is required!"
+            } else if (data.landMark.trim().length > 25){
+                errors.landMark = 'Invalid landmard'
             }
             if (!data.district) {
                 errors.district = "District is required.";
+            } else if (data.disctrict.trim().length > 15){
+                errors.district = 'District caracters should under 15'
             }
             if (!data.country) {
                 errors.country = "Country is required.";
@@ -311,6 +347,10 @@ const validateCoupon = (data) => {
 
     if (!data.couponName || typeof data.couponName !== 'string' || !/^[a-zA-Z\s]+$/.test(data.couponName.trim())) {
         errors.couponName = 'Coupon name is required and must contain only letters and spaces';
+    } else if (data.couponName.trim().length < 5 ){
+        errors.couponName = 'Coupon name should have minimum 5 Characters!!'
+    } else if (data.couponName.trim().length > 15) {
+        errors.couponName = 'Coupon name should not have 15 above characters!!'
     }
     if (!data.description || typeof data.description !== 'string' || !data.description.trim()) {
         errors.description = 'Description is required';

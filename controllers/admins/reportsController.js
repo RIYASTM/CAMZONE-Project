@@ -7,21 +7,22 @@ const Brand = require('../../model/brandModel');
 const loadReports = async (req,res) => {
     try {
 
-        const orders = await Orders.find()
-                    .populate('orderedItems.product', 'productName salePrice')
-                    .populate('userId', 'name')
-                    .populate({
-                        path: 'orderedItems.product',
-                        populate: {
-                        path: 'category',
-                        model: 'Category'
-                        }
-                    })
-                    .lean();
-        const users = await Users.find({ status : true }).lean();
-
-        const categories = await Categories.find()
-        const brands = await Brand.find()
+        const [orders, users, categories, brands] = await Promise.all([
+            Orders.find()
+                .populate('orderedItems.product', 'productName salePrice')
+                .populate('userId', 'name')
+                .populate({
+                    path: 'orderedItems.product',
+                    populate: {
+                    path: 'category',
+                    model: 'Category'
+                    }
+                })
+                .lean(),
+            Users.find({ status : true }).lean(),
+            Categories.find(),
+            Brand.find()
+        ])
         
         return res.render('reports',{
             pageTitle : 'Reports',

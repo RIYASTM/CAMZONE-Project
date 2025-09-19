@@ -71,6 +71,10 @@ const updateStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
+    if(['Cancelled', 'Returned'].includes(order.status)){
+        return res.status(401).json({ success : false, message : `This order is already ${order.status}`})
+    }
+
     order.status = status;
 
     order.orderedItems.forEach(item => {

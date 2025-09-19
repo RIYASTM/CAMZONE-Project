@@ -5,23 +5,24 @@ const Brand = require('../../model/brandModel');
 
 const loadDashboard = async (req, res) => {
     try {
-        const admin = req.session.admin;
 
-        const orders = await Orders.find()
-                    .populate('orderedItems.product', 'productName salePrice')
-                    .populate('userId', 'name')
-                    .populate({
-                        path: 'orderedItems.product',
-                        populate: {
+        const [orders, users, categories, brands] = await Promise.all([
+            Orders.find()
+                .populate('orderedItems.product', 'productName salePrice')
+                .populate('userId', 'name')
+                .populate({
+                    path : 'orderedItems.product',
+                    populate : {
                         path: 'category',
                         model: 'Category'
-                        }
-                    })
-                    .lean();
-        const users = await Users.find({ status : true }).lean();
-
-        const categories = await Category.find()
-        const brands = await Brand.find()
+                    }
+                })
+                .lean(),
+            
+            Users.find({ status : true}).lean(),
+            Category.find().lean(),
+            Brand.find().lean()
+        ])
 
         return res.render('dashboard', {
             currentPage: 'dashboard',

@@ -18,7 +18,6 @@ const userController = require('../controllers/users/userController');
 const cartController = require('../controllers/users/cartController')
 const couponController = require('../controllers/users/couponController')
 const checkoutController = require('../controllers/users/checkoutController')
-const accountController = require('../controllers/users/accountController')
 const passwordController = require('../controllers/users/passwordController')
 const addressController = require('../controllers/users/addressController')
 const profileController = require('../controllers/users/profileController')
@@ -54,11 +53,6 @@ router.post('/resend-otp', userController.resendOtp);
 router.get('/pageNotFound', userController.pageNotFound);
 
 router.get('/signout', userController.signout);
-
-
-//Account Controllings
-
-router.get('/myAccount', userAuth, accountController.loadMyAccount)
 
 
 //Password Resetting

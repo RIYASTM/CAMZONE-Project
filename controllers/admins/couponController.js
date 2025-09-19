@@ -6,13 +6,9 @@ const loadCoupons = async (req, res) => {
     try {
         const { search = '', sort = 'default', filter = 'all', page = 1 } = req.query;
         
-        console.log('query : ', req.query)
-        console.log('sort : ', sort)
-
         const limit = 10;
         let query = {};
 
-        // 🔎 Search
         if (search) {
             query.$or = [
                 { couponName: { $regex: search, $options: 'i' } },
@@ -21,7 +17,6 @@ const loadCoupons = async (req, res) => {
             ];
         }
 
-        // 🎯 Filter
         if (filter === 'active') {
             query.isList = true;
             query.validUpto = { $gte: new Date() };
@@ -29,13 +24,11 @@ const loadCoupons = async (req, res) => {
             query.validUpto = { $lt: new Date() };
         }
 
-        // 🔃 Sorting
         let sortOption = { createOn: -1 };
         if (sort === 'name') sortOption = { couponName: 1 };
         if (sort === 'discount') sortOption = { discount: -1 };
         if (sort === 'validity') sortOption = { validUpto: 1 };
 
-        // 📄 Pagination + data fetch
         const coupons = await Coupons.find(query)
             .sort(sortOption)
             .skip((page - 1) * limit)
@@ -44,7 +37,6 @@ const loadCoupons = async (req, res) => {
         const totalCoupons = await Coupons.countDocuments(query);
         const totalPages = Math.ceil(totalCoupons / limit);
 
-        // 📤 JSON for fetch requests
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
             return res.status(200).json({
                 success: true,
@@ -54,7 +46,6 @@ const loadCoupons = async (req, res) => {
             });
         }
 
-        // 🖥️ Render page for normal navigation
         return res.render('coupons', {
             pageTitle: 'Coupons',
             currentPage: 'coupons',
@@ -78,11 +69,12 @@ const loadCoupons = async (req, res) => {
 
 const getCoupon = async (req, res) => {
     try {
+
         const coupon = await Coupons.findById(req.params.id);
-        // console.log('coupons : ', coupon)
         if (!coupon) {
             return res.status(404).json({ success: false, message: 'Coupon not found' });
         }
+
         return res.status(200).json({
             success: true,
             coupon: {
@@ -100,15 +92,19 @@ const getCoupon = async (req, res) => {
                 isList: coupon.isList
             }
         });
+
     } catch (error) {
+
         console.error('Error fetching coupons:', error);
         return res.status(500).json({ success: false, message: `Error fetching coupon: ${error.message}` });
+
     }
 };
 
 const addCoupon = async (req, res) => {
     try {
         const data = req.body;
+
         const errors = validateCoupon(data);
         if (errors) {
             return res.status(400).json({ success: false, message: 'Validation failed', errors });
@@ -185,10 +181,7 @@ const updateCoupon = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Coupon not found' });
         }
 
-        const existingCoupon = await Coupons.findOne({
-            couponName: data.couponName.trim(),
-            _id: { $ne: data.id }
-        });
+        const existingCoupon = await Coupons.findOne({ couponName: data.couponName.trim(), _id: { $ne: data.id }});
         if (existingCoupon) {
             return res.status(400).json({ success: false, message: 'Coupon name already exists' });
         }

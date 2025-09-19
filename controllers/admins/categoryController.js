@@ -52,7 +52,7 @@ const loadCategory = async (req, res) => {
 const addCategory = async (req, res) => {
     try {
         const { categoryName, categoryDescription, listCategory, offerPrice } = req.body;
-        
+
         const normalizedName = sanitizeHtml(categoryName.trim().toLowerCase());
 
         const categories = await Category.find();
@@ -188,32 +188,6 @@ const editCategory = async (req, res) => {
     }
 };
 
-// const deleteCategory = async (req, res) => {
-//     try {
-//         const { categoryId } = req.body;
-//         const category = await Category.findById(categoryId);
-//         if (!category) {
-//             return res.status(404).json({ status: false, message: 'Category not found!' });
-//         }
-
-//         if (category.categoryImage) {
-//             const imagePath = path.join(__dirname, '../../public/uploads/category', category.categoryImage);
-//             try {
-//                 await fs.unlink(imagePath);
-//             } catch (err) {
-//                 console.error('Failed to delete category image:', err);
-//             }
-//         }
-
-//         category.isDeleted = true
-//         category.save()
-//         return res.status(200).json({ status: true, message: 'Category deleted successfully' });
-//     } catch (error) {
-//         console.error('Category deletion failed:', error);
-//         return res.status(500).json({ status: false, message: 'An error occurred while deleting category!' });
-//     }
-// };
-
 const addCategoryOffer = async (req, res) => {
     try {
         const percentage = parseInt(req.body.percentage);
@@ -283,5 +257,4 @@ module.exports = {
     editCategory,
     addCategoryOffer,
     removeCategoryOffer,
-    // deleteCategory,
 };
