@@ -1,6 +1,6 @@
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { cloudinary } = require('./cloudinary'); // Adjust path as needed
+const { cloudinary } = require('./cloudinary');
 
 // Create separate storage configurations for each upload type
 const storageBrand = new CloudinaryStorage({
