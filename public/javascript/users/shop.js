@@ -217,7 +217,8 @@ function addtoWishlist(productId) {
         method: 'POST',
         body: JSON.stringify({ productId }),
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json', 
+            'Accept': 'application/json'
         }
     }).then(response => response.json())
         .then(data => {

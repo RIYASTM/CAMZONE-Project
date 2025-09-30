@@ -484,7 +484,7 @@ async function deleteProduct(productId) {
     try {
         const response = await fetch('/admin/deleteProduct', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ productId })
         });
 

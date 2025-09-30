@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('clicked : ', id)
             const response = await fetch('/admin/blockCustomer', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ id, currentPages: page })
             })
 

@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (emailChanged) {
             const otpRes = await fetch('/sendOtp', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ newEmail: jsonData.email })
             });
 
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const verifyRes = await fetch('/verifyOTP', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ otp: enteredOtp.trim() })
             });
 
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await fetch('/changePassword', {
                 method: 'POST',
                 body: JSON.stringify(jsonData),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
 
             const data = await response.json();

@@ -201,6 +201,7 @@ async function openOrderModal(orderId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ orderId })
         });
@@ -374,7 +375,8 @@ async function updateOrderStatus() {
             method: 'POST',
             body: JSON.stringify({ status: newStatus, orderId }),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
 
@@ -397,7 +399,8 @@ async function handleReturnDecision(orderId, productId, newStatus, reason) {
             method: 'POST',
             body: JSON.stringify({ orderId, productId, newStatus, reason }),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
 

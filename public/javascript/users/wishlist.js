@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/addtocart', {
             method: "POST",
             body: JSON.stringify({ productId, quantity }),
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
         })
             .then(response => response.json())
             .then(data => {
@@ -71,7 +71,8 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ productId: productId })
         })
@@ -192,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({ email: email })
                 })

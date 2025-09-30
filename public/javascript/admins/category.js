@@ -383,6 +383,7 @@ async function addOffer(categoryId) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
                     percentage: amount,
@@ -417,6 +418,7 @@ async function removeOffer(categoryId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 categoryId: categoryId,

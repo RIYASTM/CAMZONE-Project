@@ -107,7 +107,7 @@ function confirmAction() {
   const url = modalType === 'cancel' ? `/orderCancel` : `/orderReturn`;
   fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ reason, description, items: selectedItems, orderId: currentOrderId })
   })
     .then(res => res.json())
@@ -190,7 +190,8 @@ async function retryPayment(method, orderId, oldMethod) {
         method: 'POST',
         body: JSON.stringify({ method, orderId }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
 
@@ -225,7 +226,7 @@ async function retryPayment(method, orderId, oldMethod) {
             handler: async function (response) {
               const verifyRes = await fetch('/verify-payment', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
                   razorpayPaymentId: response.razorpay_payment_id,
                   razorpayOrderId: response.razorpay_order_id,
@@ -277,7 +278,8 @@ async function retryPayment(method, orderId, oldMethod) {
         method: 'POST',
         body: JSON.stringify({ orderId, method }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
 
@@ -307,7 +309,7 @@ async function retryPayment(method, orderId, oldMethod) {
           handler: async function (response) {
             const verifyRes = await fetch('/verify-payment', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
               body: JSON.stringify({
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpayOrderId: response.razorpay_order_id,

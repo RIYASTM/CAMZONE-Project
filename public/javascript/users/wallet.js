@@ -88,7 +88,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await fetch('/addtoWallet', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ amount })
             })
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         try {
                             const verifyRes = await fetch('/verify-Amount', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                 body: JSON.stringify({
                                     razorpayPaymentId: response.razorpay_payment_id,
                                     razorpayOrderId: response.razorpay_order_id,

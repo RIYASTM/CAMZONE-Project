@@ -224,7 +224,8 @@ async function deleteBrand(brandId) {
                 const response = await fetch('/admin/deleteBrand', {
                     method: "POST",
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         brandId: brandId

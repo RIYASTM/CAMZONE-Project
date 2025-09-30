@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/admin/addCoupon', {
                 method: 'POST',
                 body: JSON.stringify(jsonData),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
             const result = await response.json();
             if (!result.success) {
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/admin/editCoupon', {
                 method: 'POST',
                 body: JSON.stringify(jsonData),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
             const result = await response.json();
             if (!result.success) {
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const couponId = deleteCouponModal.dataset.couponId;
             const response = await fetch(`/admin/deleteCoupon/${couponId}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
             const result = await response.json();
             if (!result.success) {

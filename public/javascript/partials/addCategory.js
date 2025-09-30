@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded',function(){
             const response = await fetch('/admin/addCategory', {
                 method : "POST",
                 body : JSON.stringify({ name : categoryname , description : categoryDescription , isListed : listCategory , categoryOffer : offerPrice}),
-                headers : {'Content-Type' : 'application/json'}
+                headers : {'Content-Type' : 'application/json', 'Accept': 'application/json'}
             })
 
             const data = await response.json()

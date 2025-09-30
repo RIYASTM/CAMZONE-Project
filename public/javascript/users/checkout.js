@@ -344,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('/addAddress', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' , 'Accept': 'application/json'},
                 body: JSON.stringify(formData)
             });
 
@@ -392,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('/editAddress', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(formData)
             });
 
@@ -468,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('/checkout', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ addressId: addressData, payment: paymentData, gst, couponCode })
             });
 
@@ -490,7 +490,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             try {
                                 const verifyRes = await fetch('/verify-payment', {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                     body: JSON.stringify({
                                         razorpayPaymentId: response.razorpay_payment_id,
                                         razorpayOrderId: response.razorpay_order_id,
@@ -650,7 +650,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: 'POST',
                 body: JSON.stringify({ method, orderId, oldMethod }),
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             });
 
@@ -688,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         try {
                             const verifyRes = await fetch('/verify-payment', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                 body: JSON.stringify({
                                     razorpayPaymentId: razorpayResponse.razorpay_payment_id,
                                     razorpayOrderId: razorpayResponse.razorpay_order_id,
@@ -890,7 +891,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch('/applyCoupon', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ couponCode, shippingCharge })
             });
@@ -933,7 +935,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch('/removeCoupon', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ shippingCharge })
             });

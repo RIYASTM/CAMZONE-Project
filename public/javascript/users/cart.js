@@ -68,7 +68,10 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const response = await fetch('/updateCart', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                 },
                 body: JSON.stringify({ productId, quantity })
             });
             const data = await response.json();
@@ -116,7 +119,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const response = await fetch('/cartTowishlist', {
                     method: 'PATCH',
                     body: JSON.stringify({ productId }),
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 });
                 const data = await response.json(); 
 
@@ -155,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 const response = await fetch('/cartRemove', {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json','Accept': 'application/json' },
                     body: JSON.stringify({ productId })
                 });
                 const data = await response.json();
@@ -202,7 +208,8 @@ async function toCheckout() {
         const response = await fetch('/toCheckout', {
             method : 'POST',
              headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         })
 

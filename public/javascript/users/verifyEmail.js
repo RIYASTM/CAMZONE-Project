@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await fetch('/verify-email', {
                 method: 'POST',
                 body: JSON.stringify({ otp }),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
             
             const data = await response.json();
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Link clicked, sending resend request');
             fetch('/resend-otp', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 credentials: 'same-origin'
             })
                 .then(response => response.json())

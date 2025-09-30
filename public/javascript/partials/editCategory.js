@@ -67,7 +67,8 @@ async function SaveChanges(event) {
         const response = await fetch('/admin/editCategory', {
             method: "POST",
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 id: categoryId.value,

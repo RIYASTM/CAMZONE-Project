@@ -188,7 +188,7 @@ const checkout = async (req, res) => {
             const reason = `Products purchased ${order.orderId}!!`
             const { success, message } = await fromWallet(userId, finalAmount, reason)
             if (success === false) {
-                order.status = 'Failed'
+                order.status = 'Payment Failed'
                 order.save()
                 return res.status(401).json({ success: false, message: message })
             }

@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(url, {
                 method,
                 body: JSON.stringify(jsonData),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
             const data = await response.json();
 
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch(`/deleteAddress/${id}`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
                 });
                 const data = await response.json();
 
