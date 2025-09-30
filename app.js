@@ -17,7 +17,6 @@ const mongoose = require('mongoose')
 // Routers
 const userRouter = require('./routes/userRouter')
 const adminRouter = require('./routes/adminRouter')
-
 // ====== GLOBAL ERROR HANDLERS ======
 process.on("uncaughtException", (err) => {
     if (err.message.includes("Unable to find the session to touch") ||
@@ -35,7 +34,6 @@ process.on('unhandledRejection', (reason, promise) => {
         console.warn("Session-related promise rejection, continuing...");
         return;
     }
-    // In production better to exit so PM2/Docker restarts app
     process.exit(1);
 });
 
@@ -45,6 +43,8 @@ app.set('views', [
     path.join(__dirname, 'views/user'),
     path.join(__dirname, 'views/admin')
 ])
+app.set("trust proxy", 1); 
+
 
 // ====== DATABASE CONNECT ======
 connectDB().then(() => {
@@ -69,9 +69,10 @@ connectDB().then(() => {
             collectionName: 'sessions'
         }),
         cookie: {
-            secure: process.env.NODE_ENV === 'production',
+            // secure: process.env.NODE_ENV === 'production',
+            secure: true,
             httpOnly: true,
-            maxAge: 1000 * 60 * 60 * 24 // 1 day
+            maxAge: 1000 * 60 * 60 * 24 
         }
     }))
 
