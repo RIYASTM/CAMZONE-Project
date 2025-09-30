@@ -41,13 +41,17 @@
                         <option value="custom">Custom Range</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label for="startDate">Start Date:</label>
-                    <input type="date" id="startDate" class="filter-input" disabled>
-                </div>
-                <div class="filter-group">
-                    <label for="endDate">End Date:</label>
-                    <input type="date" id="endDate" class="filter-input" disabled>
+                <div class="filter-group" id="customDateRange">
+                    <div class="date-inputs">
+                        <div>
+                            <label for="startDate">From:</label>
+                            <input type="date" id="startDate" class="filter-input">
+                        </div>
+                        <div>
+                            <label for="endDate">To:</label>
+                            <input type="date" id="endDate" class="filter-input">
+                        </div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <button class="generate-report-btn" onclick="generateReport()">
@@ -111,18 +115,6 @@
                     <div class="chart-header">
                         <div class="chart-title">
                             <span>Sales Trend</span>
-                            <div class="dropdown" id="salesTrendFilter">
-                                <span data-filter="week">This week</span>
-                                <i class="fas fa-chevron-down"></i>
-                                <div class="dropdown-menu" style="display: none;">
-                                    <div class="dropdown-item" data-filter="week">This week</div>
-                                    <div class="dropdown-item" data-filter="month">This month</div>
-                                    <div class="dropdown-item" data-filter="all">All time</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chart-actions">
-                            <i class="fas fa-ellipsis-h"></i>
                         </div>
                     </div>
                     <div class="chart">
@@ -140,18 +132,6 @@
                     <div class="chart-header">
                         <div class="chart-title">
                             <span>Order Status Distribution</span>
-                            <div class="dropdown" id="orderStatusFilter">
-                                <span data-filter="week">This week</span>
-                                <i class="fas fa-chevron-down"></i>
-                                <div class="dropdown-menu" style="display: none;">
-                                    <div class="dropdown-item" data-filter="week">This week</div>
-                                    <div class="dropdown-item" data-filter="month">This month</div>
-                                    <div class="dropdown-item" data-filter="all">All time</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chart-actions">
-                            <i class="fas fa-ellipsis-h"></i>
                         </div>
                     </div>
                     <canvas id="orderStatusChart"></canvas>
@@ -163,18 +143,6 @@
                 <div class="chart-header">
                     <div class="chart-title">
                         <span>Top Selling Products</span>
-                        <div class="dropdown" id="productsFilter">
-                            <span data-filter="week">This week</span>
-                            <i class="fas fa-chevron-down"></i>
-                            <div class="dropdown-menu" style="display: none;">
-                                <div class="dropdown-item" data-filter="week">This week</div>
-                                <div class="dropdown-item" data-filter="month">This month</div>
-                                <div class="dropdown-item" data-filter="all">All time</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-actions">
-                        <i class="fas fa-ellipsis-h"></i>
                     </div>
                 </div>
                 <div class="table-container">
@@ -200,18 +168,6 @@
                 <div class="chart-header">
                     <div class="chart-title">
                         <span>Top Selling Categories</span>
-                        <div class="dropdown" id="categoryFilter">
-                            <span data-filter="week">This week</span>
-                            <i class="fas fa-chevron-down"></i>
-                            <div class="dropdown-menu" style="display: none;">
-                                <div class="dropdown-item" data-filter="week">This week</div>
-                                <div class="dropdown-item" data-filter="month">This month</div>
-                                <div class="dropdown-item" data-filter="all">All time</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-actions">
-                        <i class="fas fa-ellipsis-h"></i>
                     </div>
                 </div>
                 <div class="table-container">
@@ -237,18 +193,6 @@
                 <div class="chart-header">
                     <div class="chart-title">
                         <span>Top Selling Brands</span>
-                        <div class="dropdown" id="brandFilter">
-                            <span data-filter="week">This week</span>
-                            <i class="fas fa-chevron-down"></i>
-                            <div class="dropdown-menu" style="display: none;">
-                                <div class="dropdown-item" data-filter="week">This week</div>
-                                <div class="dropdown-item" data-filter="month">This month</div>
-                                <div class="dropdown-item" data-filter="all">All time</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-actions">
-                        <i class="fas fa-ellipsis-h"></i>
                     </div>
                 </div>
                 <div class="table-container">
@@ -274,18 +218,6 @@
                 <div class="chart-header">
                     <div class="chart-title">
                         <span>Recent Orders</span>
-                        <div class="dropdown" id="ordersFilter">
-                            <span data-filter="week">This week</span>
-                            <i class="fas fa-chevron-down"></i>
-                            <div class="dropdown-menu" style="display: none;">
-                                <div class="dropdown-item" data-filter="week">This week</div>
-                                <div class="dropdown-item" data-filter="month">This month</div>
-                                <div class="dropdown-item" data-filter="all">All time</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-actions">
-                        <i class="fas fa-ellipsis-h"></i>
                     </div>
                 </div>
                 <div class="orders-table">

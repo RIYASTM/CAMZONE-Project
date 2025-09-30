@@ -39,7 +39,7 @@
                     <select class="filter">
                         <option value="all">Filter</option>
                         <option value="Listed">Listed</option>
-                        <option value="Not Listed">Not Listed</option>
+                        <option value="Unlisted">Unlisted</option>
                     </select>
                     <button class="add-category" id="addCategoryButton">Add New Category</button>
                 </div>
@@ -62,10 +62,10 @@
                     </thead>
                     <tbody>
                         <% category.reverse().forEach((category) => { %>
-                            <tr>
+                            <tr data-id="<%=category._id%>">
                                 <td>
                                     <% if (category.categoryImage) { %>
-                                        <img src="/uploads/category/<%= category.categoryImage %>" alt="<%= category.name %>" style="width: 50px; height: 50px; object-fit: fill;">
+                                        <img src="<%= category.categoryImage %>" alt="<%= category.name %>" style="width: 50px; height: 50px; object-fit: fill;">
                                     <% } else { %>
                                         <span>No Image</span>
                                     <% } %>
@@ -75,15 +75,22 @@
                                 <td><%= category.createdAt.toString().split(" ").slice(1, 4).join(" ") %></td>
                                 <td>
                                     <% if (!category.categoryOffer) { %>
-                                        <button class="filter" onclick="addOffer('<%= category._id %>')">Add Offer</button>
+                                        <button class="filter addOffer" data-id="<%= category._id %>" onclick="addOffer('<%= category._id %>')">Add Offer</button>
                                     <% } else { %>
-                                        <button class="filter" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
+                                        <button class="filter removeOffer" data-id="<%= category._id %>" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
                                     <% } %>
                                 </td>
-                                <td><%= category.categoryOffer ? category.categoryOffer + ' %' : '-' %></td>
+                                <td class="offerCell"><%= category.categoryOffer ? category.categoryOffer + ' %' : '-' %></td>
                                 <td><%= category.isListed ? 'Listed' : 'Unlisted' %></td>
                                 <td>
-                                    <a href="#" class="action-icon" onclick="showEditCategoryModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.categoryOffer %>', '<%= category.isListed %>', '<%= category.categoryImage %>')"><i class="fas fa-edit"></i></a>
+                                    <a class="action-icon editCategory" 
+                                                data-id="<%= category._id %>" 
+                                                data-name="<%= category.name %>" 
+                                                data-description="<%= category.description %>" 
+                                                data-offer="<%=category.categoryOffer%>"
+                                                data-listed="<%= category.isListed %>"
+                                                data-image="<%= category.categoryImage %>"
+                                                ><i class="fas fa-edit"></i></a>
                                     <!-- <a href="#" class="action-icon" id="delete-category" ><i class="fas fa-trash"></i></a> -->
                                 </td>
                             </tr>

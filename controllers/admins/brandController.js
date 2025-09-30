@@ -67,7 +67,7 @@ const addBrand = async (req, res) => {
         const newBrand = new Brand({
             brandName: brandName,
             description: description,
-            brandImage: req.file?.filename
+            brandImage: req.file?.path
 
         })
 
@@ -95,7 +95,8 @@ const editBrand = async (req, res) => {
         const errors = ValidateBrand(brandData)
 
         if (errors) {
-            return res.status(400).json({ success: false, errors })
+            console.log('err : ', errors)
+            return res.status(400).json({ success: false, message: errors })
         }
 
         const brand = await Brand.findById(id)
@@ -114,16 +115,28 @@ const editBrand = async (req, res) => {
                 success: false,
                 message: 'Brand already exist with this name'
             })
-        }
+        } 
 
-        const updateImage = req.file?.filename || brand.brandImage;
+        let imageUrl = brand.brandImage;
+        if (req.file) {
+            if (brand.brandImage) {
+                const publicId = brand.brandImage.split('/').pop().split('.')[0];
+                try {
+                    await cloudinary.uploader.destroy(`Camzone_IMG/brands/${publicId}`);
+                } catch (err) {
+                    console.error('Failed to delete old image from Cloudinary:', err);
+                }
+            }
+            imageUrl = req.file?.path;
+        }
+          
 
         const updateData = {
             brandName: brandName ? brandName.trim() : brand.brandName,
             description: description ? description.trim() : brand.description,
             isBlocked: isBlocked === 'on' || isBlocked === true,
             brandOffer,
-            brandImage: updateImage
+            brandImage: imageUrl
         }
 
         const updatedBrand = await Brand.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
@@ -150,7 +163,7 @@ const editBrand = async (req, res) => {
             message: "Something went wrong while updating brand: " + error.message
         });
     }
-}
+} 
 
 const deleteBrand = async (req, res) => {
     try {

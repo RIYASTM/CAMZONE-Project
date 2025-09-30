@@ -249,6 +249,8 @@ body {
     background-color: transparent;
     border: 1px solid #ff9900;
     color: #ff9900;
+    border-radius: 4px;
+    padding: 5px 15px;
 }
 
 #blockCustomerModal .block-btn:hover {
@@ -260,6 +262,8 @@ body {
     background-color: transparent;
     border: 1px solid var(--border-color);
     color: var(--border-color);
+    border-radius: 4px;
+    padding: 5px 15px;
 }
 
 #blockCustomerModal .cancel-btn:hover {

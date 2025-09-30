@@ -1,70 +1,47 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs').promises;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { cloudinary } = require('./cloudinary'); // Adjust path as needed
 
-const ensureDirectory = async (dir) => {
-    try {
-        if (!(await fs.access(dir).then(() => true).catch(() => false))) {
-            await fs.mkdir(dir, { recursive: true });
-            console.log(`Created directory: ${dir}`);
-        }
-    } catch (err) {
-        console.error(`Error creating directory ${dir}:`, err);
-    }
-};
-
-const storageBrand = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../public/uploads/brands');
-        await ensureDirectory(uploadDir);
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+// Create separate storage configurations for each upload type
+const storageBrand = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'Camzone_IMG/brands',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     },
 });
 
-const storageProduct = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../public/uploads/products');
-        await ensureDirectory(uploadDir);
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+const storageProduct = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'Camzone_IMG/products',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     },
 });
 
-const storageProfile = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../public/uploads/profile');
-        await ensureDirectory(uploadDir);
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+const storageProfile = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'Camzone_IMG/profile',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     },
 });
 
-const storageCategory = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../public/uploads/category');
-        await ensureDirectory(uploadDir);
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+const storageCategory = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'Camzone_IMG/category',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     },
 });
 
 const fileFilter = (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const filetypes = /jpeg|jpg|png|webp/;
     const mimetype = filetypes.test(file.mimetype);
-    if (extname && mimetype) {
+    if (mimetype) {
         cb(null, true);
     } else {
-        cb(new Error('Images only (JPEG, JPG, PNG)!'));
+        cb(new Error('Images only (JPEG, JPG, PNG, WEBP)!'));
     }
 };
 

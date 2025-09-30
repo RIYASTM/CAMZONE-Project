@@ -1,21 +1,31 @@
 
 
-document.addEventListener('DOMContentLoaded', ()=> {
+document.addEventListener('DOMContentLoaded', () => {
 
 
   const search = document.getElementById('search')
-    const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+  const clearButton = document.getElementById('clear-button')
 
-        const searchValue = search.value.trim()
+  search.addEventListener('keypress', async (e) => {
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
-            // window.location = `/shop?search=${searchValue}`
-            window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
-        }
-    })
+    const searchValue = search.value.trim()
+
+    if (searchValue && e.key === 'Enter') {
+      console.log('search : ', searchValue)
+      // window.location = `/shop?search=${searchValue}`
+      window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
+    }
+  })
+
+
+  const closeButton = document.getElementById('retryPaymentClose')
+  const retryPaymentButton = document.getElementById('retryPayment') || ''
+
+  if (retryPaymentButton) {
+    retryPaymentButton.addEventListener('click', () => openPaymentModal())
+  }
+
+  closeButton.addEventListener('click', () => closePaymentModal())
 
 })
 
@@ -80,7 +90,7 @@ function confirmAction() {
   const reason = document.getElementById('reasonSelect').value;
   const description = document.getElementById('descriptionText').value;
   const selectedItems = Array.from(document.querySelectorAll('#itemsList input[type="checkbox"]:checked')).map(cb => cb.id.replace('item', ''));
-  console.log(selectedItems)
+
 
   if (!reason) {
     document.getElementById('errorMessage').textContent = 'Please select a reason.';
@@ -150,12 +160,6 @@ function downloadInvoice(orderId) {
 }
 
 const retryPaymentModal = document.getElementById('retryPaymentModal')
-const closeButton = document.getElementById('retryPaymentClose')
-const retryPaymentButton = document.getElementById('retryPayment')
-
-retryPaymentButton.addEventListener('click', () => openPaymentModal())
-
-closeButton.addEventListener('click', () => closePaymentModal())
 
 function openPaymentModal() {
   retryPaymentModal.style.display = 'block'
@@ -166,9 +170,6 @@ function closePaymentModal() {
 }
 
 async function retryPayment(method, orderId, oldMethod) {
-  console.log('Payment Method:', method);
-  console.log('orderId:', orderId);
-  console.log('Old Method:', oldMethod);
 
   try {
     if (method !== oldMethod) {

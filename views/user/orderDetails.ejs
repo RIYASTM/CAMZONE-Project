@@ -83,7 +83,7 @@
                         <% if (item.product) { %>
                         <div class="item-image">
                             <% if (item.product.productImage && item.product.productImage.length > 0) { %>
-                                <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
+                                <img src="<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
                             <% } else { %>
                                 <img src="" alt="No Image">
                             <% } %>
@@ -251,7 +251,7 @@
                       </div>
                       <div class="item-image">
                         <% if (item.product.productImage && item.product.productImage.length > 0) { %>
-                          <img src="/uploads/products/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
+                          <img src="<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>">
                         <% } else { %>
                           <img src="https://via.placeholder.com/60x60/ff6b6b/white?text=P<%= index + 1 %>" alt="No Image">
                         <% } %>
@@ -262,7 +262,7 @@
                           Quantity: <%= item.quantity %> 
                         </div>
                       </div>
-                      <div class="item-price"><%= '₹' + (item.price * item.quantity).toFixed(2) %></div>
+                      <div class="item-price"><%= '₹' + (item.productPrice  * item.quantity).toFixed(2) %></div>
                     </div>
                   </div>
                 <% } %>

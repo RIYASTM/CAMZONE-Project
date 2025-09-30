@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 
+
     statusFilter.addEventListener('change', applyFilters);
     paymentFilter.addEventListener('change', applyFilters);
     couponFilter.addEventListener('change', applyFilters);
@@ -179,9 +180,7 @@ async function generateReport(orders) {
 
                     if (startDate > today) {
                         console.log('Start date over than today!!')
-                        // console.log("Cannot generate the future report!!")
-                        // showNotification("Cannot generate the future report!!")
-                        showNotification('Start date should lessthatn today..')
+                        showNotification('Start date should lessthatn today..', 'error')
                         return
                     }
                 } else {
@@ -219,7 +218,7 @@ async function generateReport(orders) {
 }
 
 function applyFilters() {
-
+console.log('jdjfkjkfj')
     const statusFilter = document.getElementById('statusFilter');
     const paymentFilter = document.getElementById('paymentFilter');
     const couponFilter = document.getElementById('couponFilter');

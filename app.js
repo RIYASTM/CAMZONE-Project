@@ -1,6 +1,6 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
-require('dotenv').config()
 const path = require('path')
 const ejs = require('ejs')
 const nocache = require('nocache')
@@ -13,13 +13,14 @@ const morgan = require('morgan')
 const passport = require('./config/passport')
 const mongoose = require('mongoose')
 
+
 // Routers
 const userRouter = require('./routes/userRouter')
 const adminRouter = require('./routes/adminRouter')
 
 // ====== GLOBAL ERROR HANDLERS ======
 process.on("uncaughtException", (err) => {
-    if (err.message.includes("Unable to find the session to touch") || 
+    if (err.message.includes("Unable to find the session to touch") ||
         err.message.includes("session")) {
         console.warn("Session issue encountered:", err.message);
         return;
@@ -60,7 +61,7 @@ connectDB().then(() => {
         saveUninitialized: false,
         store: MongoStore.create({
             mongoUrl: process.env.MONGODB_URI,
-            touchAfter: 24 * 3600, 
+            touchAfter: 24 * 3600,
             crypto: {
                 secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
             },

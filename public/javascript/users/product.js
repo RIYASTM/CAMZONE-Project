@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentOffset = 0;
     let activeIndex = 0;
     const visibleThumbnails = 3;
-    const thumbnailWidth = 130; // 120px width + 10px gap
+    const thumbnailWidth = 130;
 
     // Initialize carousel
     if (thumbnails.length > 0) {
@@ -209,11 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
             zoomLens.style.top = `${lensY}px`;
 
             // Apply zoom effect inside lens
+            zoomLens.style.backgroundColor = `#fff`
             zoomLens.style.backgroundImage = `url(${mainImage.src})`;
             zoomLens.style.backgroundSize = `${rect.width * zoomRatio}px ${rect.height * zoomRatio}px`;
 
-            const bgX = -(x * zoomRatio - zoomLens.offsetWidth / 2);
-            const bgY = -(y * zoomRatio - zoomLens.offsetHeight / 2);
+            const bgX = -(x * zoomRatio - zoomLens.offsetWidth / 4);
+            const bgY = -(y * zoomRatio - zoomLens.offsetHeight / 4);
 
             zoomLens.style.backgroundPosition = `${bgX}px ${bgY}px`;
         });

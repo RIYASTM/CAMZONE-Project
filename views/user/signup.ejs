@@ -16,11 +16,6 @@
 
         <%- include('../partials/users/header',{search , cart}) %>
     
-    
-    <!-- <div class="breadcrumb">
-        <a href="/">Home</a> > <span><a href="/signin">Sign in</a> > </span> <span>Create Account</span>
-    </div> -->
-    
     <main class="signin-page">
         <div class="signin-container">
             <div class="signin-image">
@@ -31,13 +26,6 @@
                 <p class="subtitle">Enter your details below</p>
     
                 <form action="/signup" method="POST" id="signupForm">
-                    <!-- <div class="form-group">
-                        id="signup-form " 
-                        <input type="text" name="firstName" placeholder="First Name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" name="lastName" placeholder="Last Name" required>
-                    </div> -->
                     <div class="form-group">
                         <input type="text" name="name" id="name" placeholder="Name" >
                         <div class="invalid-feedback"></div>

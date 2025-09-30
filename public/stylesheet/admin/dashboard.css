@@ -33,6 +33,7 @@ body {
 .main-content {
     flex-grow: 1;
     padding: 20px;
+    max-width: 1336px
 }
 
 /* Welcome Section */
@@ -85,6 +86,11 @@ body {
 .filter-input:focus {
     outline: none;
     border-color: #e67e22;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 15px;
 }
 
 .generate-report-btn {

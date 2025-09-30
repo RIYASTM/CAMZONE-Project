@@ -5,8 +5,6 @@ const Cart = require('../../model/cartModel')
 const {validateProfile} = require('../../helpers/validations')
 const {generateOtp,sendOTP} = require('../../helpers/OTP')
 
-const session = require('express-session')
-
 
 const loadProfile = async (req,res) => {
     try {
@@ -19,7 +17,6 @@ const loadProfile = async (req,res) => {
             return res.status(404).json({success : false , message : 'User not authenticated!'})
         }
 
-
         const user = await User.findById(userId)
 
         if(!user ){
@@ -29,7 +26,6 @@ const loadProfile = async (req,res) => {
         const cart = userId ? await Cart.findOne({userId}) : 0
 
         const address = await Address.findById(userId)
-        
         
         return res.render('profile',{
             currentPage : 'profile',
@@ -60,7 +56,6 @@ const editProfile = async (req, res) => {
 
         const emailChanged = email && email !== user.email;
 
-        // Check for duplicate entries
         const existUser = await User.findOne({
             $or: [
                 { name: new RegExp(`^${name}$`, "i") },  
@@ -85,7 +80,6 @@ const editProfile = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Validation Error', errors });
         }
 
-        // OTP Verification if email changed
         if (emailChanged) { 
             const sessionOtp = req.session.otp;
             if (!sessionOtp || sessionOtp.verified !== true) {
@@ -168,7 +162,7 @@ const verifyOTP = (req, res) => {
         return res.status(400).json({ success: false, message: 'OTP not found or expired.' });
     }
 
-    const isExpired = Date.now() - sessionOtp.createdAt > 5 * 60 * 1000; // 5 minutes
+    const isExpired = Date.now() - sessionOtp.createdAt > 5 * 60 * 1000;
     if (isExpired) {
         delete req.session.otp;
         return res.status(400).json({ success: false, message: 'OTP has expired.' });
@@ -181,12 +175,6 @@ const verifyOTP = (req, res) => {
     req.session.otp.verified = true;
     return res.status(200).json({ success: true, message: 'OTP verified.' });
 }
-
-
-
-
-
-
 
 
 module.exports = {

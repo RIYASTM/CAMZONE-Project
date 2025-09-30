@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="/stylesheet/user/contactUs.css">
+</head>
+<body>
+
+    <%- include('../partials/users/header',{ search, cart }) %>
+
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="separator">></span>
+            <span class="current">Contact Us</span>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Contact Information Section -->
+            <div class="contact-information">
+                <h1>Contact Us</h1>
+                
+                <!-- Call To Us Section -->
+                <div class="contact-method">
+                    <div class="icon-container">
+                        <div class="icon call-icon">📞</div>
+                    </div>
+                    <div class="method-content">
+                        <h3>Call To Us</h3>
+                        <p>We are available 24/7, 7 days a week.</p>
+                        <p class="contact-detail">Phone: +91 8137822686</p>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- Write To Us Section -->
+                <div class="contact-method">
+                    <div class="icon-container">
+                        <div class="icon email-icon">✉️</div>
+                    </div>
+                    <div class="method-content">
+                        <h3>Write To Us</h3>
+                        <p>Fill out the contact form or send an email to us and we will contact you within 24 hours.</p>
+                        <p class="contact-detail">Email: camzonertm@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form Section -->
+            <div class="contact-form-section">
+                <form class="contact-form" id="messageForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Your Name *" id="name">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Your Email *" id="email">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" name="phone" placeholder="Your Phone *" id="phone">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <textarea name="message" placeholder="Your Message *" rows="8" id="message"></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </form>
+                <div class="form-actions">
+                    <button type="submit" class="btn-send">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/users/footer') %>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', ()=> {
+            
+            const messageForm = document.getElementById('messageForm')
+            const sendBtn = document.querySelector('.btn-send')
+
+            sendBtn.addEventListener('click', async (e) => {
+                e.preventDefault()
+                clearErrors(messageForm)
+
+
+                const formData = new FormData(messageForm)
+                const jsonData = Object.fromEntries(formData);
+                Object.keys(jsonData).forEach(key => {
+                    if (typeof jsonData[key] === 'string') {
+                        jsonData[key] = jsonData[key].trim();
+                    }
+                });
+
+                const errors = validateForm(jsonData)
+
+                if(errors){
+                    displayFormError(messageForm, errors)
+                    return console.log('Validation error : ', errors)
+                }
+
+                try {
+                    
+                    const response = await fetch('/sendMessage', {
+                        method : 'POST', 
+                        headers : {
+                            'Content-Type' : 'application/json'
+                        },
+                        body : JSON.stringify(jsonData)
+                    })
+                    
+                    const data = await response.json()
+                    
+                    if(data.success){
+                        showNotification('Your message has been sent!', 'success')
+                    }else{
+                        showNotification('Your message has been not sent', 'error')
+                    }
+                    return messageForm.reset()
+
+                } catch (error) {
+                    console.error("Your message not sent : ", error)
+                    showNotification('Something went wrong, please try again.', 'error');
+                }
+                
+            })
+
+        })
+
+        function clearErrors(messageForm) {
+            messageForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            messageForm.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        }
+
+        function displayFormError(messageForm, errors) {
+            clearErrors(messageForm);
+
+            if (errors && typeof errors === 'object') {
+                Object.entries(errors).forEach(([field, message]) => {
+                    const input = messageForm.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = message;
+                        }
+                    }
+                });
+            }
+        }
+
+        function validateForm(data) {
+            const namePattern = /^[a-zA-Z\s]+$/
+            const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
+            const phonePattern = /^(?:\+91|91)?[6-9]\d{9}$/
+            let errors = {};
+
+            if (!data.name) {
+                errors.name = 'Name is required!';
+            } else if (data.name && !namePattern.test(data.name)) {
+                errors.name = "Name can only contain letters and spaces!";
+            } else if (data.name && data.name.trim().length < 4){
+                errors.name = 'Your name is very short!!'
+            } else if (data.name && data.name.trim().length > 15){
+                errors.name = 'Your name is very long!!'
+            }
+
+            if (!data.email) {
+                errors.email = 'Email is required!!';
+            } else if (data.email && !emailpattern.test(data.email)){
+                errors.email = 'Enter a valid email!!'
+            }
+
+            if (!data.phone) {
+                errors.phone = 'Please enter a Phone Number!!';
+            } else if (data.phone && !phonePattern.test(data.phone)){
+                errors.phone = 'Please enter a valid Phone Number!!'
+            }
+
+            if (!data.message) {
+                errors.message = 'Please enter a message!!';
+            } else if(data.message && data.message.trim().length < 10 ){
+                errors.message = 'Please enter a valide message!!'
+            } else if (data.message && data.message.trim().lengt > 150){
+                errors.message = 'Your message is too long!!'
+                
+            }
+
+            return Object.keys(errors).length > 0 ? errors : null;
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+
+            // Add styles
+            notification.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            padding: 15px 20px;
+                            border-radius: 5px;
+                            color: white;
+                            font-weight: 500;
+                            z-index: 1000;
+                            animation: slideIn 0.3s ease;
+                            ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                        `;
+
+            // Add animation styles
+            const style = document.createElement('style');
+            style.textContent = `
+                            @keyframes slideIn {
+                                from {
+                                    transform: translateX(100%);
+                                    opacity: 0;
+                                }
+                                to {
+                                    transform: translateX(0);
+                                    opacity: 1;
+                                }
+                            }
+                            @keyframes slideOut {
+                                from {
+                                    transform: translateX(0);
+                                    opacity: 1;
+                                }
+                                to {
+                                    transform: translateX(100%);
+                                    opacity: 0;
+                                }
+                            }
+                        `;
+
+            if (!document.querySelector('style[data-notification]')) {
+                style.setAttribute('data-notification', 'true');
+                document.head.appendChild(style);
+            }
+
+            // Add to page
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+
+    </script>
+</body>
+</html>

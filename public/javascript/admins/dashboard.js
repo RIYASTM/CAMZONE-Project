@@ -19,23 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
         window.chartsInitialized = false;
         window.updatingCharts = false;
 
-        generateReport();
+        const customDateRange = document.getElementById('customDateRange');
+        const reportBtn = document.querySelector('.generate-report-btn')
+        reportBtn.style.display = 'none'
+        customDateRange.style.display = 'none';
+
+        debouncedGenerateReport()
         updateCustomerInsights(users);
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             initializeCharts();
-        }, 1500);
+        });
 
     } catch (error) {
         console.error('Error initializing dashboard:', error);
     }
 });
 
-const reportTypeSelect = document.getElementById('reportType');
-const startDateInput = document.getElementById('startDate');
-const endDateInput = document.getElementById('endDate');
 
-// FIX 1: Add debouncing to prevent rapid fire events
 let debounceTimeout = null;
 
 function debounce(func, delay) {
@@ -45,7 +46,6 @@ function debounce(func, delay) {
     };
 }
 
-// FIX 2: Use debounced version of generateReport 
 const debouncedGenerateReport = debounce(() => {
     if (!generatingReport && window.orders) {
         generateReport();
@@ -60,30 +60,20 @@ function setInputValue(element, value) {
     isProgrammaticChange = false;
 }
 
+const reportTypeSelect = document.getElementById('reportType');
+const customDateRange = document.getElementById('customDateRange');
+const reportBtn = document.querySelector('.generate-report-btn')
+const startDateInput = document.getElementById('startDate');
+const endDateInput = document.getElementById('endDate');
+
 if (reportTypeSelect) {
     reportTypeSelect.addEventListener('change', () => {
         if (isProgrammaticChange) return;
         const isCustom = reportTypeSelect.value === 'custom';
 
-        if (startDateInput) startDateInput.disabled = !isCustom;
-        if (endDateInput) endDateInput.disabled = !isCustom;
-
+        customDateRange.style.display = isCustom ? 'block' : 'none'
+        reportBtn.style.display = isCustom ? 'block' : 'none'
         if (!isCustom) {
-            debouncedGenerateReport();
-        }
-    });
-}
-
-if (startDateInput && endDateInput) {
-    startDateInput.addEventListener('change', () => {
-        if (isProgrammaticChange) return;
-        if (reportTypeSelect?.value === 'custom') {
-            debouncedGenerateReport();
-        }
-    });
-    endDateInput.addEventListener('change', () => {
-        if (isProgrammaticChange) return;
-        if (reportTypeSelect?.value === 'custom') {
             debouncedGenerateReport();
         }
     });
@@ -449,15 +439,24 @@ function generateReport() {
                     endDate.setHours(23, 59, 59, 999);
 
                     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        showNotification('Invalid dates provided!!', 'error')
                         console.error('Invalid dates provided');
                         return;
                     }
 
+                    if (startDate > now) {
+                        console.log('Start date over than today!!')
+                        showNotification('Start date should lessthatn today..', 'error')
+                        return
+                    }
+
                     if (startDate > endDate) {
+                        showNotification('Start date cannot be later than end date', 'error')
                         console.error('Start date cannot be later than end date');
                         return;
                     }
                 } else {
+                    showNotification('Custom date range requires both start and end dates', 'error')
                     console.error('Custom date range requires both start and end dates');
                     return;
                 }
@@ -467,7 +466,6 @@ function generateReport() {
             case 'alltime':
             case 'all':
                 updateDashboard(filteredOrders);
-                // FIX 5: Only update charts if they exist and are initialized
                 if (window.chartsInitialized) {
                     throttledUpdateCharts(filteredOrders);
                 }
@@ -492,7 +490,6 @@ function generateReport() {
 
         updateDashboard(filteredOrders);
 
-        // FIX 6: Only update charts if they are properly initialized
         if (window.chartsInitialized && !window.updatingCharts) {
             throttledUpdateCharts(filteredOrders);
         }
@@ -851,3 +848,67 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeDropdowns();
     }, 1500);
 });
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

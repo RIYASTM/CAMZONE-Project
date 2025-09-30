@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         generateReport();
         updateCustomerInsights(users);
-
+        
         setTimeout(() => {
             initializeDropdowns();
         }, 100);
@@ -32,14 +32,20 @@ document.addEventListener('DOMContentLoaded', () => {
 const reportTypeSelect = document.getElementById('reportType');
 const startDateInput = document.getElementById('startDate');
 const endDateInput = document.getElementById('endDate');
+const generateBtn = document.querySelector('.generate-report-btn')
+const dateInputs = document.querySelector('.date-inputs')
+
+if(generateBtn) generateBtn.style.display = 'none'
+if(dateInputs) dateInputs.style.display = 'none'
 
 // Add debouncing to prevent rapid fire events
 let debounceTimeout = null;
 
 function debounce(func, delay) {
+    let timeout;
     return function (...args) {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => func.apply(this, args), delay);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
     };
 }
 
@@ -64,26 +70,33 @@ if (reportTypeSelect) {
         if (isProgrammaticChange) return;
         const isCustom = reportTypeSelect.value === 'custom';
 
-        if (startDateInput) startDateInput.disabled = !isCustom;
-        if (endDateInput) endDateInput.disabled = !isCustom;
-
         if (!isCustom) {
-            debouncedGenerateReport();
+            if (dateInputs) dateInputs.style.display = 'none';
+            if (generateBtn) generateBtn.style.display = 'none';
+
+            setTimeout(async () => {
+                await generateReport(window.orders);
+            }, 500);
+        } else {
+            if (dateInputs) dateInputs.style.display = 'flex';
+            if (generateBtn) generateBtn.style.display = 'block';
         }
     });
 }
 
-if (startDateInput && endDateInput) {
-    startDateInput.addEventListener('change', () => {
-        if (isProgrammaticChange) return;
-        if (reportTypeSelect?.value === 'custom') {
-            debouncedGenerateReport();
-        }
-    });
-    endDateInput.addEventListener('change', () => {
-        if (isProgrammaticChange) return;
-        if (reportTypeSelect?.value === 'custom') {
-            debouncedGenerateReport();
+if (generateBtn) {
+    generateBtn.addEventListener('click', async () => {
+        let success = await generateReport(window.orders);
+        if (success) {
+            generateBtn.textContent = 'Generating...';
+            generateBtn.disabled = true;
+            setTimeout(() => {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `<i class="fa-solid fa-chart-line"></i> Generate Report`;
+            }, 2500);
+        } else {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = `<i class="fa-solid fa-chart-line"></i> Generate Report`;
         }
     });
 }
@@ -147,36 +160,36 @@ function updateTopCategories(orders) {
     if (!orders || !Array.isArray(orders)) return;
 
     const categories = JSON.parse(document.getElementById('categoryData').value);
+    const catLookup = categories.reduce((map, c) => {
+        map[c._id.toString()] = c.name;
+        return map;
+    }, {});
+
     const categoryMap = {};
 
     orders.forEach(order => {
-        if (!order.orderedItems || !Array.isArray(order.orderedItems)) return;
+        if (!order.orderedItems) return;
 
         order.orderedItems.forEach(item => {
             if (!item || ['Cancelled', 'Returned'].includes(item.itemStatus)) return;
 
-            const id = item.product?.category?._id || item.product?.category?.toString() || 'unknown';
+            const id = item.product?.category?._id?.toString() || item.product?.category?.toString() || 'unknown';
             if (!categoryMap[id]) {
-                // lookup category name from `categories` array (passed from EJS)
-                const catObj = categories.find(c => c._id.toString() === id.toString());
                 categoryMap[id] = {
-                    name: catObj ? catObj.name : 'Unknown',
+                    name: catLookup[id] || 'Unknown',
                     revenue: 0,
                     quantity: 0
                 };
             }
 
-            const price = item.productPrice || 0;
-            const quantity = item.quantity || 0;
-
-            categoryMap[id].revenue += price * quantity;
-            categoryMap[id].quantity += quantity;
+            categoryMap[id].revenue += (item.productPrice || 0) * (item.quantity || 0);
+            categoryMap[id].quantity += item.quantity || 0;
         });
     });
 
     const topCategories = Object.values(categoryMap)
         .sort((a, b) => b.revenue - a.revenue)
-        .slice(0, 15); // Show top 15 categories
+        .slice(0, 15);
 
     const tbody = document.getElementById('topCategoriesTable');
     if (tbody) {
@@ -331,42 +344,25 @@ function updatePaymentMethods(orders) {
     const total = orders.length;
     if (total === 0) return;
 
-    const methods = { COD: 0, RAZORPAY: 0, WALLET: 0 };
-
+    // ✅ Dynamic method detection
+    const methods = {};
     orders.forEach(order => {
-        const method = order.paymentMethod?.toUpperCase();
-        if (methods.hasOwnProperty(method)) {
-            methods[method]++;
-        }
+        const method = (order.paymentMethod || 'UNKNOWN').toUpperCase();
+        methods[method] = (methods[method] || 0) + 1;
     });
 
-    const cod = Math.round((methods.COD / total) * 100) || 0;
-    const razorpay = Math.round((methods.RAZORPAY / total) * 100) || 0;
-    const wallet = Math.round((methods.WALLET / total) * 100) || 0;
+    // Update DOM dynamically
+    Object.keys(methods).forEach(method => {
+        const percentage = Math.round((methods[method] / total) * 100) || 0;
 
-    // Update COD
-    const codProgress = document.querySelector('.cod-progress');
-    const codPercentage = document.getElementById('codPercentage');
-    const codCount = document.getElementById('codCount');
-    if (codProgress) codProgress.style.width = `${cod}%`;
-    if (codPercentage) codPercentage.textContent = `${cod}%`;
-    if (codCount) codCount.textContent = `(${methods.COD} orders)`;
+        const progress = document.querySelector(`.${method.toLowerCase()}-progress`);
+        const percentageEl = document.getElementById(`${method.toLowerCase()}Percentage`);
+        const countEl = document.getElementById(`${method.toLowerCase()}Count`);
 
-    // Update Online Payment
-    const onlineProgress = document.querySelector('.online-progress');
-    const onlinePercentage = document.getElementById('onlinePercentage');
-    const onlineCount = document.getElementById('onlineCount');
-    if (onlineProgress) onlineProgress.style.width = `${razorpay}%`;
-    if (onlinePercentage) onlinePercentage.textContent = `${razorpay}%`;
-    if (onlineCount) onlineCount.textContent = `(${methods.RAZORPAY} orders)`;
-
-    // Update Wallet
-    const walletProgress = document.querySelector('.wallet-progress');
-    const walletPercentage = document.getElementById('walletPercentage');
-    const walletCount = document.getElementById('walletCount');
-    if (walletProgress) walletProgress.style.width = `${wallet}%`;
-    if (walletPercentage) walletPercentage.textContent = `${wallet}%`;
-    if (walletCount) walletCount.textContent = `(${methods.WALLET} orders)`;
+        if (progress) progress.style.width = `${percentage}%`;
+        if (percentageEl) percentageEl.textContent = `${percentage}%`;
+        if (countEl) countEl.textContent = `(${methods[method]} orders)`;
+    });
 }
 
 function updateCustomerInsights(users) {
@@ -399,12 +395,11 @@ function updateCustomerInsights(users) {
     if (avgCustomerValueEl) avgCustomerValueEl.textContent = `₹${avgCustomerValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 }
 
-function generateReport() {
-    if (generatingReport || !window.orders) {
-        return;
-    }
+async function generateReport() {
+    if (generatingReport || !window.orders) return false;
 
     generatingReport = true;
+    let success = false;
 
     try {
         const reportType = reportTypeSelect?.value || 'all';
@@ -447,39 +442,41 @@ function generateReport() {
                     endDate.setHours(23, 59, 59, 999);
 
                     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                        console.error('Invalid dates provided');
                         showAlert('Invalid dates provided', 'error');
-                        return;
+                        return false;
                     }
 
                     if (startDate > endDate) {
-                        console.error('Start date cannot be later than end date');
                         showAlert('Start date cannot be later than end date', 'error');
-                        return;
+                        return false;
+                    }
+
+                    if (startDate > now) {
+                        showAlert('Start date cannot be greater than today!!', 'error');
+                        return false;
                     }
                 } else {
-                    console.error('Custom date range requires both start and end dates');
                     showAlert('Please select both start and end dates for custom range', 'warning');
-                    return;
+                    return false;
                 }
                 break;
 
             case 'all':
             default:
                 updateDashboard(filteredOrders);
-                return;
+                success = true;
+                return success;
         }
 
+        // ✅ Always filter with correct dates
         filteredOrders = filteredOrders.filter(order => {
             if (!order.createdOn) return false;
-
             const orderDate = new Date(order.createdOn);
-            if (isNaN(orderDate.getTime())) return false;
-
-            return orderDate >= startDate && orderDate <= endDate;
+            return !isNaN(orderDate.getTime()) && orderDate >= startDate && orderDate <= endDate;
         });
 
         updateDashboard(filteredOrders);
+        success = true;
 
     } catch (error) {
         console.error('Error in generateReport:', error);
@@ -487,6 +484,8 @@ function generateReport() {
     } finally {
         generatingReport = false;
     }
+
+    return success;
 }
 
 function initializeDropdowns() {

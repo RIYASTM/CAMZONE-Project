@@ -14,7 +14,6 @@
     <div class="container">
         <!-- Include Sidebar -->
         <%- include('../partials/admins/sidebar') %>
-
         <div class="main-content">
             <!-- Include Header -->
             <%- include('../partials/admins/header') %>
@@ -23,11 +22,11 @@
             <div class="brands-top-bar">
                 <div class="top-left">
                     <span>Brands </span>
-                    <!-- <select class="sort-by">
+                    <select class="sort-by">
                         <option value="default">Sort by</option>
                         <option value="name">Name</option>
                         <option value="description">Description</option>
-                    </select> -->
+                    </select>
                 </div>
                 <div class="top-center" style="position: relative; display: inline-block;">
                     <input type="text" id="search" class="search-bar" placeholder="Search" value="<%= search %>">
@@ -36,10 +35,10 @@
                     <% } %>
                 </div>
                 <div class="top-right">
-                    <select class="filter">
-                        <option value="all">Filter</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                    <select class="filter" id="statusFilter">
+                        <option value="All">Filter</option>
+                        <option value="Active">Active</option>
+                        <option value="Blocked">Blocked</option>
                     </select>
                     <button class="add-brand" id="addBrandButton">Add New Brand</button>
                 </div>
@@ -63,8 +62,8 @@
                         <% brands.forEach((brand) => { %>
                             <tr>
                                 <td>
-                                    <% if (brand.brandImage) { %>
-                                        <img src="/uploads/brands/<%= brand.brandImage %>" alt="<%= brand.name %>" style="width: 50px; height: 50px; object-fit: fill;">
+                                    <% if (brand.brandImage) { %> 
+                                        <img src="<%= brand.brandImage %>" alt="<%= brand.name %>" style="width: 50px; height: 50px; object-fit: fill;">
                                     <% } else { %>
                                         <span>No Image</span>
                                     <% } %>

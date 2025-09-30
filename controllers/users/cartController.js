@@ -1,74 +1,10 @@
 const User = require('../../model/userModel')
 const Products = require('../../model/productModel')
-const Brands = require('../../model/brandModel')
-const Category = require('../../model/categoryModel')
 const Cart = require('../../model/cartModel')
 const WishList = require('../../model/wishlistModel')
 
-const {calculateDiscountedPrice, cartPrices} = require('../../helpers/productOffer')
-
-
-// async function cartPrices(cart){
-//     let cartItems = cart.items.filter(item => !item.isDeleted);
-//     let subTotal = 0;
-
-//     for (let item of cartItems) {
-//         const product = await Products.findOne({ _id: item.productId, isBlocked: false })
-//             .populate('category')
-//             .populate('brand');
-
-//         if (product) {
-
-//             // Fallback logic
-//             if (item.quantity >= product.quantity) {
-//                 console.log('Product Stock : ', product.quantity)
-//                 console.log('Item quantity before : ', item.quantity)
-//                 item.quantity = product.quantity;
-//                 cart.markModified('items');
-//             }  
-
-//             if (product.stock <= 0) {
-//                 item.isDeleted = true;
-//                 cart.markModified('items');
-//                 continue;
-//             }
-
-//             item.productId = product;
-
-//             const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
-
-//             item.itemPrice = product.regularPrice;
-//             item.discount = totalOffer;
-//             item.price = discountedPrice;
-//             item.totalPrice = discountedPrice * item.quantity;
-//             console.log('Total Price : ', item.totalPrice)
-//             item.productGst = product.gst || Math.round(product.regularPrice * 0.18);
-
-//             subTotal += item.totalPrice;
-
-//         } else {
-//             item.productId = null;
-//         }
-//     }
-
-//     cartItems = cartItems.filter(item => item.productId !== null);
-
-//     cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-//     cart.GST = (cart.totalAmount * 18 ) / 118;
-
-//     await cart.save();
-
-//     const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
-//     const totalOfferedPrice = totalOfferPrice - cart.totalAmount;
-
-//     return { 
-//         cartItems,
-//         subTotal,
-//         totalOfferPrice,
-//         totalOfferedPrice,
-//         cartTotal : cart.totalAmount
-//     }
-// }
+const { calculateDiscountedPrice, cartPrices } = require('../../helpers/productOffer')
+const Product = require('../../model/productModel')
 
 
 const loadCart = async (req, res) => {
@@ -86,7 +22,7 @@ const loadCart = async (req, res) => {
         let totalOfferedPrice = 0;
 
         if (cart && cart.items.length > 0) {
-            ({cartItems, subTotal, totalOfferPrice, totalOfferedPrice} = await cartPrices(cart))
+            ({ cartItems, subTotal, totalOfferPrice, totalOfferedPrice } = await cartPrices(cart))
         }
 
         return res.render('cart', {
@@ -110,10 +46,6 @@ const addToCart = async (req, res) => {
     try {
         const userId = req.session.user;
 
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not Authenticated!!' });
-        }
-
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found!!' });
@@ -122,7 +54,7 @@ const addToCart = async (req, res) => {
         const { productId, quantity } = req.body;
         const parsedQuantity = parseInt(quantity);
 
-        const wishList = await WishList.findOne({userId }).populate('items.product');
+        const wishList = await WishList.findOne({ userId }).populate('items.product');
         if (wishList) {
             const wishlistItem = wishList.items.find(
                 item => item.product._id.toString() === productId.toString()
@@ -142,17 +74,16 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found!!' });
         }
 
-        if(product.status !== 'Available'){
-            return res.status(401).json({ success : false, message : 'This item is not available!!', productId})
+        if (product.status !== 'Available') {
+            return res.status(401).json({ success: false, message: 'This item is not available!!', productId })
         }
 
         const stock = product.quantity;
 
-        // Offer calculation
-        const {discountedPrice, totalOffer} = calculateDiscountedPrice(product)
+        const { discountedPrice, totalOffer } = calculateDiscountedPrice(product)
         const gstValue = +(product.gst * parsedQuantity).toFixed(2);
 
-        const newCartItem = { 
+        const newCartItem = {
             productId: product._id,
             quantity: parsedQuantity,
             discount: totalOffer,
@@ -185,10 +116,10 @@ const addToCart = async (req, res) => {
             existingItem.totalPrice = discountedPrice * existingItem.quantity;
             existingItem.productGst = +(product.gst * existingItem.quantity).toFixed(2);
         } else {
-            if(cartDoc.items.length < 6){
+            if (cartDoc.items.length < 6) {
                 cartDoc.items.push(newCartItem);
-            }else{
-                return res.status(401).json({ success : false , message : 'You can save 6 items in your cart!!'})
+            } else {
+                return res.status(401).json({ success: false, message: 'You can save 6 items in your cart!!' })
             }
         }
 
@@ -217,9 +148,6 @@ const addToCart = async (req, res) => {
 const cartUpdate = async (req, res) => {
     try {
         const userId = req.session.user;
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not Authenticated!!' });
-        }
 
         const user = await User.findById(userId);
         if (!user) {
@@ -228,14 +156,12 @@ const cartUpdate = async (req, res) => {
 
         const { productId, quantity } = req.body;
         const parsedQuantity = parseInt(quantity);
-        console.log('Requested Quantity:', parsedQuantity);
 
         const product = await Products.findOne({
             _id: productId,
             isDeleted: false,
             isBlocked: false
         }).populate('category').populate('brand');
-
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found!!' });
         }
@@ -260,13 +186,7 @@ const cartUpdate = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Item not found in cart' });
         }
 
-        // Discount calculation
-        const productOffer = product.productOffer || 0;
-        const categoryOffer = product.category?.categoryOffer || 0;
-        const brandOffer = product.brand?.brandOffer || 0;
-        const totalOffer = productOffer + categoryOffer + brandOffer;
-
-        const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
+        const { discountedPrice, totalOffer } = calculateDiscountedPrice(product)
         const gstValue = +(product.gst * parsedQuantity).toFixed(2);
 
         existItem.quantity = parsedQuantity;
@@ -309,25 +229,24 @@ const cartUpdate = async (req, res) => {
 
 const removeItem = async (req, res) => {
     try {
+
         const userId = req.session.user;
+        const { productId } = req.body;
 
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not authenticated!' });
-        }
+        const [user, product, cartDoc] = await Promise.all([
+            User.findById(userId),
+            Product.findOne({ _id: productId, isDeleted: false, isBlocked: false }),
+            Cart.findOne({ userId }).populate('items.productId')
+        ])
 
-        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found!' });
         }
 
-        const { productId } = req.body;
-
-        const product = await Products.findOne({ _id: productId, isDeleted: false, isBlocked: false });
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found!' });
         }
 
-        const cartDoc = await Cart.findOne({ userId }).populate('items.productId');
         if (!cartDoc) {
             return res.status(404).json({ success: false, message: 'Cart not found!' });
         }
@@ -358,7 +277,7 @@ const removeItem = async (req, res) => {
         let totalOfferedPrice = 0;
 
         if (cartDoc && cartDoc.items.length > 0) {
-            ({cartItems, subTotal, totalOfferPrice, totalOfferedPrice, cartTotal} = await cartPrices(cartDoc))
+            ({ cartItems, subTotal, totalOfferPrice, totalOfferedPrice, cartTotal } = await cartPrices(cartDoc))
         }
 
         return res.status(200).json({
@@ -368,7 +287,7 @@ const removeItem = async (req, res) => {
             subTotal,
             totalOfferedPrice,
             cartTotal,
-            cartCount : cartDoc.items.length
+            cartCount: cartDoc.items.length
         });
 
     } catch (error) {
@@ -407,11 +326,11 @@ const cartToWishlist = async (req, res) => {
 
         await cartDoc.save();
 
-        let wishlist = await WishList.findOne({userId }).populate('items.product');
+        let wishlist = await WishList.findOne({ userId }).populate('items.product');
 
         if (!wishlist) {
             wishlist = new WishList({
-                userId,   
+                userId,
                 items: [{ product: product._id }]
             });
         } else {
@@ -422,9 +341,9 @@ const cartToWishlist = async (req, res) => {
             }
         }
 
-        
-        
-        
+
+
+
         await wishlist.save();
 
         let cartItems = [];
@@ -434,7 +353,7 @@ const cartToWishlist = async (req, res) => {
         let totalOfferedPrice = 0;
 
         if (cartDoc && cartDoc.items.length > 0) {
-            ({cartItems, subTotal, totalOfferPrice, totalOfferedPrice, cartTotal} = await cartPrices(cartDoc))
+            ({ cartItems, subTotal, totalOfferPrice, totalOfferedPrice, cartTotal } = await cartPrices(cartDoc))
         }
 
         return res.status(200).json({
@@ -444,7 +363,7 @@ const cartToWishlist = async (req, res) => {
             subTotal,
             totalOfferedPrice,
             cartTotal,
-            cartCount : cartDoc.items.length
+            cartCount: cartDoc.items.length
         });
 
     } catch (error) {
@@ -453,33 +372,33 @@ const cartToWishlist = async (req, res) => {
     }
 };
 
-const toCheckout = async (req,res) => {
+const toCheckout = async (req, res) => {
     try {
-        
+
         const userId = req.session.user
 
-        const cart = await Cart.findOne({userId}).populate('items.productId')
+        const cart = await Cart.findOne({ userId }).populate('items.productId')
 
         const cartItems = cart.items
 
-        if(cartItems.length < 1){
-            return res.status(401).json({ success : false, message : 'Your cart is empty!!'})
+        if (cartItems.length < 1) {
+            return res.status(401).json({ success: false, message: 'Your cart is empty!!' })
         }
 
-        for( let item of cartItems){
-            if(item.quantity < 1){
-                return res.status(401).json({ success : false, message : 'One of item is Not available...', productId : item.productId._id})
+        for (let item of cartItems) {
+            if (item.quantity < 1) {
+                return res.status(401).json({ success: false, message: 'One of item is Not available...', productId: item.productId._id })
             }
         }
 
         return res.status(200).json({
-            success : true, 
-            redirectUrl : '/checkout'
+            success: true,
+            redirectUrl: '/checkout'
         })
 
     } catch (error) {
         console.log('Something went wrong while proceeding to checkout...', error)
-        return res.status(500).json({success : false, message : 'Something went wrong while proceeding to checkout...'})
+        return res.status(500).json({ success: false, message: 'Something went wrong while proceeding to checkout...' })
     }
 }
 

@@ -72,7 +72,7 @@
                             <tr>
                                 <td>
                                     <% if (product.productImage && product.productImage.length > 0) { %>
-                                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>" style="width: 100px; height: 100px; object-fit: fill;">
+                                        <img src="<%= product.productImage[0] %>" alt="<%= product.productName %>" style="width: 100px; height: 100px; object-fit: fill;">
                                     <% } else { %>
                                         <span>No Image</span>
                                     <% } %>

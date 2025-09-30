@@ -6,7 +6,7 @@ function returnItem(items , reason , status){
     let returnedItems = items.map(item => {
         item.itemStatus = status;
         item.reason = reason;
-        refundAmount += item.price * item.quantity
+        refundAmount += item.productPrice * item.quantity
         return item
     });
 
@@ -27,7 +27,7 @@ function orderReturn (order , reason , status) {
     order.orderedItems.forEach(item => {
         item.itemStatus = status,
         item.reason = reason
-        refundAmount += item.price * item.quantity
+        refundAmount += item.productPrice * item.quantity
         return item
     })
 

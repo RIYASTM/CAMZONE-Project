@@ -33,7 +33,7 @@ const loadCategory = async (req, res) => {
         }).countDocuments();
 
         const totalPages = Math.ceil(totalCategories / limit);
-
+            console.log(categories)
         return res.render('category', {
             pageTitle: 'Category',
             category: categories,
@@ -82,7 +82,7 @@ const addCategory = async (req, res) => {
             description: sanitizeHtml(categoryDescription.trim()),
             isListed: listCategory === 'on' || listCategory === 'true',
             categoryOffer: parseFloat(offerPrice) || 0,
-            categoryImage: req.file?.filename,
+            categoryImage: req.file?.path,
         });
 
         await newCategory.save();
@@ -145,14 +145,14 @@ const editCategory = async (req, res) => {
         let imageFilename = category.categoryImage;
         if (req.file) {
             if (category.categoryImage) {
-                const oldImagePath = path.join(__dirname, '../../public/uploads/category', category.categoryImage);
+                const publicId = category.categoryImage.split('/').pop().split('.')[0];
                 try {
-                    await fs.unlink(oldImagePath);
+                    await cloudinary.uploader.destroy(`Camzone_IMG/category/${publicId}`);
                 } catch (err) {
-                    console.error('Failed to delete old image:', err);
+                    console.error('Failed to delete old image from Cloudinary:', err);
                 }
             }
-            imageFilename = req.file.filename;
+            imageFilename = req.file?.path;
         }
 
         const updateCategory = await Category.findByIdAndUpdate(
@@ -177,6 +177,7 @@ const editCategory = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: 'Category Successfully Updated',
+            category : updateCategory
         });
     } catch (error) {
         console.error('Category editing failed:', error);
@@ -207,15 +208,10 @@ const addCategoryOffer = async (req, res) => {
             return res.json({ status: false, message: 'Products within this category already have a higher offer!' });
         }
 
-        await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
+        const updatedCategory = await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
 
-        for (const product of products) {
-            product.productOffer = 0;
-            product.salePrice = product.regularPrice;
-            await product.save();
-        }
 
-        return res.status(200).json({ status: true, message: 'Category offer added successfully' });
+        return res.status(200).json({ status: true, message: 'Category offer added successfully', category : updatedCategory });
     } catch (error) {
         console.error('Failed to add category offer:', error);
         return res.status(500).json({ status: false, message: 'Internal server error' });
@@ -230,21 +226,10 @@ const removeCategoryOffer = async (req, res) => {
             return res.status(404).json({ status: false, message: 'Category not found!' });
         }
 
-        const percentage = category.categoryOffer;
-        const products = await Products.find({ category: category._id });
-
-        if (products.length > 0) {
-            for (const product of products) {
-                product.salePrice += Math.floor((product.regularPrice * percentage) / 100);
-                product.productOffer = 0;
-                await product.save();
-            }
-        }
-
         category.categoryOffer = 0;
         await category.save();
 
-        return res.status(200).json({ status: true, message: 'Category offer removed successfully' });
+        return res.status(200).json({ status: true, message: 'Category offer removed successfully', category });
     } catch (error) {
         console.error('Failed to remove category offer:', error);
         return res.status(500).json({ status: false, message: 'Internal server error' });

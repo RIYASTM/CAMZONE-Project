@@ -1,3 +1,8 @@
+const addProductModal = document.getElementById('addProductModal');
+const editProductModal = document.getElementById('editProductModal');
+const deleteProductModal = document.getElementById('deleteProductModal');
+const addProductForm = document.getElementById('addProductForm');
+const editProductForm = document.getElementById('editProductForm');
 
 document.addEventListener('DOMContentLoaded', () => {
     const regularPriceInput = document.getElementById('editRegularPrice');
@@ -86,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const hasImages = Object.keys(croppedBlobs).length > 0;
+        const hasImages = Object.keys(croppedBlobs).length >= 3;
         if (!hasImages) {
-            showNotification('Images are required!!', 'error')
+            showNotification('At least three images are required!', 'error');
             return;
         }
 
@@ -102,15 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
 
+            console.log(5);
             const data = await response.json();
+            console.log('Server response:', data);
             if (!data.success) {
-                showNotification(data.message || 'Validation error', 'error')
+                const errorMessage = typeof data.message === 'object' ? Object.values(data.message).join(', ') : data.message;
+                showNotification(errorMessage || 'Failed to add product', 'error');
                 return;
             }
-            showNotification(data.message, 'success')
-            window.location.replace(data.redirectUrl)
+            showNotification(data.message, 'success');
+            window.location.replace(data.redirectUrl);
         } catch (error) {
-            console.error('Something went wrong : ', error.message)
+            console.error('Something went wrong: ', error.message);
+            showNotification('Something went wrong while adding product: ' + error.message, 'error');
         }
     });
 
@@ -135,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const finalImages = [];
-
         existingImages.forEach((img, index) => {
             if (img && img !== null) {
                 finalImages.push(img);
@@ -152,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const totalImages = finalImages.length + Object.keys(croppedBlobs).length;
         if (totalImages < 3) {
-            showNotification('At least 3 images are required!!', 'error')
+            showNotification('At least 3 images are required!', 'error');
             return;
         }
 
@@ -162,15 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
             const data = await response.json();
+            console.log('Server response:', data);
             if (!data.success) {
-                showNotification(data.message || 'Validation error', 'error')
+                const errorMessage = typeof data.message === 'object' ? Object.values(data.message).join(', ') : data.message;
+                showNotification(errorMessage || 'Failed to update product', 'error');
                 return;
             }
-            showNotification(data.message || 'Product updated!!', 'success')
-            window.location.replace(data.redirectUrl)
+            showNotification(data.message || 'Product updated successfully', 'success');
+            window.location.replace(data.redirectUrl);
             hideEditProductModal();
         } catch (error) {
-            console.error('SOmething went wrong on editing : ', error.message)
+            console.error('Something went wrong on editing: ', error.message);
+            showNotification('Something went wrong while editing product: ' + error.message, 'error');
         }
     });
 
@@ -198,12 +209,6 @@ let currentImageIndex;
 let currentModalType;
 let croppedBlobs = {};
 let existingImages = [];
-
-const addProductModal = document.getElementById('addProductModal');
-const editProductModal = document.getElementById('editProductModal');
-const deleteProductModal = document.getElementById('deleteProductModal');
-const addProductForm = document.getElementById('addProductForm');
-const editProductForm = document.getElementById('editProductForm');
 
 function triggerFileInput() {
     const fileInput = document.getElementById(currentModalType === 'add' ? 'productImages' : 'editProductImages');
@@ -275,7 +280,7 @@ function handleFileSelect(event) {
             cropper.destroy();
         }
 
-    
+
         const aspectRatioSelect = document.getElementById(currentModalType === 'add' ? 'cropperAspectRatio' : 'editCropperAspectRatio');
         const aspectRatio = parseFloat(aspectRatioSelect.value);
 
@@ -339,13 +344,13 @@ function saveCroppedImage() {
 function removeImage(modalType, index) {
     const previewContainer = document.getElementById(modalType === 'add' ? 'imagePreviewContainer' : 'editImagePreviewContainer');
     const previewBox = previewContainer.querySelector(`.image-preview-box[data-index="${index}"]`);
-    
+
     previewBox.innerHTML = '';
 
     delete croppedBlobs[index];
 
     if (modalType === 'edit') {
-        existingImages[index] = null; 
+        existingImages[index] = null;
         console.log('Image removed at index:', index);
         console.log('Updated existing images:', existingImages);
     }
@@ -430,7 +435,7 @@ function showEditProductModal(id, name, description, brand, category, regularPri
             previewBox.innerHTML = '';
 
             const img = document.createElement('img');
-            img.src = `/uploads/products/${image}`;
+            img.src = `${image}`;
             img.alt = `Product Image ${index + 1}`;
 
             const removeBtn = document.createElement('div');
@@ -451,7 +456,6 @@ function showEditProductModal(id, name, description, brand, category, regularPri
     console.log('Initial existing images:', existingImages);
     editProductModal.style.display = 'block';
 }
-
 
 function hideEditProductModal() {
     editProductModal.style.display = 'none';
@@ -521,12 +525,18 @@ function displayFormError(productForm, errors) {
 function validateForm(data) {
     const salePrice = Number(data.salePrice);
     const regularPrice = Number(data.regularPrice);
+    const productOffer = Number(data.productOffer);
+    const stock = Number(data.stock);
 
     const digit = /^\d+(\.\d{1,2})?$/;
     let errors = {};
 
     if (!data.productName) {
         errors.productName = 'Name is required!';
+    } else if (data.productName.trim().length > 30) {
+        errors.productName = 'Name is too long!';
+    } else if (data.productName.trim().length < 4) {
+        errors.productName = 'Name should contain at least 4 characters!';
     }
 
     if (!data.description) {
@@ -543,30 +553,32 @@ function validateForm(data) {
 
     if (!regularPrice) {
         errors.regularPrice = 'Regular Price is required!';
-    } else if (!digit.test(regularPrice)) {
+    } else if (isNaN(regularPrice) || !digit.test(regularPrice)) {
         errors.regularPrice = 'Regular Price should be a valid number!';
     }
 
     if (!salePrice && !data.productOffer) {
         errors.salePrice = 'Sale Price is required!';
-    } else if (!digit.test(salePrice)) {
+    } else if (isNaN(salePrice) || !digit.test(salePrice)) {
         errors.salePrice = 'Sale Price should be a valid number!';
     } else if (salePrice > regularPrice) {
         errors.salePrice = 'Sale Price should be less than Regular Price!';
     }
 
-    if (!data.stock) {
+    if (!stock) {
         errors.stock = 'Stock is required!';
-    } else if (!digit.test(data.stock)) {
+    } else if (isNaN(stock) || !Number.isInteger(stock)) {
         errors.stock = 'Stock should be a whole number!';
     }
 
     if (data.productOffer) {
-        if (parseInt(data.productOffer) >= 100) {
+        if (isNaN(productOffer)) {
+            errors.productOffer = 'Offer should be a whole number!';
+        } else if (productOffer >= 100) {
             errors.productOffer = 'Offer should be under 100!';
-        } else if (parseInt(data.productOffer) < 0) {
+        } else if (productOffer < 0) {
             errors.productOffer = 'Negative value not acceptable!';
-        } else if (!digit.test(data.productOffer)) {
+        } else if (!Number.isInteger(productOffer)) {
             errors.productOffer = 'Offer should be a whole number!';
         }
     }
@@ -575,59 +587,57 @@ function validateForm(data) {
 }
 
 function showNotification(message, type) {
-    // Create notification element
+    const displayMessage = typeof message === 'object' ? JSON.stringify(message) : message;
+    console.log('Notification message:', displayMessage, 'Type:', type);
+
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.textContent = message;
+    notification.textContent = displayMessage;
 
-    // Add styles
     notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 5px;
-                    color: white;
-                    font-weight: 500;
-                    z-index: 1000;
-                    animation: slideIn 0.3s ease;
-                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
-                `;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+    `;
 
-    // Add animation styles
     const style = document.createElement('style');
     style.textContent = `
-                    @keyframes slideIn {
-                        from {
-                            transform: translateX(100%);
-                            opacity: 0;
-                        }
-                        to {
-                            transform: translateX(0);
-                            opacity: 1;
-                        }
-                    }
-                    @keyframes slideOut {
-                        from {
-                            transform: translateX(0);
-                            opacity: 1;
-                        }
-                        to {
-                            transform: translateX(100%);
-                            opacity: 0;
-                        }
-                    }
-                `;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
 
     if (!document.querySelector('style[data-notification]')) {
         style.setAttribute('data-notification', 'true');
         document.head.appendChild(style);
     }
 
-    // Add to page
     document.body.appendChild(notification);
 
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {

@@ -196,9 +196,8 @@ function validateProfile(data) {
     console.log(data)
     const namepattern = /^[A-Za-z\s]+$/;
     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
-    const digit = /\d/
-    const phonePattern = /^\[6-9]\d{9}$/
-;
+    const digit = /\d/;
+    const phonePattern = /^\[6-9]\d{9}$/;
 
     let error = {}
 
@@ -273,7 +272,7 @@ function validateAddress(data){
             }
             if (!data.district) {
                 errors.district = "District is required.";
-            } else if (data.disctrict.trim().length > 15){
+            } else if (data.district.trim().length > 15){
                 errors.district = 'District caracters should under 15'
             }
             if (!data.country) {

@@ -13,7 +13,7 @@ const loadProducts = async (req, res) => {
         const limit = 5;
         const skip = (page - 1) * limit
 
-        const query = { isDeleted: false};
+        const query = { isDeleted: false };
 
         if (search) {
             const brandIds = await Brands.find({
@@ -86,8 +86,6 @@ const addProduct = async (req, res) => {
     try {
         const data = req.body;
 
-        console.log('brand : ', data.brand)
-
         const existProduct = await Products.findOne({ productName: data.productName }).populate(['category', 'brand']);
 
         if (existProduct) {
@@ -99,7 +97,8 @@ const addProduct = async (req, res) => {
             return res.status(400).json({ success: false, message: errors });
         }
 
-        const productImages = req.files ? req.files.map(file => file.filename) : [];
+        // const productImages = req.files ? req.files.map(file => file.filename) : [];
+        const productImages = req.files ? req.files.map(file => file.path) : [];
         if (productImages.length === 0) {
             return res.status(400).json({ success: false, message: 'There is no images added!!!' });
         }
@@ -107,6 +106,7 @@ const addProduct = async (req, res) => {
         if (productImages.length < 3) {
             return res.status(401).json({ success: false, message: 'At least three images needed!!!' })
         }
+        console.log('image : ', productImages)
 
         const regularPrice = parseFloat(data.regularPrice)
         const gst = (regularPrice * 18) / 118
@@ -161,9 +161,20 @@ const addProduct = async (req, res) => {
 
 const editProduct = async (req, res) => {
     try {
+        console.log('req.body:', req.body);
+        console.log('req.files:', req.files);
         const data = req.body;
         const productId = data.id;
         const page = data.currentPages;
+
+        const product = await Products.findById(productId).populate('brand').populate('category')
+
+        const isBlocked = product.isBlocked
+        const isDeleted = product.isDeleted
+
+        if (isBlocked || isDeleted) {
+            return res.status(401).json({ success: false, message: `This product is ${isBlocked ? 'Blocked' : 'Deleted'}` })
+        }
 
         const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } }).populate('category').populate('brand');
         if (existProduct) {
@@ -189,7 +200,10 @@ const editProduct = async (req, res) => {
             finalImages.push(existingImages);
         }
 
-        const newImages = req.files ? req.files.map(file => file.filename) : [];
+        // const newImages = req.files ? req.files.map(file => file.filename) : [];
+        // finalImages = [...finalImages, ...newImages];
+
+        const newImages = req.files ? req.files.map(file => file.path) : [];
         finalImages = [...finalImages, ...newImages];
 
         finalImages = [...new Set(finalImages.filter(img => img && img !== 'null'))];
@@ -214,15 +228,6 @@ const editProduct = async (req, res) => {
             salePrice = Math.round(regularPrice - (regularPrice * productOffer / 100));
         } else {
             salePrice = regularPrice;
-        }
-
-        const product = await Products.findById(productId).populate('brand').populate('category')
-
-        const isBlocked = product.isBlocked
-        const isDeleted = product.isDeleted
-
-        if(isBlocked || isDeleted){
-            return res.status(401).json({ success : false, message : `This product is ${isBlocked ? 'Blocked' : 'Deleted'}`})
         }
 
         const categoryOffer = parseFloat(product?.category?.categoryOffer) || 0
@@ -279,7 +284,17 @@ const editProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
     try {
 
+        console.log('req.body:', req.body);
+        console.log('req.files:', req.files);
+
         const productId = req.body.productId
+
+        const product = await Products.findById(productId)
+        const isBlocked = product.isBlocked
+        const isDeleted = product.isDeleted
+        if (isBlocked || isDeleted) {
+            return res.status(401).json({ success: false, message: `This product already ${isBlocked ? 'Blocked' : 'Deleted'}` })
+        }
 
         const deletedProduct = await Products.findByIdAndUpdate(
             productId,

@@ -504,6 +504,12 @@ body {
     font-size: 12px;
 }
 
+/* Date Inputs */
+.date-inputs{
+    display: flex;
+    gap: 8px;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .sales-summary {

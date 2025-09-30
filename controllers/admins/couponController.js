@@ -1,13 +1,14 @@
 const Coupons = require('../../model/couponModel');
 const { v4: uuidv4 } = require('uuid');
 const { validateCoupon } = require('../../helpers/validations')
+const mongoose =require('mongoose')
 
 const loadCoupons = async (req, res) => {
     try {
-        const { search = '', sort = 'default', filter = 'all', page = 1 } = req.query;
+        const { search = '', sort = 'all', filter = 'all', page = 1 } = req.query;
         
-        const limit = 10;
-        let query = {};
+        const limit = 10; 
+        let query = { isDeleted : false};
 
         if (search) {
             query.$or = [
@@ -24,13 +25,29 @@ const loadCoupons = async (req, res) => {
             query.validUpto = { $lt: new Date() };
         }
 
-        let sortOption = { createOn: -1 };
-        if (sort === 'name') sortOption = { couponName: 1 };
-        if (sort === 'discount') sortOption = { discount: -1 };
-        if (sort === 'validity') sortOption = { validUpto: 1 };
+        let sortOption;
+
+        switch (sort) {
+            case 'all':
+                sortOption = { createdOn: -1 };
+                break;
+            case 'name':
+                sortOption = { couponName: 1 };
+                break;
+            case 'name_desc':
+                sortOption = { couponName: -1 };
+                break;
+            case 'discount':
+                sortOption = { discount: -1 };
+                break;
+            default:
+                sortOption = { createdOn: -1 };
+        }
+
 
         const coupons = await Coupons.find(query)
             .sort(sortOption)
+            .collation({ locale: 'en', strength: 2 })
             .skip((page - 1) * limit)
             .limit(limit);
 
@@ -65,7 +82,6 @@ const loadCoupons = async (req, res) => {
         });
     }
 };
-
 
 const getCoupon = async (req, res) => {
     try {
@@ -104,7 +120,7 @@ const getCoupon = async (req, res) => {
 const addCoupon = async (req, res) => {
     try {
         const data = req.body;
-
+        console.log(data)
         const errors = validateCoupon(data);
         if (errors) {
             return res.status(400).json({ success: false, message: 'Validation failed', errors });
@@ -225,12 +241,17 @@ const updateCoupon = async (req, res) => {
 
 const deleteCoupon = async (req, res) => {
     try {
-        const couponId = req.params.id;
-        const coupon = await Coupons.findByIdAndDelete(couponId);
+        const couponId = req.params.id || new mongoose.Types.ObjectId(req.params.id) ;
+        const coupon = await Coupons.findByIdAndUpdate(couponId,
+            {isDeleted : true, isList : false}, 
+            {new : true, runValidators : true}
+        );    
         if (!coupon) {
             return res.status(404).json({ success: false, message: 'Coupon not found' });
         }
+
         return res.status(200).json({ success: true, message: 'Coupon deleted successfully!' });
+
     } catch (error) {
         console.error('Error deleting coupon:', error);
         return res.status(500).json({ success: false, message: `Error deleting coupon: ${error.message}` });

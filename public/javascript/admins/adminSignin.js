@@ -8,8 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const email = document.getElementById('email').value
         const password = document.getElementById('password').value
 
-
-
         let errors = validateForm({ email, password })
         if (errors) {
             displayFormError(signinForm, errors)
@@ -37,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
             Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
         }
     })
+    
     function displayFormError(signinform, errors) {
         clearErrors(signinform)
 

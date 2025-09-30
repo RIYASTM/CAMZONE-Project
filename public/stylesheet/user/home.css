@@ -180,6 +180,10 @@ body {
     padding: 50px 5%;
 }
 
+.popular-products h2{
+    margin-bottom: 15px;
+}
+
 .product-filters {
     display: flex;
     gap: 20px;

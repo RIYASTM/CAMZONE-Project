@@ -6,10 +6,7 @@ const loadCoupon = async (req, res) => {
     try {
 
         const search = req.query.search || ''
-
         const userId = req.session.user
-
-        const cart = await Cart.findOne({ userId })
 
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
@@ -20,13 +17,17 @@ const loadCoupon = async (req, res) => {
             query.couponName = { $regex: search.trim(), $options: 'i' };
         }
 
-        const coupons = await Coupon.find(query)
-            .sort({ createdAt: -1 })
-            .limit(limit)
-            .skip((page - 1) * limit)
-            .exec();
-        const totalCoupons = await Coupon.countDocuments(query)
-        const totalPages = Math.ceil((totalCoupons >= 2 ? totalCoupons : 1) / limit)
+        const [cart, coupons, totalCoupons] = await Promise.all([
+            Cart.findOne({ userId }),
+            Coupon.find(query)
+                .sort({ createdAt: -1 })
+                .limit(limit)
+                .skip((page - 1) * limit)
+                .exec(),
+            Coupon.countDocuments(query)
+        ])
+
+        const totalPages = Math.max(1, Math.ceil(totalCoupons / limit))
 
         return res.render('coupon', {
             currentPage: 'coupon',
@@ -46,53 +47,38 @@ const applyCoupon = async (req, res) => {
     try {
 
         const userId = req.session.user
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not Authenticated...' })
-        }
+        const { couponCode, shippingCharge } = req.body
 
-        const user = await User.findById(userId)
+        const [user, coupon, cart] = await Promise.all([
+            User.findById(userId),
+            Coupon.findOne({ couponCode }),
+            Cart.findOne({ userId })
+        ])
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found...' })
-        }
-
-        const {couponCode, shippingCharge} = req.body
-
-        const coupon = await Coupon.findOne({ couponCode })
-
-        if (!coupon) {
+        } else if (!coupon) {
             return res.status(401).json({ success: false, message: 'Coupon not found...' })
-        }
-
-        const cart = await Cart.findOne({ userId })
-
-        if (!cart) {
+        } else if (!cart) {
             return res.status(401).json({ success: false, message: 'Cart not found...' })
         }
 
         const timeNow = new Date()
 
-        if(timeNow > coupon.validUpto){
-            return res.status(401).json({ success : false , message : 'Coupon has been expired...'})
+        if (timeNow > coupon.validUpto) {
+            return res.status(401).json({ success: false, message: 'Coupon has been expired...' })
         }
 
         if (coupon.discountType === 'fixed') {
             if (cart.totalAmount <= coupon.discount) {
-                return res.status(401).json({ success: false, message: `Your order need minimum amount morethan - ${coupon.discount}...` })
+                return res.status(401).json({ success: false, message: `Your order needs to be more than - ${coupon.discount}...` })
             }
         }
 
         if (cart.totalAmount < coupon.minOrder) {
-            return res.status(401).json({ success: false, message: `This coupon needs minimum RS- ${coupon.minOrder} order...` })
-        }
-
-        if(cart.totalAmount > coupon.maxOrder){
-            return res.status(401).json({ success : false, message : `This order should under RS- ${coupon.maxOrder}..`})
-        }
-
-        const today = new Date()
-
-        if (coupon.validUpto < today) {
-            return res.status(401).json({ success: false, message: 'This coupon has been expired...' })
+            return res.status(401).json({ success: false, message: `Your order needs to be more than RS- ${coupon.minOrder} order...` })
+        } else if (cart.totalAmount > coupon.maxOrder) {
+            return res.status(401).json({ success: false, message: `This order should under RS- ${coupon.maxOrder}..` })
         }
 
         if (coupon.couponLimit <= 0) {
@@ -100,7 +86,7 @@ const applyCoupon = async (req, res) => {
         }
 
         const couponDiscount = coupon.discount
-        const totalAmount = cart.totalAmount + shippingCharge
+        const totalAmount = cart.totalAmount + Number(shippingCharge)
         const discount = Math.floor(coupon.discountType === 'percentage' ? (totalAmount * couponDiscount) / 100 : couponDiscount)
 
         const finalAmount = Math.floor(totalAmount - discount)
@@ -117,7 +103,7 @@ const applyCoupon = async (req, res) => {
 
     } catch (error) {
         console.log('Something went wrong while applying coupon : ', error)
-        return res.status(500).json({ success: false, message: `Something went wrong while applying coupon : ${error.message}`, error })
+        return res.status(500).json({ success: false, message: `Something went wrong while applying coupon : ${error.message || error.stack}`, error })
     }
 }
 
@@ -127,24 +113,22 @@ const removeCoupon = async (req, res) => {
         const shippingCharge = req.body.shippingCharge
 
         const userId = req.session.user
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not authenticated..' })
-        }
 
-        const user = await User.findById(userId)
+        const [user, cart] = await Promise.all([
+            User.findById(userId),
+            Cart.findOne({ userId })
+        ])
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found..' })
         }
-
-        const cart = await Cart.findOne({ userId })
         if (!cart) {
             return res.status(401).json({ success: false, message: 'Cart not found...' })
         }
 
         req.session.appliedCoupon = null;
 
-        const finalAmount = cart.totalAmount + shippingCharge
-
+        const finalAmount = cart.totalAmount + Number(shippingCharge)
         const totalGst = Math.floor(cart.GST)
 
         return res.status(200).json({ success: true, message: 'Coupon successfully removed..', finalAmount, totalGst })

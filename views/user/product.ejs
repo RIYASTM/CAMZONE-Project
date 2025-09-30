@@ -29,7 +29,7 @@
                 <!-- Main Image with Zoom Container -->
                 <div class="main-image-container">
                     <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 0) { %>
-                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>"
+                        <img src="<%= product.productImage[0] %>" alt="<%= product.productName %>"
                             class="main-image" id="mainImage">
                     <% } else { %>
                         <span>No Main Image</span>
@@ -43,10 +43,10 @@
                     <% if (product.productImage && Array.isArray(product.productImage) && product.productImage.length > 1) { %>
                         <div class="thumbnail-wrapper" id="thumbnailWrapper">
                             <% product.productImage.forEach((image, index)=> { %>
-                                <img src="/uploads/products/<%= image %>"
+                                <img src="<%= image %>"
                                     alt="<%= product.productName %> Thumbnail <%= index %>"
                                     class="thumbnail <%= index === 0 ? 'active' : '' %>"
-                                    data-src="/uploads/products/<%= image %>"
+                                    data-src="<%= image %>"
                                     data-index="<%= index %>">
                             <% }) %>
                         </div>
@@ -140,7 +140,7 @@
                 <% relatedProducts.forEach(product => { %>
                 <div class="product-card" data-id="<%=product._id%>">
                     <% if (product.productImage && product.productImage.length> 0) { %>
-                        <img src="/uploads/products/<%= product.productImage[0] %>"
+                        <img src="<%= product.productImage[0] %>"
                             alt="<%= product.productName %>">
                     <% } else { %>
                         <span>No Image</span>

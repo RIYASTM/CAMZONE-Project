@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/stylesheet/admin/customers.css">
     <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
     <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
-
+    <link rel="stylesheet" href="/stylesheet/partials/pagination.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Font Awesome for icons -->
@@ -16,7 +16,7 @@
 <body>
     <div class="container">
         <!-- Include Sidebar -->
-        <%- include('../partials/admins/sidebar') %>
+        <%- include('../partials/admins/sidebar') %> 
         
         <!-- Main Content -->
         <div class="main-content">
@@ -31,7 +31,6 @@
                         <option value="default">Sort by</option>
                         <option value="name">Name</option>
                         <option value="date">Date</option>
-                        <option value="status">Status</option>
                     </select>
                 </div>
                 <div class="top-center" style="position: relative; display: inline-block;">
@@ -44,7 +43,7 @@
                     <select class="filter">
                         <option value="all">Filter</option>
                         <option value="active">Active</option>
-                        <option value="deleted">Blocked</option>
+                        <option value="blocked">Blocked</option>
                     </select>
                 </div> 
             </div>
@@ -62,17 +61,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <%for(let i = 0 ; i < data.length ; i ++ ) {%>
+                        <% datas.forEach(data =>{ %>
                             <tr>
-                                <td><%= data[i].name %></td>
-                                <td><%= data[i].email %></td>
-                                <td><%= data[i].phone %></td>
-                                <td><%= data[i].createdOn.toString().split(' ').slice(1,4).join(' ') %> </td>
+                                <td><%= data.name %></td>
+                                <td><%= data.email %></td>
+                                <td><%= data.phone %></td>
+                                <td><%= data.createdOn.toString().split(' ').slice(1,4).join(' ') %> </td>
                                 <td>
-                                    <button class="blockCustomer filter" data-id="<%= data[i]._id %>" data-name="<%= data[i].name %>" data-page="<%= currentPages %>" data-blocked="<%= data[i].isBlocked %>" ><%= data[i].isBlocked ? 'Unblock' : 'Block' %></button>
+                                    <button class="blockCustomer filter" data-id="<%= data._id %>" data-name="<%= data.name %>" data-page="<%= currentPages %>" data-blocked="<%= data.isBlocked %>" ><%= data.isBlocked ? 'Unblock' : 'Block' %></button>
                                 </td>
                             </tr>
-                        <% } %>
+                        <% }) %>
                     </tbody>
                 </table>
             </div>
@@ -87,10 +86,52 @@
                        <button type="button" class="btn cancel-btn" id="cancelBlockButton">Cancel</button>
                    </div>
                </div>
-           </div>
+            </div>
 
             <!-- Pagination -->
-            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+            <div class="pagination" data-total-pages="<%= totalPages %>">
+                <span><%= currentPages %> of <%= totalPages %></span>
+                <div class="pagination-controls">
+                    <!-- First Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="1" 
+                        <%= currentPages === 1 ? 'disabled' : '' %>
+                        title="Go to first page">
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+
+                    <!-- Previous Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="<%= currentPages - 1 %>" 
+                        <%= currentPages === 1 ? 'disabled' : '' %>
+                        title="Previous page">
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+
+                    <span> - </span>
+
+                    <!-- Next Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="<%= currentPages + 1 %>" 
+                        <%= currentPages === totalPages ? 'disabled' : '' %>
+                        title="Next page">
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+
+                    <!-- Last Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="<%= totalPages %>" 
+                        <%= currentPages === totalPages ? 'disabled' : '' %>
+                        title="Go to last page">
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div> 
     

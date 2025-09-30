@@ -1,30 +1,199 @@
 
 document.addEventListener('DOMContentLoaded', () => {
-    const search = document.getElementById('search');
-    let searchValue = search.value;
+    const searchBar = document.getElementById('search');
+    const sortBy = document.querySelector('.sort-by');
+    const filter = document.querySelector('.filter');
+    const clearButton = document.getElementById('clear-button');
 
-    document.getElementById('search').addEventListener('keypress', function (e) {
-        const searchValue = search.value;
+    const paginationDiv = document.querySelector('.pagination');
+
+    let currentState = {
+        search: searchBar.value.trim(),
+        sort: sortBy.value,
+        filter: filter.value,
+        page: 1
+    }; 
+
+    // Debounce helper
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+        };
+    }
+
+    // Fetch orders
+    async function fetchOrders({ search, sort, filter, page }) {
+        try {
+            let queryParts = [];
+            if (search) queryParts.push(`search=${encodeURIComponent(search)}`);
+            if (sort) queryParts.push(`sort=${sort}`);
+            if (filter) queryParts.push(`filter=${filter}`);
+            if (page) queryParts.push(`page=${page}`);
+
+            const finalQuery = queryParts.join('&');
+
+            const response = await fetch(`/admin/orders?${finalQuery}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                updateOrdersTable(result.orders, parseInt(result.currentPages));
+                updatePagination(parseInt(result.currentPages), parseInt(result.totalPages));
+            } else {
+                console.error('Failed to fetch orders:', result.message);
+            }
+        } catch (error) {
+            console.error('Something went wrong:', error);
+        }
+    }
+
+    
+    document.querySelectorAll('.order-details-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            // e.preventDefault()
+            console.log('clicked')
+            const orderId = button.dataset.orderId
+            console.log('orderId : ', orderId)
+            openOrderModal(orderId);
+        });
+    });
+    
+
+    // Attach pagination button listeners
+    paginationDiv.querySelectorAll('.pagination-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = parseInt(btn.dataset.page);
+            if (!isNaN(page) && page >= 1) {
+                currentState.page = page;
+                fetchOrders({ ...currentState });
+            }
+        });
+    });
+
+    // Search bar
+    searchBar.addEventListener('input', debounce(async () => {
+        currentState.search = searchBar.value.trim();
+        currentState.page = 1;
+        await fetchOrders({ ...currentState });
+    }, 300));
+
+    // Enter key triggers search
+    searchBar.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
-            window.location.href = `?search=${searchValue}`;
+            e.preventDefault();
+            currentState.search = searchBar.value.trim();
+            currentState.page = 1;
+            await fetchOrders({ ...currentState });
         }
     });
 
-    if (searchValue) {
-        document.getElementById('clear-button').addEventListener('click', function (e) {
-            searchValue = ''
-            window.location.href = `?search=${searchValue}`;
-        });
-    }
-
-    document.querySelectorAll('.order-details-btn').forEach(button => {
-        button.addEventListener('click', async function () {
-            const orderId = this.getAttribute('data-order-id');
-            await openOrderModal(orderId);
-        });
+    // Sort and filter
+    sortBy.addEventListener('change', async () => {
+        currentState.sort = sortBy.value;
+        currentState.page = 1;
+        await fetchOrders({ ...currentState });
     });
 
+    filter.addEventListener('change', async () => {
+        currentState.filter = filter.value;
+        currentState.page = 1;
+        await fetchOrders({ ...currentState });
+    });
+
+    // Clear button
+    if (clearButton) {
+        clearButton.addEventListener('click', async () => {
+            currentState.search = '';
+            currentState.page = 1;
+            searchBar.value = '';
+            await fetchOrders({ ...currentState });
+        });
+    }
 });
+
+// Update pagination dynamically
+function updatePagination(currentPages, totalPages) {
+    const paginationDiv = document.querySelector('.pagination');
+    if (!paginationDiv) return;
+
+    paginationDiv.innerHTML = `
+        <span>${currentPages} of ${totalPages}</span>
+        <div class="pagination-controls">
+            <button class="pagination-button" data-page="1" ${currentPages === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-left"></i>
+            </button>
+            <button class="pagination-button" data-page="${currentPages - 1}" ${currentPages === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-left"></i>
+            </button>
+            <span> - </span>
+            <button class="pagination-button" data-page="${currentPages + 1}" ${currentPages === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-right"></i>
+            </button>
+            <button class="pagination-button" data-page="${totalPages}" ${currentPages === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-right"></i>
+            </button>
+        </div>
+    `;
+
+    // Attach pagination button listeners
+    paginationDiv.querySelectorAll('.pagination-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = parseInt(btn.dataset.page);
+            if (!isNaN(page) && page >= 1) {
+                currentState.page = page;
+                fetchOrders({ ...currentState });
+            }
+        });
+    });
+}
+
+// Update orders table
+function updateOrdersTable(orders, currentPages) {
+    const tbody = document.querySelector('.orders-table tbody');
+    tbody.innerHTML = '';
+    if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No orders found</td></tr>';
+        return;
+    }
+
+    orders.forEach(order => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${order.orderId}</td>
+            <td>${order.address.name}</td>
+            <td>${new Date(order.createdOn).toDateString().split(' ').slice(1, 4).join(' ')}</td>
+            <td>₹${order.finalAmount}</td>
+            <td>${order.paymentMethod}</td>
+            <td>${order.status}</td>
+            <td>
+                <button class="filter order-details-btn" data-order-id="${order._id}">
+                    Order Details
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Reattach order-details button listeners
+    document.querySelectorAll('.order-details-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            // e.preventDefault()
+            console.log('clicked')
+            const orderId = button.dataset.orderId
+            console.log('orderId : ', orderId)
+            openOrderModal(orderId);
+        });
+    });
+}
+
 
 async function openOrderModal(orderId) { 
     try {
@@ -79,7 +248,7 @@ function populateModal(order) {
     order.orderedItems.forEach(item => {
         const row = document.createElement('tr');
         const imageSrc = item.product.productImage?.[0]
-            ? `/uploads/products/${item.product.productImage[0]}`
+            ? `${item.product.productImage[0]}`
             : '/images/placeholder.jpg';
         row.innerHTML = `
                     <td>

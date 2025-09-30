@@ -61,15 +61,10 @@ async function fromWallet(userId, amount, reason){
     }
     
     const balance = wallet.balance || ''
-
-    
-    console.log("amount : ", amount)
-    console.log('wallet amount : ', balance)
     
     if(!wallet || balance < amount || !balance){
         return {success : false, message : 'Insufficient balance in your wallet!!'}
     }
-
 
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
@@ -93,11 +88,9 @@ async function fromWallet(userId, amount, reason){
                 status : 'Success'
             }
 
-    let updatedWallet
-
     wallet.balance -= amount;
     wallet.transactions.push(transactions)
-    updatedWallet = wallet
+    const updatedWallet = wallet
 
     await updatedWallet.save()
 

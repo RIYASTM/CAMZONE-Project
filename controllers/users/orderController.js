@@ -4,88 +4,89 @@ const Products = require('../../model/productModel')
 const Cart = require('../../model/cartModel')
 const Coupon = require('../../model/couponModel')
 const mongoose = require('mongoose')
-const { search } = require("../../routes/userRouter")
 
-const {addToWallet} = require('../../helpers/wallet')
-const {cancelItem,orderCancel} = require('../../helpers/orderCancelling')
+const { addToWallet } = require('../../helpers/wallet')
+const { cancelItem, orderCancel } = require('../../helpers/orderCancelling')
 
 
-const loadOrderSuccess = async (req,res) => { 
+const loadOrderSuccess = async (req, res) => {
     try {
 
         const search = req.query.search || ''
-
         const userId = req.session.user
-
-        if(!userId){
-            return res.status(401).json({ success :false , message : 'User not authenticated!'})
-        }
-
-        const user = await User.findById(userId)
-
-        if(!user){
-            return res.status(401).json({ success : false , message : 'User not found!'})
-        }
-
         const orderId = req.session.orderId
 
-        const userOrder = await Order.findOne({orderId})
-             .populate("orderedItems.product")
+        const [user, userOrder] = await Promise.all([
+            User.findById(userId),
+            Order.findOne({ orderId })
+                .populate('orderedItems.product')
+        ])
 
-        if(!userOrder){
-            return res.status(401).json({ success : false , message : 'Order not found!'})
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'User not found!' })
         }
-        
-        console.log("Order ID from session:", orderId);
 
-        if(req.session.orderSuccess = true){
-            
-            res.render('orderSuccess',{
-                order : userOrder,
+        if (!userOrder) {
+            return res.status(401).json({ success: false, message: 'Order not found!' })
+        }
+
+        if (req.session.orderSuccess = true) {
+            res.render('orderSuccess', {
+                order: userOrder,
                 search,
-                currentPage : 'orderSuccess'
+                currentPage: 'orderSuccess'
             })
-            
             return req.session.orderSuccess = false
         }
-        
+
         return res.redirect('/')
     } catch (error) {
-        console.log('Failed to render success : ',error )
+        console.log('Failed to render success : ', error)
         return res.redirect('/pageNotFound')
     }
 }
 
-const loadMyOrders = async (req,res) => {
+const loadMyOrders = async (req, res) => {
     try {
 
         const search = req.query.search || ''
+        const userId = req.session.user
 
         const page = parseInt(req.query.page) || 1
         const limit = 6
-        const skip = (page -1) * limit
-        const totalOrders = await Order.find().countDocuments()
+        const skip = (page - 1) * limit
+
+        const [user, cart, userOrders, totalOrders] = await Promise.all([
+            User.findById(userId),
+            Cart.findOne({ userId }),
+            Order.find({ userId })
+                .sort({ createdOn: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate("orderedItems.product"),
+            Order.find().countDocuments(),
+            Order.updateMany(
+                    { expiresAt: { $lt: new Date() } },
+                    {
+                        $set: {
+                        status: 'Cancelled',
+                        reason: 'Order Expired',
+                        'orderedItems.$[].status': 'Cancelled',
+                        'orderedItems.$[].reason': 'Order Expired'
+                        }
+                    }
+                )
+        ])
+
         totalPages = Math.ceil(totalOrders / limit)
-        
-        const userId = req.session.user
-        const usermail = req.session.usermail;
-        
-        const user = await User.findById(userId)
-        const cart = await Cart.findOne({userId})
 
-        const userOrders = await Order.find({userId})
-                                        .sort({createdOn : -1})
-                                        .skip(skip)
-                                        .limit(limit)
-                                        .populate("orderedItems.product")
-
-        return res.render('myOrders',{
-            orders : userOrders,
+        return res.render('myOrders', {
+            orders: userOrders,
             search,
-            cart ,
-            user ,
-            currentPage : 'myOrders',
-            currentPages : page,
+            cart,
+            user,
+            currentPage: 'myOrders',
+            currentPages: page,
             totalPages
         })
 
@@ -94,25 +95,31 @@ const loadMyOrders = async (req,res) => {
     }
 }
 
-const loadOrderDetails = async (req,res) => {
+const loadOrderDetails = async (req, res) => {
     try {
 
-        const userId = req.session.user
-        const usermail = req.session.usermail;
-        
-        const user = await User.findById(userId);
-        const cart = await Cart.findOne({userId})
-
         const search = req.query.search || ''
-        
-        if(!userId){
-            return res.status(401).json({ success : false , message : 'User not authenticated!'})
-        }
-        
-        const userOrders = await Order.find({userId}).populate("orderedItems.product")
-        
-        if(!userOrders){
-            return res.status(401).json({ success : false , message : 'User Orders not found!!'})
+        const userId = req.session.user
+
+        const [user, cart, userOrders] = await Promise.all([
+            User.findById(userId),
+            Cart.findOne({ userId }),
+            Order.find({ userId }).populate("orderedItems.product"),
+            Order.updateMany(
+                    { expiresAt: { $lt: new Date() } },
+                    {
+                        $set: {
+                        status: 'Cancelled',
+                        reason: 'Order Expired',
+                        'orderedItems.$[].status': 'Cancelled',
+                        'orderedItems.$[].reason': 'Order Expired'
+                        }
+                    }
+                )
+        ])
+
+        if (!userOrders) {
+            return res.status(401).json({ success: false, message: 'User Orders not found!!' })
         }
 
         const orderId = req.query.id
@@ -120,32 +127,29 @@ const loadOrderDetails = async (req,res) => {
         let query = orderId
 
         if (mongoose.Types.ObjectId.isValid(orderId)) {
-            query = { $or: [{ _id: orderId }, {orderId : orderId }]};
+            query = { $or: [{ _id: orderId }, { orderId: orderId }] };
         } else {
-            query = {orderId}
+            query = { orderId }
         }
 
         const order = await Order.findOne(query).populate("orderedItems.product");
 
         const isUser = order.userId.toString() === userId.toString()
 
-        if(!isUser){
-            return res.status(401).json({ success : false, message : 'Wrong order details!!!'})
+        if (!isUser) {
+            return res.status(401).json({ success: false, message: 'Wrong order details!!!' })
         }
 
-        return res.render('orderDetails',{
-            order ,
+        return res.render('orderDetails', {
+            order,
             search,
             user,
             cart,
-            currentPage : 'orderDetails'
+            currentPage: 'orderDetails'
         })
-
-
-
     } catch (error) {
         console.log('failed to load the order details : ', error)
-        return res.status(500).json({ success : false , message : 'An error occurred while loading the order details!!'})        
+        return res.status(500).json({ success: false, message: 'An error occurred while loading the order details!!' })
     }
 }
 
@@ -159,7 +163,7 @@ const cancelOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found.' });
         }
 
-        if (!['Confirmed','Pending', 'Processing', 'Shipped', 'Out of Delivery','Payment Failed'].includes(order.status)) {
+        if (!['Confirmed', 'Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Payment Failed'].includes(order.status)) {
             return res.status(400).json({ success: false, message: 'Order cannot be cancelled anymore.' });
         }
 
@@ -167,42 +171,44 @@ const cancelOrder = async (req, res) => {
         const orderedProductIds = order.orderedItems.map(item => String(item.product));
 
         const cancelItems = order.orderedItems.filter(item =>
+            !['Cancelled', 'Return Request', 'Returned'].includes(item.itemStatus) &&
             cancelItemIds.includes(String(item.product))
         );
+        if (!cancelItems.length) {
+            return res.status(400).json({ success: false, message: 'No cancellable items found.' });
+        }
 
         const isFullCancellation =
             orderedProductIds.length === cancelItemIds.length &&
             cancelItemIds.every(id => orderedProductIds.includes(id));
 
-        let {refundAmount , refundReason} =  cancelItem(cancelItems , reason)
-
+        let refundAmount = 0
+        let refundReason = ''
 
         const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled');
-        
-        if (isFullCancellation || allCancelled) {   
-            ({refundAmount,refundReason} = orderCancel(order, reason))
+
+        if (isFullCancellation || allCancelled) {
+            ({ refundAmount, refundReason } = orderCancel(order, reason))
+        }else {
+            ({ refundAmount, refundReason } = cancelItem(cancelItems, reason))
         }
-        
+
         let finalPrice = order.finalAmount - refundAmount
         order.finalAmount -= refundAmount
-        
-        if(order.couponApplied && order.finalAmount > 0){
+
+        if (order.couponApplied && order.finalAmount > 0) {
             const couponCode = order.couponCode || ''
-            const coupon = couponCode ?  await Coupon.findOne({couponCode}) : ''
+            const coupon = couponCode ? await Coupon.findOne({ couponCode }) : ''
             finalPrice += order.couponDiscount
-            if(finalPrice < coupon.minOrder){
+            if (finalPrice < coupon.minOrder) {
                 refundAmount -= coupon.discount
                 order.finalAmount += coupon.discount
                 order.couponApplied = false
             }
         }
-        
 
         await order.save();
 
-
-        console.log("order saved...")
-        
         if (['Razorpay', 'Wallet'].includes(order.paymentMethod) && (order.status === 'Confirmed' || order.paymentStatus === 'Paid')) {
             console.log('wallet userID : ', userId)
             await addToWallet(userId, refundAmount, refundReason);
@@ -229,18 +235,18 @@ const cancelOrder = async (req, res) => {
     }
 };
 
-const returnRequest = async (req,res) => {
+const returnRequest = async (req, res) => {
     try {
 
-        const {orderId , reason , items} = req.body
+        const { orderId, reason, items } = req.body
 
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found...' });
         }
 
-        if (order.status !== 'Delivered') {
-            return res.status(400).json({ success: false, message: 'This order cannot be cancelled anymore.' });
+        if (!['Return Request', 'Returned', 'Cancelled', 'Delivered'].includes(order.status)) {
+            return res.status(400).json({ success: false, message: 'This order cannot be returned anymore.' });
         }
 
         const returnItemIds = items.map(id => id.toString());
@@ -252,7 +258,7 @@ const returnRequest = async (req,res) => {
 
         let refundAmount
 
-        const isFullReturn = 
+        const isFullReturn =
             orderedProducts.length === returnItemIds.length &&
             returnItemIds.every(id => orderedProducts.includes(id));
 
@@ -275,13 +281,13 @@ const returnRequest = async (req,res) => {
             item => item.itemStatus && item.itemStatus.trim().toLowerCase() === "return request".toLowerCase().trim()
         );
 
-        order.orderedItems.forEach(item => console.log('item status : ', item.itemStatus ) )
+        order.orderedItems.forEach(item => console.log('item status : ', item.itemStatus))
 
-        if(everyItem){
+        if (everyItem) {
             order.status = 'Return Request'
             order.reason = reason
         }
-        
+
         await order.save();
 
 
@@ -292,7 +298,7 @@ const returnRequest = async (req,res) => {
                 : 'Successfully requested for Return Ordered Items.'
         });
 
-        
+
     } catch (error) {
         console.error('Return Order Error:', error);
         return res.status(500).json({ success: false, message: 'Server error during return request.' });

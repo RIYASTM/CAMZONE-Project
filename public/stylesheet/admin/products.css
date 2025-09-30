@@ -27,17 +27,7 @@ body {
 }
 
 .fas {
-    margin-right: 5px; /* Add some space between the icon and text */
-}
-
-/* Style for action icons */
-.action-icon {
-    margin-right: 10px;
-    color: #555;
-}
-
-.action-icon:hover {
-    color: #007bff;
+    margin-right: 5px;
 }
 
 .container {
@@ -162,25 +152,25 @@ body {
     margin-right: 10px;
     color: #fff;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .products-table .action-icon:hover {
-    color: var(--accent-color);
+    color: var(--border-color);
 }
 
 /* Modal Styles */
-
 .modal {
     display: none;
-    position: fixed; /* can stay fixed */
-    top: 0; /* full screen */
+    position: fixed;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    overflow: auto; /* page scroll */
-    padding: 40px 0; /* optional: some spacing from top and bottom */
+    overflow: auto;
+    padding: 40px 0;
 }
 
 .modal h2 {
@@ -194,16 +184,6 @@ body {
     font-weight: lighter;
     width: 100%;
 }
-
-/* .modal-content {
-    background-color: #333;
-    padding: 20px;
-    border-radius: 5px;
-    width: 600px;
-    color: #fff;
-    border: 2px solid var(--border-color);
-    position: relative;
-} */
 
 .modal-content {
     background-color: #333;
@@ -220,7 +200,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* margin-bottom: 20px; */
 }
 
 .modal-content h2 {
@@ -295,10 +274,6 @@ body {
 .plus-btn:hover {
     background-color: #555;
 }
-
-/* .form-grid .image-group {
-    grid-column: 2 / 3; 
-} */
 
 .checkbox-group {
     display: flex;
@@ -421,7 +396,6 @@ body {
 }
 
 /* Error Display */
-
 .is-invalid ~ .invalid-feedback {
     display: block;
 }

@@ -10,18 +10,19 @@ const Brand = require('../../model/brandModel')
 const loadWishList = async (req, res) => {
     try {
         const userId = req.session.user;
-        const user = await User.findById(userId);
+
+        const [user, cart, wishList] = await Promise.all([
+            User.findById(userId),
+            Cart.findOne({ userId }).populate('items.productId') || { items: [] },
+            Wishlist.findOne({ userId }).populate({
+                path: 'items.product',
+                populate: [
+                    { path: 'brand' },
+                    { path: 'category' }
+                ]
+            })
+        ])
         if (!user) return res.redirect('/signin');
-
-        const cart = await Cart.findOne({ userId }).populate('items.productId') || { items: [] };
-
-        const wishList = await Wishlist.findOne({ userId }).populate({
-            path: 'items.product',
-            populate: [
-                { path: 'brand' },
-                { path: 'category' }
-            ]
-        });
 
         if (!wishList) {
             return res.render('wishList', {
@@ -76,25 +77,23 @@ const loadWishList = async (req, res) => {
 
 const addtoWishlist = async (req, res) => {
     try {
-        console.log(req.body)
-        if(!req.session.user){
-            return res.status(401).json({ success : false, message : 'You must log in first!!'})
-        }
-        const userId = req.session.user;
 
-        const user = await User.findById(userId);
+        const userId = req.session.user;
+        const { productId } = req.body;
+        const [user, product, cart] = await Promise.all([
+            User.findById(userId),
+            Product.findById(productId),
+            Cart.findOne({ userId }).populate('items.productId')            
+        ])
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found.' });
         }
 
-        const { productId } = req.body;
-
-        const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found.' });
         }
 
-        const cart = await Cart.findOne({ userId }).populate('items.productId');
         const existInCart = cart?.items.find(
             (item) => item.productId._id.toString() === productId
         );
@@ -163,13 +162,14 @@ const removeFromWishList = async (req, res) => {
         const { productId } = req.body;
         const userId = req.session.user;
 
-        const user = await User.findById(userId);
+        const [user, wishlist] = await Promise.all([
+            User.findById(userId),
+            Wishlist.findOne({ userId })
+        ])
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found.' });
         }
-
-        const wishlist = await Wishlist.findOne({ userId });
-
         if (!wishlist) {
             return res.status(404).json({ success: false, message: 'Wishlist not found.' });
         }

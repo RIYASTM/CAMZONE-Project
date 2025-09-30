@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const row = document.querySelector(`tr[data-id=${id}]`)
-                if(row){
+                if (row) {
                     row.remove()
                 }
                 showNotification(data.message || 'Address deleted', 'success')
@@ -227,11 +227,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateForm(data) {
         const namePattern = /^[a-zA-Z\s]+$/;
         const phonePattern = {
-            'USA' : /^\+1[2-9]\d{2}[2-9]\d{6}$/,
-            'India' : /^\+91[6-9]\d{9}$/,
-            'UK' : /^\+44\d{10}$/,
-            'UAE' : /^\+971\d{8,9}$/,
-            'SAUDI ARABIA' : /^\+966\d{8,9}$/
+            'USA': /^\+1[2-9]\d{2}[2-9]\d{6}$/,
+            'India': /^\+91[6-9]\d{9}$/,
+            'UK': /^\+44\d{10}$/,
+            'UAE': /^\+971\d{8,9}$/,
+            'SAUDI ARABIA': /^\+966\d{8,9}$/
         };
         const pincodePattern = /^\d{5,10}$/;
         let errors = {};
@@ -243,30 +243,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Phone
-            if (data.phone) {
-                if (data.country && phonePattern[data.country]) {
-                    if (!phonePattern[data.country].test(data.phone)) {
-                        errors.phone = "Invalid phone number format!";
-                    }
-                } else {
-                    errors.phone = "Unsupported country for phone validation!";
+        if (data.phone) {
+            if (data.country && phonePattern[data.country]) {
+                if (!phonePattern[data.country].test(data.phone)) {
+                    errors.phone = "Invalid phone number format!";
                 }
             } else {
-                errors.phone = "Phone number 1 is required!";
+                errors.phone = "Unsupported country for phone validation!";
             }
+        } else {
+            errors.phone = "Phone number 1 is required!";
+        }
 
-            // Alternate Phone
-            if (data.altPhone) {
-                if (data.country && phonePattern[data.country]) {
-                    if (!phonePattern[data.country].test(data.altPhone)) {
-                        errors.altPhone = "Invalid phone number format!";
-                    }
-                } else {
-                    errors.altPhone = "Unsupported country for phone validation!";
+        // Alternate Phone
+        if (data.altPhone) {
+            if (data.country && phonePattern[data.country]) {
+                if (!phonePattern[data.country].test(data.altPhone)) {
+                    errors.altPhone = "Invalid phone number format!";
                 }
             } else {
-                errors.altPhone = "Phone number 2 is required!";
+                errors.altPhone = "Unsupported country for phone validation!";
             }
+        } else {
+            errors.altPhone = "Phone number 2 is required!";
+        }
 
         if (!data.country) {
             errors.country = "Country is required!";
@@ -299,13 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
+        if (searchValue && e.key === 'Enter') {
+            console.log('search : ', searchValue)
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })

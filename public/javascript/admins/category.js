@@ -86,6 +86,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelEditButton = document.getElementById('cancelEditButton');
     const editModalOverlay = editCategoryModal?.querySelector('.modal-overlay');
 
+    document.querySelectorAll('.editCategory').forEach(button =>{
+        button.addEventListener('click', (e)=> {
+            e.preventDefault()
+
+            const categoryId = button.dataset.id
+            const categoryname = button.dataset.name
+            const description = button.dataset.description
+            const categoryOffer = button.dataset.offer || 0
+            const isListed = button.dataset.listed === ('true' || 'True');
+            const image = button.dataset.image
+            const test=button.dataset.riyas
+    
+            showEditCategoryModal(categoryId, categoryname, description, categoryOffer,isListed, image)
+            
+        })
+    })
+
     if (editCategoryForm) {
         editCategoryForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -161,28 +178,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function displayFormError(form, errors) {
-        clearErrors(form);
-        Object.entries(errors).forEach(([field, message]) => {
-            const input = form.querySelector(`[name="${field}"]`);
-            if (input) {
-                input.classList.add('is-invalid');
-                let feedback = input.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.appendChild(feedback);
-                }
-                feedback.textContent = message;
-            }
-        });
-    }
-
-    function clearErrors(form) {
-        form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
-        form.querySelectorAll('.invalid-feedback').forEach((el) => el.remove());
-    }
+    
 });
+
+const sort = document.querySelector('.sort-by')
+const filter = document.querySelector('.filter')
+filter.addEventListener('change', applyFilters)
+sort.addEventListener('change', applyFilters)
+
+const tableBody = document.querySelector('.categories-table tbody');
+const originalRows = Array.from(tableBody.getElementsByTagName('tr'));
+
+function applyFilters() {
+
+    const sort = document.querySelector('.sort-by')
+    const filter = document.querySelector('.filter')
+
+    const sortValue = sort.value.toLowerCase()
+    const filterValue = filter.value.toLowerCase()
+
+    const rows = Array.from(tableBody.getElementsByTagName('tr'))
+
+    rows.forEach(row => {
+        const status = row.querySelector('td:nth-child(7)')?.textContent.trim().toLowerCase();
+        if(filterValue.toLowerCase() === 'all' || status.toLowerCase() === filterValue.toLowerCase()){
+            row.style.display = ''
+        }else{
+            row.style.display = 'none';
+        }
+    })
+
+    if(sortValue !== 'default'){
+        rows.sort((a,b) => {
+            let aText = ''
+            let bText = ''
+
+            if(sortValue === 'name'){
+                aText = a.querySelector('td:nth-child(2)')?.textContent.trim().toLowerCase()
+                bText = b.querySelector('td:nth-child(2)')?.textContent.trim().toLowerCase()
+            }else if( sortValue === 'description'){
+                aText = a.querySelector('td:nth-child(3)')?.textContent.trim().toLowerCase()
+                bText = b.querySelector('td:nth-child(3)')?.textContent.trim().toLowerCase()
+            }
+
+            return aText.localeCompare(bText)
+        })
+        rows.forEach(row => tableBody.appendChild(row))
+    }else{
+        originalRows.forEach(row => tableBody.appendChild(row))
+    }
+}
 
 function validateForm(data) {
     const namePattern = /^[a-zA-Z\s]+$/;
@@ -213,6 +258,7 @@ function validateForm(data) {
 }
 
 function showEditCategoryModal(id, name, description, offer, isListed, image) {
+    console.log('offer : ', offer)
     const editCategoryModal = document.getElementById('editCategoryModal');
     const categoryId = document.getElementById('categoryId');
     const categoryName = document.getElementById('editCategoryName');
@@ -230,7 +276,7 @@ function showEditCategoryModal(id, name, description, offer, isListed, image) {
     categoryName.value = name;
     categoryDescription.value = description;
     categoryOffer.value = offer || '';
-    categoryList.checked = isListed === 'true';
+    categoryList.checked = isListed;
     currentImageDiv.innerHTML = image
         ? `<img src="/Uploads/category/${image}" alt="Current Image" style="width: 50px; height: 50px; object-fit: fill;">`
         : 'No Image';
@@ -321,6 +367,8 @@ async function SaveChanges(event) {
     }
 }
 
+
+
 async function addOffer(categoryId) {
     const { value: amount } = await Swal.fire({
         title: 'Offer in Percentage',
@@ -345,9 +393,14 @@ async function addOffer(categoryId) {
             const data = await response.json();
 
             if (response.ok && data.status) {
-                Swal.fire('Offer Added', 'The Offer Has Been Added', 'success').then(() => {
-                    location.reload();
-                });
+                const offerButton = document.querySelector(`tr[data-id="${categoryId}"]`)
+                const offerCell = document.querySelector('.offerCell')
+                offerCell.textContent = `${dd}`
+
+                Swal.fire('Offer Added', 'The Offer Has Been Added', 'success')
+                // .then(() => {
+                //     location.reload();
+                // });
             } else {
                 Swal.fire('Failed', data.message || 'Offer adding failed', 'error');
             }
@@ -373,53 +426,189 @@ async function removeOffer(categoryId) {
         const data = await response.json();
 
         if (response.ok && data.status) {
-            Swal.fire('Offer Removed', 'The Offer has been removed', 'success').then(() => {
-                location.reload();
-            });
+            showNotification(data.message || 'The Offer has been removed', 'success')
+            location.reload();
         } else {
-            Swal.fire('Failed', data.message || 'Offer removing failed', 'error');
+            showNotification(data.message || 'Offer removing failed', 'error')
         }
     } catch (error) {
-        Swal.fire('Error', 'An error occurred while removing offer', 'error');
         console.error('Offer removing failed:', error);
     }
 }
 
-// async function deleteCategory(categoryId) {
-//     Swal.fire({
-//         title: 'Are you sure?',
-//         text: "You won't be able to revert this!",
-//         icon: 'warning',
-//         showCancelButton: true,
-//         confirmButtonColor: '#d33',
-//         cancelButtonColor: '#3085d6',
-//         confirmButtonText: 'Yes, delete it!',
-//     }).then(async (result) => {
-//         if (result.isConfirmed) {
-//             try {
-//                 const response = await fetch('/admin/deleteCategory', {
-//                     method: 'POST',
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                     },
-//                     body: JSON.stringify({
-//                         categoryId: categoryId,
-//                     }),
-//                 });
 
-//                 const data = await response.json();
+function displayFormError(form, errors) {
+    clearErrors(form);
+    Object.entries(errors).forEach(([field, message]) => {
+        const input = form.querySelector(`[name="${field}"]`);
+        if (input) {
+            input.classList.add('is-invalid');
+            let feedback = input.nextElementSibling;
+            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                input.parentNode.appendChild(feedback);
+            }
+            feedback.textContent = message;
+        }
+    });
+}
 
-//                 if (response.ok && data.status) {
-//                     Swal.fire('Category Removed', 'The Category has been removed', 'success').then(() => {
-//                         location.reload();
-//                     });
-//                 } else {
-//                     Swal.fire('Failed', data.message || 'Category removing failed', 'error');
-//                 }
-//             } catch (error) {
-//                 Swal.fire('Error', 'An error occurred while deleting category', 'error');
-//                 console.error('Category removing failed:', error);
-//             }
-//         }
-//     });
-// }
+function clearErrors(form) {
+    form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+    form.querySelectorAll('.invalid-feedback').forEach((el) => el.remove());
+}
+
+function updateCategoryTable(categories) {
+    const tbody = document.querySelector('.categories-table tbody');
+    tbody.innerHTML = '';
+
+    if (categories.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No categories found</td></tr>';
+        return;
+    }
+
+    categories.forEach(category => {
+        const tr = document.createElement('tr'); 
+        tr.setAttribute('data-id', category._id);
+
+        // Image cell
+        const imgCell = document.createElement('td');
+        if (category.categoryImage) {
+            const img = document.createElement('img');
+            img.src = `/uploads/category/${category.categoryImage}`;
+            img.alt = category.name;
+            img.style.width = '50px';
+            img.style.height = '50px';
+            img.style.objectFit = 'fill';
+            imgCell.appendChild(img);
+        } else {
+            imgCell.textContent = 'No Image';
+        }
+        tr.appendChild(imgCell);
+
+        // Name
+        const nameCell = document.createElement('td');
+        nameCell.textContent = category.name;
+        tr.appendChild(nameCell);
+
+        // Description
+        const descCell = document.createElement('td');
+        descCell.textContent = category.description;
+        tr.appendChild(descCell);
+
+        // Created At
+        const dateCell = document.createElement('td');
+        const createdAt = new Date(category.createdAt);
+        dateCell.textContent = createdAt.toString().split(" ").slice(1, 4).join(" ");
+        tr.appendChild(dateCell);
+
+        // Offer Button
+        const offerBtnCell = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.classList.add('filter', 'offer-btn');
+        if (!category.categoryOffer) {
+            btn.textContent = 'Add Offer';
+            btn.onclick = () => addOffer(category._id);
+        } else {
+            btn.textContent = 'Remove Offer';
+            btn.onclick = () => removeOffer(category._id);
+        }
+        offerBtnCell.appendChild(btn);
+        tr.appendChild(offerBtnCell);
+
+        // Offer Value
+        const offerCell = document.createElement('td');
+        offerCell.classList.add('offerCell');
+        offerCell.textContent = category.categoryOffer ? `${category.categoryOffer} %` : '-';
+        tr.appendChild(offerCell);
+
+        // Listed status
+        const listedCell = document.createElement('td');
+        listedCell.textContent = category.isListed ? 'Listed' : 'Unlisted';
+        tr.appendChild(listedCell);
+
+        // Actions
+        const actionCell = document.createElement('td');
+        const editLink = document.createElement('a');
+        editLink.href = '#';
+        editLink.classList.add('action-icon');
+        editLink.innerHTML = '<i class="fas fa-edit"></i>';
+        editLink.onclick = () => showEditCategoryModal(
+            category._id,
+            category.name,
+            category.description,
+            category.categoryOffer,
+            category.isListed,
+            category.categoryImage
+        );
+        actionCell.appendChild(editLink);
+        tr.appendChild(actionCell);
+
+        tbody.appendChild(tr);
+    });
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

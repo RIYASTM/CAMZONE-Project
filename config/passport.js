@@ -1,7 +1,9 @@
 const passport = require('passport')
+const bcrypt = require('bcrypt')
 const GoogleStrategy = require('passport-google-oauth20').Strategy
 
 const User = require('../model/userModel')
+const {securePassword} = require('../helpers/hashPass')
 
 const env = require('dotenv').config()
 if(env.error)throw new Error("Failed to load .env file: ",env.error.message)
@@ -27,10 +29,13 @@ async (accessToken,refreshToken,profile,done) => {
                 return done(null,false,{message : 'User is blocked!!'})
             }
         }else{
+            const hashedPassword = await securePassword(profile.id)
+
             user = new User({
                 name : profile.displayName,
                 email : profile.emails[0].value,
-                googleId : profile.id
+                googleId : profile.id,
+                password : hashedPassword
             })
             console.log('Google User : ', user)
             await user.save()

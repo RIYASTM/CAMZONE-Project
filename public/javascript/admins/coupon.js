@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxOrderValue = couponMaxOrderInput.value ? Number(couponMaxOrderInput.value) : 700000;
     couponMaxOrderInput.value = maxOrderValue
 
-    let currentPages = 1;
+    let currentPages = 1; 
 
     // Modal close on outside click or Escape key
     [addCouponModal, editCouponModal, deleteCouponModal].forEach(modal => {
@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelector('.coupons-table tbody').addEventListener('click', async (e) => {
         e.preventDefault();
+        editCouponForm.reset()
         const button = e.target.closest('.editCouponButton, .deleteCoupon');
         if (!button) return;
 
@@ -108,18 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     editCouponForm.querySelector('#editDeactivateCoupon').checked = !coupon.isList;
                     editCouponModal.style.display = 'block';
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message || 'Failed to fetch coupon details!'
-                    });
+                    console.error('Failed to fetch coupon details!', error.message || error)
+                    showNotification('Failed to fetch coupon details!')
                 }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: `Error fetching coupon: ${error.message}`
-                });
+                console.error(`Error fetching coupon: ${error.message}`)
             }
         } else if (button.classList.contains('deleteCoupon')) {
             const couponName = button.closest('tr').querySelector('td:first-child').textContent;
@@ -129,10 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // searchBar.addEventListener('input', debounce(async () => {
-    //     currentPages = 1;
-    //     await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
-    // }, 300));
+    searchBar.addEventListener('input', debounce(async () => {
+        currentPages = 1;
+        await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
+    }, 300));
 
     sortBy.addEventListener('change', async () => {
         currentPages = 1;
@@ -180,28 +174,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (!result.success) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Coupon adding failed!'
-                });
+                showNotification(result.message || 'Coupon adding failed!', 'error')
                 return;
+            }else{
+                showNotification('The new coupon has been successfully added!', 'success')
+                addCouponModal.style.display = 'none';
+                await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
             }
-            Swal.fire({
-                icon: 'success',
-                title: 'Coupon Added',
-                text: 'The new coupon has been successfully added!'
-            });
-            window.location.reload()
-            addCouponModal.style.display = 'none';
-            addCouponForm.reset();
-            // await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Something went wrong while adding coupon: ${error.message}`
-            });
+            console.error(`Something went wrong while adding coupon: `,error.message)
         }
     });
 
@@ -234,22 +215,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (!result.success) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Coupon updating failed!'
-                });
+                showNotification(result.message || 'Coupon updating failed!', 'error')
                 return;
+            }else{
+                showNotification('The coupon has been successfully updated!', 'success')
+                editCouponModal.style.display = 'none';
+                editCouponForm.reset();
+                await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
             }
-            Swal.fire({
-                icon: 'success',
-                title: 'Coupon Updated',
-                text: 'The coupon has been successfully updated!'
-            });
-            editCouponModal.style.display = 'none';
-            editCouponForm.reset();
-            window.location.reload()
-            // await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -268,27 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (!result.success) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Coupon deletion failed!'
-                });
+                showNotification('Failed to delete coupon!!', 'error')
                 return;
+            }else{
+                showNotification('Coupon has been deleted!!', 'success')
+                deleteCouponModal.style.display = 'none';
+                await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
             }
-            Swal.fire({
-                icon: 'success',
-                title: 'Coupon Deleted',
-                text: 'The coupon has been successfully deleted!'
-            });
-            deleteCouponModal.style.display = 'none';
-            // await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
-            window.location.reload()
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Something went wrong while deleting coupon: ${error.message}`
-            });
+            console.error('Something went wrong while deleting coupon : ', error.message || error)
         }
     });
 
@@ -367,8 +328,12 @@ document.addEventListener('DOMContentLoaded', () => {
             errors.validUpto = 'Valid upto date must be after valid from date';
         }
 
-        if (data.couponLimit && (isNaN(parseInt(data.couponLimit)) || parseInt(data.couponLimit) < 0)) {
+        if (!data.couponLimit){
+            errors.couponLimit = 'Coupon Limit is required!!'
+        } else if (data.couponLimit && (isNaN(parseInt(data.couponLimit)) || parseInt(data.couponLimit) < 0)) {
             errors.couponLimit = 'Usage limit must be a non-negative number';
+        } else if (data.couponLimit && data.couponLimit > 5) {
+            errors.couponLimit = `Coupon shouldn't be able to use more than 5`
         }
 
         return Object.keys(errors).length > 0 ? errors : null;
@@ -400,27 +365,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 queryParts.push(`page=${page}`)
             }
 
-            console.log('fetching with:', { search, sort, filter, page });
-
             const finalQuery = queryParts.join('&');
             
-            const response = await fetch(`/admin/coupon?${finalQuery}`);
+            const response = await fetch(`/admin/coupons?${finalQuery}`, {
+                method  : 'GET',
+                headers : {
+                    'Content-Type' : 'application/json',
+                    'Accept' : 'application/json'
+                }
+            });
             const result = await response.json();
             if (result.success) {
                 updateCouponTable(result.coupons);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Failed to fetch coupons!'
-                });
+                console.log('Failed to fetch coupons : ', error.message || error)
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Error fetching couponsss: ${error.message}`
-            });
+            console.log('Something went wrong : ', error.message || error)
         }
     }
 
@@ -443,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
                 <td>${new Date(coupon.validUpto).toLocaleDateString()}</td>
                 <td>${coupon.couponLimit || 'N/A'}</td>
-                <td>${coupon.isList ? 'Active' : 'Inactive'}</td>
+                <td>${new Date(coupon.validUpto) < new Date() ? 'Expired' : (coupon.isList ? 'Active' : 'Inactive')}</td>
                 <td>
                     <a href="#" class="action-icon editCouponButton" data-coupon-id="${coupon.id}" aria-label="Edit coupon"><i class="fas fa-edit"></i></a>
                     <a href="#" class="action-icon deleteCoupon" data-coupon-id="${coupon.id}" aria-label="Delete coupon"><i class="fas fa-trash"></i></a>
@@ -453,7 +414,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
 
-    
+        // Add styles
+        notification.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 15px 20px;
+                        border-radius: 5px;
+                        color: white;
+                        font-weight: 500;
+                        z-index: 1000;
+                        animation: slideIn 0.3s ease;
+                        ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                    `;
 
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+                        @keyframes slideIn {
+                            from {
+                                transform: translateX(100%);
+                                opacity: 0;
+                            }
+                            to {
+                                transform: translateX(0);
+                                opacity: 1;
+                            }
+                        }
+                        @keyframes slideOut {
+                            from {
+                                transform: translateX(0);
+                                opacity: 1;
+                            }
+                            to {
+                                transform: translateX(100%);
+                                opacity: 0;
+                            }
+                        }
+                    `;
+
+        if (!document.querySelector('style[data-notification]')) {
+            style.setAttribute('data-notification', 'true');
+            document.head.appendChild(style);
+        }
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
 });

@@ -43,8 +43,6 @@ async function generateRazorpayCheckout(amount){
 };
 
 
-
-
 module.exports = {
     razorpayInst,
     generateRazorpay,

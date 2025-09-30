@@ -4,51 +4,21 @@ const Cart = require('../../model/cartModel')
 const bcrypt = require('bcrypt')
 const {validatePassword} = require('../../helpers/validations')
 const {generateOtp,sendOTP} = require('../../helpers/OTP')
-const securePassword = require('../../helpers/hashPass')
+const {securePassword} = require('../../helpers/hashPass')
 
 
 
-// const loadPassword = async (req,res) => {
-//     try {
-//         const search = req.query.search || ''
-//         const user = await User.findById(req.session.user)
-        
-//         const userId = req.session.user
-
-//         const cart = userId ? await Cart.findOne({userId}) : 0
-
-//         return res.render('password',{
-//             currentPage : 'password',
-//             search,
-//             user,
-//             cart
-//         })
-
-//     } catch (error) {
-//         console.log('Failed to load the password Page : ', error)
-//     }
-// }
 
 const checkPassword = async (req,res) => {
     try {
         
         const userId = req.session.user
 
-        // console.log('userId :: ', userId)
-
         const user = await User.findById(userId)
-
-        // console.log('User :: ', user)
 
         const currentPassword = req.body.currentPassword
 
-        console.log('Current pasword : ', currentPassword)
-
-        // const password = user.password
-
-        // console.log('Password : ', password)
-
-        const isMatch = await bcrypt.compare( currentPassword , user.password)
+        const isMatch = bcrypt.compare( currentPassword , user.password)
 
         if (!isMatch) {
             return res.status(400).json({
@@ -59,8 +29,6 @@ const checkPassword = async (req,res) => {
         }
 
         const email = user.email
-
-        console.log('email : ', email)
 
         const otp = generateOtp();
         console.log('==================================================')
@@ -77,18 +45,6 @@ const checkPassword = async (req,res) => {
                 message: "Failed to send OTP. Try again."
             });
         }
-
-        // let seconds = 10
-
-        // let countdown = setInterval(() => {
-        //     seconds --
-            
-        //     if(seconds <= 0){
-        //         clearInterval(countdown)
-        //         req.session.userOtp = null
-        //         console.log('OTP Expired!!')
-        //     }
-        // },1000)
 
         return res.status(200).json({success : true , message : 'Password matched!!'})
 
@@ -112,7 +68,7 @@ const confirmOTP = async (req,res) => {
 
 
     } catch (error) {
-        console.log('Failed verify otp : ', error)
+        return console.log('Failed verify otp : ', error)
     }
 }
 
@@ -161,12 +117,9 @@ const changePassword = async (req,res) => {
             return res.status(401).json({success : false , message : 'Password updation failed!'})
         }
 
-
-
         req.session.userOtp = null
 
-        return res.status(200).json({success : true , message : 'Password updated successfully!!'})
-        
+        return res.status(200).json({success : true , message : 'Password updated successfully!!'}) 
 
     } catch (error) {
         console.log('Failed to update password : ', error)
@@ -176,7 +129,6 @@ const changePassword = async (req,res) => {
 
 
 module.exports = {
-    // loadPassword,
     checkPassword,
     confirmOTP,
     changePassword

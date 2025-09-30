@@ -141,10 +141,11 @@ body {
     margin-left: 10px;
     color: #fff;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .categories-table .action-icon:hover {
-    color: var(--accent-color);
+    color: var(--border-color);
 }
 
 /* Responsive Adjustments */

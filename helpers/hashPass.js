@@ -13,4 +13,4 @@ async function securePassword (password) {
 
 
 
-module.exports = securePassword
+module.exports = {securePassword}

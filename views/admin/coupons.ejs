@@ -25,7 +25,7 @@
                 <div class="top-left">
                     <span>All Coupons |</span>
                     <select class="sort-by" aria-label="Sort coupons">
-                        <option value="default">Sort by</option>
+                        <option value="all">Sort by</option>
                         <option value="name">Name</option>
                         <option value="discount">Discount</option>
                         <option value="validity">Validity</option>
@@ -78,10 +78,10 @@
                                     <td><%= new Date(coupon.validFrom).toLocaleDateString() %></td>
                                     <td><%= new Date(coupon.validUpto).toLocaleDateString() %></td>
                                     <td><%= coupon.couponLimit || '0' %></td>
-                                    <td><%= coupon.isList ? 'Active' : 'Inactive' %></td>
+                                    <td><%= new Date(coupon.validUpto) < new Date() ? 'Expired' : (coupon.isList ? 'Active' : 'Inactive') %></td>
                                     <td>
                                         <a href="#" class="action-icon editCouponButton" data-coupon-id="<%= coupon.id %>" aria-label="Edit coupon"><i class="fas fa-edit"></i></a>
-                                        <!-- <a href="#" class="action-icon deleteCoupon" data-coupon-id="<%= coupon.id %>" aria-label="Delete coupon"><i class="fas fa-trash"></i></a> -->
+                                        <a href="#" class="action-icon deleteCoupon" data-coupon-id="<%= coupon.id %>" aria-label="Delete coupon"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
                             <% }) %>

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/stylesheet/admin/orders.css">
     <link rel="stylesheet" href="/stylesheet/partials/admins/sidebar.css">
     <link rel="stylesheet" href="/stylesheet/partials/admins/header.css">
+    <link rel="stylesheet" href="/stylesheet/partials/pagination.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -26,9 +27,9 @@
                     <span>All Orders |</span>
                     <select class="sort-by">
                         <option value="default">Sort by</option>
+                        <option value="name">Cus Name</option>
                         <option value="date">Date</option>
                         <option value="total">Total</option>
-                        <option value="status">Status</option>
                     </select>
                 </div>
                 <div class="top-center" style="position: relative; display: inline-block;">
@@ -36,14 +37,16 @@
                     <%if(search){%>
                     <button class="clear" id="clear-button"><i class="bi bi-x fs-1"></i></button>
                     <%}%>
-                </div>
+                </div> 
                 <div class="top-right">
                     <select class="filter">
                         <option value="all">Filter</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Returned">Returned</option>
                     </select>
                      <button class="sales-report-btn">
                         <i class="fa-solid fa-chart-line"></i> Sales Report
@@ -86,7 +89,48 @@
             </div>
 
             <!-- Pagination -->
-            <%- include('../partials/admins/pagination', { currentPages, totalPages }) %>
+            <div class="pagination" data-total-pages="<%= totalPages %>">
+                <span><%= currentPages %> of <%= totalPages %></span>
+                <div class="pagination-controls">
+                    <!-- First Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="1" 
+                        <%= currentPages === 1 ? 'disabled' : '' %>
+                        title="Go to first page">
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+
+                    <!-- Previous Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="<%= currentPages - 1 %>" 
+                        <%= currentPages === 1 ? 'disabled' : '' %>
+                        title="Previous page">
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+
+                    <span> - </span>
+
+                    <!-- Next Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="<%= currentPages + 1 %>" 
+                        <%= currentPages === totalPages ? 'disabled' : '' %>
+                        title="Next page">
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+
+                    <!-- Last Page -->
+                    <button 
+                        class="pagination-button" 
+                        data-page="<%= totalPages %>" 
+                        <%= currentPages === totalPages ? 'disabled' : '' %>
+                        title="Go to last page">
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -348,14 +392,6 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- Chart Section -->
-                <!-- <div class="sales-chart-section" id="salesChartSection">
-                    <h3>Sales Trend</h3>
-                    <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                </div> -->
             </div>
             
             <div class="modal-footer">

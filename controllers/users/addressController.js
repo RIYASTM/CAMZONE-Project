@@ -10,22 +10,17 @@ const loadAddress = async (req, res) => {
 
         const userId = req.session.user;
 
-        if (!userId) {
-            return res.status(401).render('error', { message: 'User not authenticated.' });
-        }
-
-        const user = await User.findById(userId);
+        const [user, addressDoc, cart] = await Promise.all([
+            User.findById(userId),
+            Address.findOne({ userId }),
+            Cart.findOne({ userId })
+        ])
 
         if (!user) {
             return res.status(404).render('error', { message: 'User not found.' });
         }
 
-        const addressDoc = await Address.findOne({ userId });
-
         const addresses = addressDoc ? addressDoc.address.filter(addr => !addr.isDeleted) : [];
-
-        const cart = await Cart.findOne({ userId })
-
 
         return res.render('address', {
             currentPage: 'address',
@@ -45,12 +40,7 @@ const addAddress = async (req, res) => {
 
         const userId = req.session.user;
 
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not authenticated.' });
-        }
-
         const user = await User.findById(userId);
-
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
@@ -58,7 +48,6 @@ const addAddress = async (req, res) => {
         const data = req.body;
 
         let errors = validateAddress(data)
-
         if (errors) {
             return res.status(400).json({ success: false, message: 'Validation error', errors });
         }
@@ -132,31 +121,22 @@ const editAddress = async (req, res) => {
         const data = req.body
 
         const userId = req.session.user
-
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'User not authenticated!' })
-        }
-
         const user = await User.findById(userId)
-
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found!' })
         }
 
         let errors = validateAddress(data)
-
         if (errors) {
             return res.status(401).json({ success: false, message: 'Validation error', errors })
         }
 
         const addressDoc = await Address.findOne({ userId });
-
         if (!addressDoc) {
             return res.status(401).json({ success: false, message: 'Address not found!!' });
         }
 
         const existAddress = addressDoc.address.findIndex(add => !add.isDeleted && add._id.toString() === data.addressId)
-
         if (existAddress === -1) {
             return res.status(401).json({ success: false, message: 'Address id not found!!' });
         }
@@ -168,7 +148,6 @@ const editAddress = async (req, res) => {
                 add.pincode === data.pincode &&
                 add.city === data.city
         })
-
         if (existFields) {
             return res.status(400).json({ success: false, message: 'Duplicate fields found' })
         }
@@ -191,7 +170,6 @@ const editAddress = async (req, res) => {
             userId,
             'addresses.addressType': updatingAddress.addressType
         });
-
         if (exist) {
             return res.status(401).json({
                 success: false,
@@ -232,19 +210,12 @@ const deleteAddress = async (req, res) => {
         const addressId = req.params.id
 
         const userId = req.session.user
-        
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'User not authenticated!' })
-        }
-
         const user = await User.findById(userId)
-
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found!' })
         }
 
         const findAddress = await Address.findOne({ userId, 'address._id': addressId })
-
         if (!findAddress) {
             return res.status(404).json({ success: false, message: 'Address not found!' })
         }

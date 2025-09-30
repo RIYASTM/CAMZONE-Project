@@ -14,10 +14,12 @@ const loadWallet = async (req,res) => {
 
         const search = req.query.search || '';
         const userId = req.session.user
-        const user = await User.findById(userId)
-        const cart = await Cart.findOne({userId})
-        
-        const userWallet = await Wallet.findOne({userId})
+
+        const [user, cart, userWallet] = await Promise.all([
+            User.findById(userId),
+            Cart.findOne({userId}),
+            Wallet.findOne({userId})  
+        ])        
 
         if(!userWallet){
             return res.render('wallet',{
@@ -42,7 +44,6 @@ const loadWallet = async (req,res) => {
         const totalPages = Math.ceil(totalTransaction / limit)
 
         const userTransactions = transactions.slice(skip, skip + limit) || []
-
         
         return res.render('wallet',{
             user,
@@ -65,19 +66,12 @@ const addTowallet = async (req,res) => {
     try {
 
         const userId = req.session.user
-
-        if(!userId){
-            return res.status(401).json({ success : false, message : 'User not authenticated!!'})
-        }
-
         const user = await User.findById(userId)
-
         if(!user){
             return res.status(401).json({ success : false, message : 'User not found!!'})
         }
 
         const amount = parseInt(req.body.amount)
-
         if(amount > 90000 ){
             return res.status(401).json({ success : false, message : 'Not allowed for the amount above 90000'})
         }

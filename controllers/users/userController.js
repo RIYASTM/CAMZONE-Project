@@ -15,7 +15,7 @@ const Wishlist = require('../../model/wishlistModel')
 const OTP = require('../../model/otpModal')
 
 //helper Functions
-const securePassword = require('../../helpers/hashPass')
+const {securePassword} = require('../../helpers/hashPass')
 const { sendOTPForgott, generateOtp, sendOTP } = require('../../helpers/OTP')
 const { validateForm, validateUser } = require('../../helpers/validations')
 
@@ -26,7 +26,6 @@ const loadHomePage = async (req, res) => {
     try {
 
         const search = req.query.search || ''
-        const usermail = req.session.usermail;
         const userId = req.session.user
 
         const user = await User.findById(userId)
@@ -132,13 +131,10 @@ const loadShop = async (req, res) => {
         const cart = userId ? await Cart.findOne({ userId }) : 0
 
         let queryParts = [];
-
-        // Price Filter
         let sortOption = {};
 
         if (price) {
             switch (price) {
-                // 🔃 Sorting cases
                 case 'LOW-HIGH':
                     sortOption.salePrice = 1;
                     queryParts.push(`price=${encodeURIComponent(price)}`);
@@ -148,7 +144,6 @@ const loadShop = async (req, res) => {
                     queryParts.push(`price=${encodeURIComponent(price)}`);
                     break;
 
-                // 💰 Filtering cases
                 case 'below-10000':
                     query.salePrice = { $lt: 10000 };
                     queryParts.push(`price=${encodeURIComponent(price)}`);
@@ -176,13 +171,11 @@ const loadShop = async (req, res) => {
             }
         }
 
-        // Category Filter
         if (category) {
             const categoryFilter = category ? (Array.isArray(category) ? category : [category]) : [];
             if (categoryFilter.length > 0) {
                 query.category = { $in: categoryFilter };
 
-                // If it's array, handle each category separately
                 if (Array.isArray(category)) {
                     category.forEach(cat => {
                         queryParts.push(`category=${encodeURIComponent(cat)}`);
@@ -193,7 +186,6 @@ const loadShop = async (req, res) => {
             }
         }
 
-        // Brand Filter
         if (brand) {
             const brandFilter = brand ? (Array.isArray(brand) ? brand : [brand]) : [];
             if (brandFilter.length > 0) {
@@ -209,7 +201,6 @@ const loadShop = async (req, res) => {
             }
         }
 
-        // Name Filter
         if (sortName) {
             if (sortName === 'A-Z') {
                 sortOption.productName = 1;
@@ -220,10 +211,8 @@ const loadShop = async (req, res) => {
             }
         }
 
-        // Build final query string from all parts
         let finalQuery = queryParts.join('&');
 
-        // Search logic for database query
         if (search) {
             queryParts.push(`search=${encodeURIComponent(search)}`);
 
@@ -247,8 +236,6 @@ const loadShop = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = 12;
         const skip = (page - 1) * limit;
-
-
 
         const products = await Products.find(query)
             .sort(sortOption)
@@ -320,14 +307,11 @@ const loadProduct = async (req, res) => {
 
         const search = req.query.search || ''
 
-        const usermail = req.session.usermail
-
         const userId = req.session.user
 
         const user = await User.findById(userId)
 
         const cart = userId ? await Cart.findOne({ userId }) : 0
-
 
         const productId = req.query.id
 
@@ -446,7 +430,7 @@ const signin = async (req, res) => {
             return res.status(400).json({ success: false, errors })
         }
 
-        const isMatch = await bcrypt.compare(password, isUser.password)
+        const isMatch = bcrypt.compare(password, isUser.password)
 
         if (!isMatch) {
             return res.status(400).json({
@@ -587,13 +571,10 @@ const signout = async (req, res) => {
     }
 }
 
-//Email Verifying
 const loadVerifyEmail = async (req, res) => {
     try {
 
         if(req.session.user) return res.redirect('/')
-
-        console.log('page loaded')
 
         const search = req.query.search || ''
 
@@ -601,20 +582,11 @@ const loadVerifyEmail = async (req, res) => {
 
         const userOtp = await OTP.findOne({ email })
 
-        if (userOtp) {
-            console.log('userOtp : ', userOtp)
-        }
-
-
         const otpGenerated = userOtp?.createdAt || 0
-        console.log('otp generated : ', otpGenerated)
 
         const expiryTime = 90 * 1000
 
         const now = Date.now()
-
-        console.log('now : ', now)
-
 
         let remainingTime = 0
 
@@ -663,11 +635,9 @@ const verifyEmail = async (req, res) => {
 
         await saveUserData.save();
 
-        // 4. Setup session
         req.session.user = saveUserData._id;
         req.session.userData = saveUserData;
 
-        // 5. Cleanup OTP from DB
         await OTP.deleteOne({ _id: userOtp._id });
 
         return res.status(200).json({
@@ -689,7 +659,6 @@ const resendOtp = async (req, res) => {
     try {
 
         const { email } = req.session.userData;
-        console.log('email from session data : ', email)
 
         if (!email) {
             res.status(500).json({
@@ -715,7 +684,6 @@ const resendOtp = async (req, res) => {
             });
         }
 
-        console.log("Resend otp:", otp);
         return res.status(200).json({
             success: true,
             message: "OTP resent successfully",
@@ -730,7 +698,6 @@ const resendOtp = async (req, res) => {
     }
 }
 
-//Forgot Password Resetting
 const loadforgotPass = async (req, res) => {
     try {
         const search = req.query.search || ''
@@ -870,8 +837,6 @@ const resetPassword = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' })
         }
 
-
-        console.log('from back : ', password, ' ', confirmPassword)
         if (password !== confirmPassword) {
             return res.status(401).json({ success: false, message: 'Passwords do not match' })
         }
@@ -881,8 +846,6 @@ const resetPassword = async (req, res) => {
 
             return res.status(401).json({ success: false, message: 'Password hashing failed' })
         }
-
-        console.log('user : ', user)
 
         user.password = passwordHash
 
@@ -895,31 +858,6 @@ const resetPassword = async (req, res) => {
     }
 }
 
-//cart
-const loadCart = async (req, res) => {
-    try {
-
-        search = req.query.search || ''
-
-        const product = await Products.find({ isBlocked: false })
-
-        const userId = req.session.user
-
-        const cart = userId ? await Cart.findOne({ userId }) : 0
-
-        return res.render('cart', {
-            currentPage: 'cart',
-            product,
-            search,
-            cart
-        })
-
-    } catch (error) {
-        console.log('Failed to load the cart page : ', error)
-    }
-}
-
-//Error Page
 const pageNotFound = async (req, res) => {
     try {
         res.render('page-404')
@@ -952,6 +890,5 @@ module.exports = {
     signin,
     signout,
     loadProduct,
-    loadCart
 
 }

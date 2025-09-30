@@ -18,15 +18,7 @@
     <section class="hero">
         <div class="hero-content">
             <h1>Canon camera</h1>
-            <div class="cta-buttons">
-                <button class="shop-now">Shop now</button>
-                <button class="view-more">View more</button>
-            </div>
-            <div class="dots">
-                <span class="dot active"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
+            <h1>Your dreams on your hand</h1>
         </div>
         <div class="hero-image">
             <img src="<%= locals.heroImage || '/images/Products/Canon/Camera/EOS RS 5 MARK II/Canon RS 5.webp' %>" alt="Canon Camera">
@@ -42,10 +34,9 @@
                     <div class="name-image-row">
                         <h3><%= category.name %></h3>
                         <% if (category.categoryImage) { %>
-                        <img src="/uploads/category/<%= category.categoryImage %>" alt="<%= category.name %>">
+                        <img src="<%= category.categoryImage %>" alt="<%= category.name %>">
                         <% } %>
                     </div>
-                    <p>(<%= category.length ? category.length : 0 %> items)</p>
                 </div>
             </a>
         </div>
@@ -54,15 +45,8 @@
     </section>
 
     <section class="popular-products">
-        <h2>Popular products</h2>
-        <div class="product-filters">
-            <% category.forEach((category, index) => { %>
-                <button class="<%= index === 0 ? 'active' : '' %>"><%= category.name %></button>
-            <% }) %>
-        </div>
+        <h2>Popular Products</h2>
         <div class="product-grid"> 
-            
-
             <% newProducts.forEach(product=>{ %>
                 <div class="product-card">
                     <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" data-id="<%= product._id %>">
@@ -71,7 +55,7 @@
                     <a href="/product?id=<%=product._id%>">
                         <div class="product-card-img">
                             <% if (product.productImage && product.productImage.length > 0) { %>
-                                <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                                <img src="<%= product.productImage[0] %>" alt="<%= product.productName %>">
                             <% } else { %>
                                 <span>No Image</span> 
                             <% } %>
@@ -147,7 +131,7 @@
                         <div class="product-card-featured-img-container">
                             <div class="product-badge"><%= product.badge ? product.badge : 'New' %></div>
                             <% if (product.productImage && product.productImage.length > 0) { %>
-                                <img src="/Uploads/products/<%= product.productImage[0] %>" alt="<%= product.name %>">
+                                <img src="<%= product.productImage[0] %>" alt="<%= product.name %>">
                             <% } else { %>
                                 <span>No Image</span>
                             <% } %>
@@ -209,7 +193,7 @@
                     <div class="product-card-img-container">
                         <div class="product-badge ">New</div>
                         <% if (products[i].productImage && products[i].productImage.length > 0) { %>
-                            <img src="/uploads/products/<%= products[i].productImage[0] %>" alt="<%= products[i].name %>">
+                            <img src="<%= products[i].productImage[0] %>" alt="<%= products[i].name %>">
                         <% } else { %>
                             <span>No Image</span>
                         <% } %>
@@ -248,50 +232,6 @@
             <% }) %>
         </div>
     </section>
-
-    <!-- <section class="blog-posts">
-        <div class="section-header">
-            <h2>Photography Tips & Tutorials</h2>
-            <a href="#" class="view-all-link">View All Posts</a>
-        </div>
-        <div class="blog-grid">
-            <% const blogPosts = [
-                {
-                    title: 'How to Choose Your First DSLR Camera',
-                    excerpt: 'A comprehensive guide for beginners looking to invest in their first DSLR camera.',
-                    image: '/images/blog/first-dslr.jpg',
-                    date: 'May 15, 2023'
-                },
-                {
-                    title: 'Mastering Night Photography',
-                    excerpt: 'Expert tips on capturing stunning night scenes with your camera.',
-                    image: '/images/blog/night-photography.jpg',
-                    date: 'April 28, 2023'
-                },
-                {
-                    title: 'Understanding Camera Lenses',
-                    excerpt: 'Learn about different types of camera lenses and when to use them.',
-                    image: '/images/blog/camera-lenses.jpg',
-                    date: 'March 10, 2023'
-                }
-            ] %>
-
-            <% blogPosts.forEach(post => { %>
-                <div class="blog-card">
-                    <div class="blog-image">
-                        <img src="<%= post.image %>" alt="<%= post.title %>">
-                    </div>
-                    <div class="blog-content">
-                        <span class="blog-date"><%= post.date %></span>
-                        <h3><%= post.title %></h3>
-                        <p><%= post.excerpt %></p>
-                        <a href="#" class="read-more">Read More →</a>
-                    </div>
-                </div>
-            <% }) %>
-        </div>
-    </section> -->
-    
     <footer>
         
         <%- include('../partials/users/footer') %>

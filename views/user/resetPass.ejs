@@ -16,9 +16,6 @@
     </header>
 
     <section>
-        <!-- <div class="breadcrumb">
-            <a href="/">Home</a> > <span>Sign In</span>
-        </div> -->
         <main class="signin-page">
             <div class="signin-container">
                 <div class="signin-image">
@@ -44,109 +41,106 @@
         </main>
     </section>
 
-        
-        <%- include('../partials/users/footer') %>
+    <%- include('../partials/users/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const resetForm = document.getElementById('resetForm')
 
 
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            resetForm.addEventListener('submit', async (e) => {
+                e.preventDefault()
+                clearErrors(resetForm)
 
-        <!-- <script src="/javascript/users/signin.js"></script> -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const resetForm = document.getElementById('resetForm')
+                const formdata = new FormData(resetForm)
+                const jsonData = Object.fromEntries(formdata);
+                Object.keys(jsonData).forEach(key => {
+                    if (typeof jsonData[key] === 'string') {
+                        jsonData[key] = jsonData[key].trim();
+                    }
+                });
 
-
-        resetForm.addEventListener('submit', async (e) => {
-            e.preventDefault()
-            clearErrors(resetForm)
-
-            const formdata = new FormData(resetForm)
-            const jsonData = Object.fromEntries(formdata);
-            Object.keys(jsonData).forEach(key => {
-                if (typeof jsonData[key] === 'string') {
-                    jsonData[key] = jsonData[key].trim();
+                console.log('formdata : ',jsonData)
+                let errors = validateUser(jsonData);
+                if(errors ){
+                    displayFormErrors(resetForm,errors)
+                    return
                 }
-            });
 
-            console.log('formdata : ',jsonData)
-            let errors = validateUser(jsonData);
-            if(errors ){
-                displayFormErrors(resetForm,errors)
-                return
-            }
+                try {
+                    const response = await fetch('/resetPassword', {
+                    method: 'POST',
+                    body: JSON.stringify(jsonData),
+                    headers: { 'Content-Type': 'application/json' }
+                });
 
-            try {
-                const response = await fetch('/resetPassword', {
-                method: 'POST',
-                body: JSON.stringify(jsonData),
-                headers: { 'Content-Type': 'application/json' }
-            });
+                const data = await response.json();
 
-            const data = await response.json();
+                console.log(data)
+                if (!data.success) {
+                    displayFormErrors(resetForm, data.errors);
+                    Swal.fire(' ', data.message || 'Validation error!', 'error');
+                } else {
+                    Swal.fire('Success',data.message || 'Password reset successful', 'success')
+                    .then(() => {
+                        window.location.replace(data.redirectUrl);
+                    });
+                }
 
-            console.log(data)
-            if (!data.success) {
-                displayFormErrors(resetForm, data.errors);
-                Swal.fire(' ', data.message || 'Validation error!', 'error');
-            } else {
-                Swal.fire('Success',data.message || 'Password reset successful', 'success')
-                .then(() => {
-                    window.location.replace(data.redirectUrl);
+
+                } catch (error) {
+                    console.error('Password reset error:', error);
+                Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
+                }
+            })
+            function displayFormErrors(form, errors) {
+            clearErrors(form);
+            if (errors && typeof errors === 'object') {
+                Object.entries(errors).forEach(([field, message]) => {
+                    const input = form.querySelector(`input[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = message; 
+                        }
+                    }
                 });
             }
-
-
-            } catch (error) {
-                console.error('Password reset error:', error);
-            Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
-            }
-        })
-        function displayFormErrors(form, errors) {
-        clearErrors(form);
-        if (errors && typeof errors === 'object') {
-            Object.entries(errors).forEach(([field, message]) => {
-                const input = form.querySelector(`input[name="${field}"]`);
-                if (input) {
-                    input.classList.add('is-invalid');
-                    const feedback = input.nextElementSibling;
-                    if (feedback && feedback.classList.contains('invalid-feedback')) {
-                        feedback.textContent = message; 
-                    }
-                }
-            });
         }
+
+        function clearErrors(form) {
+            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+     }
+    });
+
+    function validateUser(data){
+
+        const alpha = /[a-zA-Z]/
+        const digit = /\d/
+
+        let error ={};
+
+        if(!data.password){
+            error.password = "Password is required !!"
+        }else if(data.password.length < 8){
+            error.password = "Enter minimum 8 charactors !!"
+        }else if(!alpha.test(data.password) || !digit.test(data.password)){
+            error.password = "Should contain Numbers and Alphabets !!"
+        }
+        if(!data.confirmPassword){
+            error.confirmPassword = "ConfirmPassword is required !!"
+        }else if(data.password !== data.confirmPassword){
+            error.confirmPassword = "Passwords don`t match !!"
+        }
+
+        return Object.keys(error).length > 0 ? error : null;
+            
     }
-
-    function clearErrors(form) {
-        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
-    }
-});
-
-function validateUser(data){
-
-    const alpha = /[a-zA-Z]/
-    const digit = /\d/
-
-    let error ={};
-
-    if(!data.password){
-        error.password = "Password is required !!"
-    }else if(data.password.length < 8){
-        error.password = "Enter minimum 8 charactors !!"
-    }else if(!alpha.test(data.password) || !digit.test(data.password)){
-        error.password = "Should contain Numbers and Alphabets !!"
-    }
-    if(!data.confirmPassword){
-        error.confirmPassword = "ConfirmPassword is required !!"
-    }else if(data.password !== data.confirmPassword){
-        error.confirmPassword = "Passwords don`t match !!"
-    }
-
-    return Object.keys(error).length > 0 ? error : null;
-        
-}
-</script>
+    </script>
 
 </body>
 </html>

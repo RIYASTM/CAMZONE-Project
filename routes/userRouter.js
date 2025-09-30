@@ -25,6 +25,7 @@ const orderControlller = require('../controllers/users/orderController')
 const walletController = require('../controllers/users/walletController')
 const wishListController = require('../controllers/users/wishListController')
 const invoiceController = require('../controllers/users/invoiceController')
+const contactUsController = require('../controllers/users/contactUsController')
 
 
 //Routers
@@ -165,6 +166,13 @@ router.get('/wishList', userAuth, wishListController.loadWishList)
 router.post('/addtowishlist', userAuth, wishListController.addtoWishlist)
 
 router.post('/removeFromWishList', userAuth, wishListController.removeFromWishList)
+
+
+// Contact Us
+
+router.get('/contact', contactUsController.loadContactUs)
+
+router.post('/sendMessage', contactUsController.contactUs)
 
 
 //Invoice 

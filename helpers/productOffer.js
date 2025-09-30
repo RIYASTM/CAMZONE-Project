@@ -1,4 +1,5 @@
 const Products = require('../model/productModel');
+const Coupon = require('../model/couponModel')
 
 async function cartPrices(cart) {
     let cartItems = cart.items.filter(item => !item.isDeleted);
@@ -10,11 +11,10 @@ async function cartPrices(cart) {
             .populate('brand');
 
         if (product) {
-            // Fallback logic
             if (item.quantity >= product.quantity) {
                 item.quantity = product.quantity;
                 cart.markModified('items');
-            }  
+            }
 
             if (product.stock <= 0) {
                 item.isDeleted = true;
@@ -24,7 +24,6 @@ async function cartPrices(cart) {
 
             item.productId = product;
 
-            // ✅ call local function
             const { discountedPrice, totalOffer } = calculateDiscountedPrice(product);
 
             item.itemPrice = product.regularPrice;
@@ -42,19 +41,19 @@ async function cartPrices(cart) {
     cartItems = cartItems.filter(item => item.productId !== null);
 
     cart.totalAmount = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-    cart.GST = (cart.totalAmount * 18 ) / 118;
+    cart.GST = (cart.totalAmount * 18) / 118;
 
     await cart.save();
 
     const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
     const totalOfferedPrice = totalOfferPrice - cart.totalAmount;
 
-    return { 
+    return {
         cartItems,
         subTotal,
         totalOfferPrice,
         totalOfferedPrice,
-        cartTotal : cart.totalAmount
+        cartTotal: cart.totalAmount
     }
 }
 
@@ -65,11 +64,45 @@ function calculateDiscountedPrice(product) {
 
     const totalOffer = Math.max(productOffer, categoryOffer, brandOffer);
     const discountedPrice = Math.round(product.regularPrice * (1 - totalOffer / 100));
-    
-    return { discountedPrice, totalOffer }; 
+
+    return { discountedPrice, totalOffer };
 }
+
+async function calculateAmounts(couponCode, totalAmount, cartItems) {
+
+    const coupon = await Coupon.findOne({ couponCode }) || ''
+
+    let couponDiscount = 0
+
+    if (coupon) {
+        if (coupon.discountType === 'percentage') {
+            couponDiscount = Math.floor((totalAmount * coupon.discount) / 100)
+        } else {
+            couponDiscount = coupon.discount
+        }
+    }
+
+
+    const finalAmount = Math.floor(totalAmount - couponDiscount);
+    const totalGST = Math.floor((finalAmount * 18) / 118)
+    const priceWithoutGST = Math.floor(finalAmount - totalGST);
+
+    const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
+    const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
+    const totalOfferedPrice = totalOfferPrice - subtotal + couponDiscount || 0
+
+    return {
+        couponDiscount,
+        priceWithoutGST,
+        totalOfferedPrice,
+        finalAmount,
+        totalGST,
+        coupon
+    }
+};
 
 module.exports = {
     cartPrices,
-    calculateDiscountedPrice
+    calculateDiscountedPrice,
+    calculateAmounts
 };

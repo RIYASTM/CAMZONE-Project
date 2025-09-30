@@ -9,39 +9,85 @@ const {addToWallet} = require('../../helpers/wallet')
 
 
 const loadOrders = async (req,res) => {
-    try {
+    try { 
 
-        const search = req.query.search || ''
+        const { search = '', sort = 'all', filter = 'all', page = 1 } = req.query;
+
+        const limit = 8
+        const skip = (page - 1 ) * limit
+        
+        let query = {};
+
         if (search) {
-            console.log( 'Searched value in orders : ' , search)
+            query.$or = [
+                { orderId: { $regex: search, $options: 'i' } },
+                { 'address.name': { $regex: search, $options: 'i' } },
+                !isNaN(search) ? { finalAmount: Number(search) } : null,
+                { paymentMethod: { $regex: search, $options: 'i' } }
+            ].filter(Boolean);
         }
 
-        const page = parseInt(req.query.page) || 1
-        const limit = 10
-        const skip = (page - 1 ) * limit
+
+        if(filter && filter !== 'all'){
+            console.log('status : ', filter)
+            query.status = filter
+        }
+
+        let sortOption;
+
+        switch (sort) {
+            case 'all':
+                sortOption = { createdOn: -1 };
+                break;
+            case 'date':
+                sortOption = { createdOn : 1 };
+                break;
+            case 'total':
+                sortOption = { finalAmount : -1 };
+                break;
+            case 'name' : 
+                sortOption = {'address.name' : 1};
+                break;
+            default:
+                sortOption = { createdOn: -1 };
+        }
 
         const products = await Product.find()
                 
-        const orders = await Order.find({
-            $or: [
-                { orderId: { $regex: search, $options: 'i' } },
-                { 'address.name': { $regex: search, $options: 'i' } }
-            ]
-            })
+        const orders = await Order.find(query)
             .populate('orderedItems.product')
-            .sort({ createdOn: -1 })
+            .sort(sortOption)
+            .collation({ locale: "en", strength: 1 })
             .skip(skip)
             .limit(limit)
 
-            const totalOrders = await Order.countDocuments({
-            $or: [
-                { orderId: { $regex: search, $options: 'i' } },
-                { 'address.name': { $regex: search, $options: 'i' } }
-            ]
-            })
+        await Order.updateMany(
+            { expiresAt: { $lt: new Date() } },
+            {
+                $set: {
+                status: 'Cancelled',
+                reason: 'Order Expired',
+                'orderedItems.$[].status': 'Cancelled',
+                'orderedItems.$[].reason': 'Order Expired'
+                }
+            }
+        );
+
+        const totalOrders = await Order.countDocuments(query)
 
         const totalPages = Math.ceil(totalOrders / limit)
 
+         if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.json({
+                success: true,
+                orders,
+                currentPages: parseInt(page),
+                totalPages,
+                search,
+                sort,
+                filter
+            });
+        }
         
         return res.render('orders',{
             search,
@@ -50,7 +96,9 @@ const loadOrders = async (req,res) => {
             orders: orders,
             currentPages : page,
             totalPages ,
-            iconClass: 'fa-shopping-cart'
+            iconClass: 'fa-shopping-cart',
+            sort,
+            filter
         })
     } catch (error) {
         
@@ -152,20 +200,13 @@ const returnOrder = async (req, res) => {
                 ({ refundAmount, refundReason } = orderReturn(order, reason, newStatus))
             }
 
-            // for (let item of returnItems) {
-            //     const product = await Product.findById(item.product);
-            //     if (product) {
-            //         product.quantity += item.quantity;
-            //         await product.save();
-            //     }
-            // }
-
             const bulkOps = returnItems.map(item => ({
                 updateOne: {
                     filter: { _id: item.product },
                     update: { $inc: { quantity: item.quantity } }
                 }
             }));
+            
             await Product.bulkWrite(bulkOps);
 
 
@@ -202,12 +243,6 @@ const returnOrder = async (req, res) => {
         } else {
 
             let { refundAmount, refundReason } = orderReturn(order, reason, newStatus)
-            // order.status = newStatus;
-            // order.reason = reason;
-            // order.orderedItems.forEach(item => {
-            //     item.itemStatus = newStatus;
-            //     item.reason = reason;
-            // });
 
             let finalPrice = order.finalAmount - refundAmount
             order.finalAmount -= refundAmount

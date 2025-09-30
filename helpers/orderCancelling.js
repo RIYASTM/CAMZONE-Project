@@ -7,7 +7,7 @@ function cancelItem(items , reason){
     let cancelledItems = items.map(item => {
         item.itemStatus = 'Cancelled';
         item.reason = reason;
-        refundAmount += item.price * item.quantity;
+        refundAmount += item.productPrice * item.quantity;
         return item
     });
 
@@ -29,7 +29,7 @@ function orderCancel(order , reason){
     order.orderedItems.forEach(item => {
         item.itemStatus = 'Cancelled',
         item.reason = reason,
-        refundAmount += item.price * item.quantity
+        refundAmount += item.productPrice * item.quantity
     });
 
     return {

@@ -58,7 +58,7 @@
                             <label>Profile Picture</label>
                             <div class="profile-picture-container" id="profilePicContainer">
                                 <% if (user && user.profileImage) { %>
-                                    <img src="/uploads/profile/<%= user.profileImage %>" alt="<%= user.name %>" id="profilePreview" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
+                                    <img src="<%= user.profileImage %>" alt="<%= user.name %>" id="profilePreview" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
                                 <% } else { %>
                                     <div class="profile-placeholder">
                                         <span class="plus-icon">+</span>
