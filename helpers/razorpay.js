@@ -1,5 +1,5 @@
+require('dotenv').config()
 const Razorpay = require('razorpay')
-
 
 const razorpayInst = new Razorpay({
     key_id : process.env.RAZORPAY_KEY_ID,
@@ -44,7 +44,6 @@ async function generateRazorpayCheckout(amount){
 
 
 module.exports = {
-    razorpayInst,
     generateRazorpay,
     generateRazorpayCheckout
 }

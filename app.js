@@ -69,10 +69,12 @@ connectDB().then(() => {
             collectionName: 'sessions'
         }),
         cookie: {
-            // secure: process.env.NODE_ENV === 'production',
-            secure: true,
-            httpOnly: true,
-            maxAge: 1000 * 60 * 60 * 24 
+            cookie: {
+                secure: process.env.NODE_ENV === 'production',  
+                httpOnly: true,
+                sameSite: 'lax', 
+                maxAge: 1000 * 60 * 60 * 24 
+            } 
         }
     }))
 
