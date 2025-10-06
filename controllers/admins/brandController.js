@@ -115,7 +115,7 @@ const editBrand = async (req, res) => {
                 success: false,
                 message: 'Brand already exist with this name'
             })
-        } 
+        }
 
         let imageUrl = brand.brandImage;
         if (req.file) {
@@ -129,7 +129,7 @@ const editBrand = async (req, res) => {
             }
             imageUrl = req.file?.path;
         }
-          
+
 
         const updateData = {
             brandName: brandName ? brandName.trim() : brand.brandName,
@@ -163,7 +163,7 @@ const editBrand = async (req, res) => {
             message: "Something went wrong while updating brand: " + error.message
         });
     }
-} 
+}
 
 const deleteBrand = async (req, res) => {
     try {

@@ -70,36 +70,51 @@ function calculateDiscountedPrice(product) {
 
 async function calculateAmounts(couponCode, totalAmount, cartItems) {
 
-    const coupon = await Coupon.findOne({ couponCode }) || ''
+    const coupon = await Coupon.findOne({ couponCode }) || null;
 
-    let couponDiscount = 0
+    let couponDiscount = 0;
 
     if (coupon) {
         if (coupon.discountType === 'percentage') {
-            couponDiscount = Math.floor((totalAmount * coupon.discount) / 100)
+            couponDiscount = Math.floor((totalAmount * coupon.discount) / 100);
         } else {
-            couponDiscount = coupon.discount
+            couponDiscount = coupon.discount;
         }
     }
 
+    let message = null
+
+    if (totalAmount < couponDiscount) {
+        return message = { success: false, message: 'Your order total is below coupon Discount' };
+    }
 
     const finalAmount = Math.floor(totalAmount - couponDiscount);
-    const totalGST = Math.floor((finalAmount * 18) / 118)
+
+    const totalGST = Math.floor((finalAmount * 18) / 118);
     const priceWithoutGST = Math.floor(finalAmount - totalGST);
 
+    
+    
     const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
+    console.log('totalAmount : ', totalAmount)
+    console.log('subTotal : ', subtotal);
+    
     const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
-    const totalOfferedPrice = totalOfferPrice - subtotal + couponDiscount || 0
+
+    const totalOfferedPrice = (totalOfferPrice - subtotal) + couponDiscount;
 
     return {
+        message,
+        success: true,
         couponDiscount,
         priceWithoutGST,
         totalOfferedPrice,
         finalAmount,
         totalGST,
         coupon
-    }
-};
+    };
+}
+
 
 module.exports = {
     cartPrices,

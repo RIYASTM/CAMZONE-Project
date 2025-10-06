@@ -50,16 +50,25 @@ const loadProducts = async (req, res) => {
             .skip(skip)
             .exec();
 
-        for (let product of products) {
-            let newStatus = 'Available';
+        if (products.length > 0) {
+            const bulkOps = products.map(product => {
+                let newStatus = 'Available'
 
-            if (product.isBlocked === true || product.isBlocked === "true") {
-                newStatus = 'Discontinued';
-            } else if (product.quantity <= 0) {
-                newStatus = 'Out of Stock';
-            }
+                if (product.isBlocked === true || product.isBlocked === 'true') {
+                    newStatus = 'Discontinued';
+                } else if (product.quantity <= 0) {
+                    newStatus = 'Out of Stock';
+                }
 
-            await Products.updateMany({ _id: product._id }, { $set: { status: newStatus } });
+                return {
+                    updateOne: ({
+                        filter: { _id: product._id },
+                        update: { $set: { status: newStatus } }
+                    })
+                }
+            })
+
+            await Products.bulkWrite(bulkOps)
         }
 
         return res.render('products', {
@@ -97,7 +106,6 @@ const addProduct = async (req, res) => {
             return res.status(400).json({ success: false, message: errors });
         }
 
-        // const productImages = req.files ? req.files.map(file => file.filename) : [];
         const productImages = req.files ? req.files.map(file => file.path) : [];
         if (productImages.length === 0) {
             return res.status(400).json({ success: false, message: 'There is no images added!!!' });
@@ -200,9 +208,6 @@ const editProduct = async (req, res) => {
             finalImages.push(existingImages);
         }
 
-        // const newImages = req.files ? req.files.map(file => file.filename) : [];
-        // finalImages = [...finalImages, ...newImages];
-
         const newImages = req.files ? req.files.map(file => file.path) : [];
         finalImages = [...finalImages, ...newImages];
 
@@ -221,7 +226,7 @@ const editProduct = async (req, res) => {
 
         const productOffer = parseFloat(data.productOffer) || 0;
         const regularPrice = parseFloat(data.regularPrice);
-        const gst = (regularPrice * 18) / 118;
+        const gst = Math.ceil((regularPrice * 18) / 118);
         let salePrice = parseFloat(data.salePrice);
 
         if (productOffer > 0) {

@@ -6,9 +6,9 @@ const loadCustomers = async (req, res) => {
 
         const { search = '', sort = 'all', filter = 'all', page = 1 } = req.query;
 
-        const limit = 5;
+        const limit = 8;
 
-        let query = { isAdmin : false};
+        let query = { isAdmin: false };
 
         if (search) {
             query.$or = [
@@ -54,7 +54,7 @@ const loadCustomers = async (req, res) => {
 
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
             return res.status(200).json({
-                success : true,
+                success: true,
                 datas: userData,
                 currentPages: page,
                 totalPages,

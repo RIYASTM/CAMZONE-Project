@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const env = require('dotenv').config()
 
-const connectDB = async () =>{
+const connectDB = async () => {
     try {
         const dbConnect = await mongoose.connect(process.env.MONGODB_URI)
         console.log(`\x1b[36m Mongo DB connected with ${dbConnect.connection.host} \x1b[0m`)

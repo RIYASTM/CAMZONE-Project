@@ -134,7 +134,12 @@ const checkout = async (req, res) => {
 
         const couponCode = data.couponCode
 
-        const { finalAmount, totalOfferedPrice, totalGST, priceWithoutGST, coupon, couponDiscount } = await calculateAmounts(couponCode, totalAmount, cartItems)
+        const { finalAmount, totalOfferedPrice, totalGST, priceWithoutGST, coupon, couponDiscount, message } = await calculateAmounts(couponCode, totalAmount, cartItems)
+
+        if(message !== null){
+            console.log(message)
+            return res.status(401).json({ success : false, message })
+        }
 
         if (paymentMethod === 'COD' && finalAmount > 50000) {
             return res.status(401).json({ success: false, message: 'COD is not available for the amount 50000 & above!!' })
@@ -166,6 +171,8 @@ const checkout = async (req, res) => {
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
             shipping: shippingCharge
         });
+
+        console.log(order)
 
         if (paymentMethod === 'Razorpay') {
             await order.save();

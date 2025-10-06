@@ -1,20 +1,20 @@
 const Coupons = require('../../model/couponModel');
 const { v4: uuidv4 } = require('uuid');
 const { validateCoupon } = require('../../helpers/validations')
-const mongoose =require('mongoose')
+const mongoose = require('mongoose')
 
 const loadCoupons = async (req, res) => {
     try {
         const { search = '', sort = 'all', filter = 'all', page = 1 } = req.query;
-        
-        const limit = 10; 
-        let query = { isDeleted : false};
+
+        const limit = 10;
+        let query = { isDeleted: false };
 
         if (search) {
             query.$or = [
                 { couponName: { $regex: search, $options: 'i' } },
                 { couponCode: { $regex: search, $options: 'i' } },
-                { discountType: { $regex: search, $options : 'i'}}
+                { discountType: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -197,7 +197,7 @@ const updateCoupon = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Coupon not found' });
         }
 
-        const existingCoupon = await Coupons.findOne({ couponName: data.couponName.trim(), _id: { $ne: data.id }});
+        const existingCoupon = await Coupons.findOne({ couponName: data.couponName.trim(), _id: { $ne: data.id } });
         if (existingCoupon) {
             return res.status(400).json({ success: false, message: 'Coupon name already exists' });
         }
@@ -241,11 +241,11 @@ const updateCoupon = async (req, res) => {
 
 const deleteCoupon = async (req, res) => {
     try {
-        const couponId = req.params.id || new mongoose.Types.ObjectId(req.params.id) ;
+        const couponId = req.params.id || new mongoose.Types.ObjectId(req.params.id);
         const coupon = await Coupons.findByIdAndUpdate(couponId,
-            {isDeleted : true, isList : false}, 
-            {new : true, runValidators : true}
-        );    
+            { isDeleted: true, isList: false },
+            { new: true, runValidators: true }
+        );
         if (!coupon) {
             return res.status(404).json({ success: false, message: 'Coupon not found' });
         }

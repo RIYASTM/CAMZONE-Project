@@ -130,12 +130,16 @@
                               <td><%= !order.shipping || order.shipping === 0 ? 'Free' : '₹' + order.shipping.toFixed(2) %></td>
                             </tr>
                             <tr>
-                                <td>GST (18%)</td>
-                                <td>₹<%= (order.GST || 0).toFixed(2) %></td>
+                              <td>GST (18%)</td>
+                              <td>₹<%= (order.GST || 0).toFixed(2) %></td>
                             </tr>
                             <tr class="total-row">
-                                <td><strong>Total Amount</strong></td>
-                                <td><strong>₹<%= order.finalAmount.toFixed(2) %></strong></td>
+                              <td><strong>Total Amount</strong></td>
+                              <td><strong>₹<%= order.finalAmount.toFixed(2) %></strong></td>
+                            </tr>
+                            <tr>
+                              <td>Paid By</td>
+                              <td><%= order.paymentMethod %></td>
                             </tr>
                         </tbody>
                     </table>
@@ -180,7 +184,6 @@
   </main>
 
   <!--Modal For Retry Payment-->
-
   <div class="modal fade" id="retryPaymentModal" tabindex="-1" aria-labelledby="retryPaymentModalLabel"  style="display: none;">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -205,7 +208,6 @@
       </div>
     </div>
   </div>
-
 
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">

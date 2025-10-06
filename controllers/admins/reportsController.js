@@ -4,7 +4,7 @@ const Categories = require('../../model/categoryModel');
 const Brand = require('../../model/brandModel');
 
 
-const loadReports = async (req,res) => {
+const loadReports = async (req, res) => {
     try {
 
         const [orders, users, categories, brands] = await Promise.all([
@@ -14,31 +14,31 @@ const loadReports = async (req,res) => {
                 .populate({
                     path: 'orderedItems.product',
                     populate: {
-                    path: 'category',
-                    model: 'Category'
+                        path: 'category',
+                        model: 'Category'
                     }
                 })
                 .lean(),
-            Users.find({ status : true }).lean(),
+            Users.find({ status: true }).lean(),
             Categories.find(),
             Brand.find()
         ])
-        
-        return res.render('reports',{
-            pageTitle : 'Reports',
-            currentPage:'reports',
-            currentPages : 1,
-            totalPages : 10,
-            iconClass : 'fa-chart-bar',
+
+        return res.render('reports', {
+            pageTitle: 'Reports',
+            currentPage: 'reports',
+            currentPages: 1,
+            totalPages: 10,
+            iconClass: 'fa-chart-bar',
             categories,
             brands,
             orders,
             users
         })
     } catch (error) {
-        
+
         console.log('======================================');
-        console.log('failed to load reports',error);
+        console.log('failed to load reports', error);
         console.log('======================================');
         res.status(500).send("Server Error")
     }

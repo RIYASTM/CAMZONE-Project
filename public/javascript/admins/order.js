@@ -117,43 +117,44 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetchOrders({ ...currentState });
         });
     }
+    
+    // Update pagination dynamically
+    function updatePagination(currentPages, totalPages) {
+        const paginationDiv = document.querySelector('.pagination');
+        if (!paginationDiv) return;
+    
+        paginationDiv.innerHTML = `
+            <span>${currentPages} of ${totalPages}</span>
+            <div class="pagination-controls">
+                <button class="pagination-button" data-page="1" ${currentPages === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button class="pagination-button" data-page="${currentPages - 1}" ${currentPages === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                <span> - </span>
+                <button class="pagination-button" data-page="${currentPages + 1}" ${currentPages === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button class="pagination-button" data-page="${totalPages}" ${currentPages === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        `;
+    
+        // Attach pagination button listeners
+        paginationDiv.querySelectorAll('.pagination-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = parseInt(btn.dataset.page);
+                if (!isNaN(page) && page >= 1) {
+                    currentState.page = page;
+                    fetchOrders({ ...currentState });
+                }
+            });
+        });
+    }
 });
 
-// Update pagination dynamically
-function updatePagination(currentPages, totalPages) {
-    const paginationDiv = document.querySelector('.pagination');
-    if (!paginationDiv) return;
-
-    paginationDiv.innerHTML = `
-        <span>${currentPages} of ${totalPages}</span>
-        <div class="pagination-controls">
-            <button class="pagination-button" data-page="1" ${currentPages === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-left"></i>
-            </button>
-            <button class="pagination-button" data-page="${currentPages - 1}" ${currentPages === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-left"></i>
-            </button>
-            <span> - </span>
-            <button class="pagination-button" data-page="${currentPages + 1}" ${currentPages === totalPages ? 'disabled' : ''}>
-                <i class="fas fa-angle-right"></i>
-            </button>
-            <button class="pagination-button" data-page="${totalPages}" ${currentPages === totalPages ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
-
-    // Attach pagination button listeners
-    paginationDiv.querySelectorAll('.pagination-button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const page = parseInt(btn.dataset.page);
-            if (!isNaN(page) && page >= 1) {
-                currentState.page = page;
-                fetchOrders({ ...currentState });
-            }
-        });
-    });
-}
 
 // Update orders table
 function updateOrdersTable(orders, currentPages) {

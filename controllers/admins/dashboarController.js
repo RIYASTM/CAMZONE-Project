@@ -11,15 +11,15 @@ const loadDashboard = async (req, res) => {
                 .populate('orderedItems.product', 'productName salePrice')
                 .populate('userId', 'name')
                 .populate({
-                    path : 'orderedItems.product',
-                    populate : {
+                    path: 'orderedItems.product',
+                    populate: {
                         path: 'category',
                         model: 'Category'
                     }
                 })
                 .lean(),
-            
-            Users.find({ status : true}).lean(),
+
+            Users.find({ status: true }).lean(),
             Category.find().lean(),
             Brand.find().lean()
         ])

@@ -33,7 +33,7 @@ const loadCategory = async (req, res) => {
         }).countDocuments();
 
         const totalPages = Math.ceil(totalCategories / limit);
-            console.log(categories)
+        console.log(categories)
         return res.render('category', {
             pageTitle: 'Category',
             category: categories,
@@ -177,7 +177,7 @@ const editCategory = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: 'Category Successfully Updated',
-            category : updateCategory
+            category: updateCategory
         });
     } catch (error) {
         console.error('Category editing failed:', error);
@@ -211,7 +211,7 @@ const addCategoryOffer = async (req, res) => {
         const updatedCategory = await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
 
 
-        return res.status(200).json({ status: true, message: 'Category offer added successfully', category : updatedCategory });
+        return res.status(200).json({ status: true, message: 'Category offer added successfully', category: updatedCategory });
     } catch (error) {
         console.error('Failed to add category offer:', error);
         return res.status(500).json({ status: false, message: 'Internal server error' });

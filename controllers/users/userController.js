@@ -341,17 +341,6 @@ const loadProduct = async (req, res) => {
 
         const totalOffer = Math.max(productOffer, brandOffer, categoryOffer);
 
-        //Offer Console
-        const offers = {
-            Brand: brandOffer,
-            Category: categoryOffer,
-            Product: productOffer
-        }
-
-        const maxKey = Object.keys(offers).reduce((a, b) => {
-            return offers[a] > offers[b] ? a : b
-        })
-
         product.salePrice = Math.round(product.regularPrice - product.regularPrice / 100 * totalOffer)
 
         const relatedProducts = await Products.find({ category: findCategory })
@@ -430,7 +419,7 @@ const signin = async (req, res) => {
             return res.status(400).json({ success: false, errors })
         }
 
-        const isMatch = bcrypt.compare(password, isUser.password)
+        const isMatch = await bcrypt.compare(password, isUser.password)
 
         if (!isMatch) {
             return res.status(400).json({

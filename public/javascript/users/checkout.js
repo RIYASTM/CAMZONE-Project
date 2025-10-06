@@ -700,13 +700,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             const verifyData = await verifyRes.json();
                             if (verifyData.success) {
-                                // Swal.fire({
-                                //     icon: 'success',
-                                //     title: 'Success',
-                                //     text: verifyData.message || 'Payment completed successfully!'
-                                // }).then(() => {
-                                //     window.location.href = '/orderSuccess';
-                                // });
                                 showNotification(verifyData.message || 'Payment completed successfully!')
                                 window.location.href = '/orderSuccess'
                             } else {
@@ -914,6 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 applyButton.textContent = 'Remove'
 
             } else {
+                couponInput.value = '';
                 showNotification(data.message || 'Coupon applying failed', 'error')
             }
         } catch (error) {

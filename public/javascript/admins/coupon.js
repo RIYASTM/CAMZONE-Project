@@ -60,6 +60,27 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 
+    
+    const discountTypeEl = document.getElementById('discountType')
+    const minOrderEl = document.getElementById('minOrder')
+    const discountEl = document.getElementById('discount')
+
+    discountTypeEl.addEventListener('change', updateMinOrder);
+    discountEl.addEventListener('input', updateMinOrder);
+
+    function updateMinOrder() {
+        const discountType = discountTypeEl.value;
+        const discount = parseFloat(discountEl.value) || 0;
+
+        if (discountType === 'fixed') {
+            minOrderEl.value = Math.ceil(discount * 1.2);
+            minOrderEl.disabled = true;
+        } else {
+            minOrderEl.disabled = false;
+            minOrderEl.value = ''; // optional: clear for percentage
+        }
+    }
+
     // Event Listeners
     addCouponButton.addEventListener('click', () => {
         clearErrors(addCouponForm);
@@ -101,7 +122,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     editCouponForm.querySelector('#editCouponDescription').value = coupon.description;
                     editCouponForm.querySelector('#editDiscountType').value = coupon.discountType;
                     editCouponForm.querySelector('#editDiscount').value = coupon.discount;
-                    editCouponForm.querySelector('#editMinOrder').value = coupon.minOrder || 100000;
+                    // Setup dynamic minOrder behavior
+                    const editDiscountTypeEl = editCouponForm.querySelector('#editDiscountType');
+                    const editDiscountEl = editCouponForm.querySelector('#editDiscount');
+                    const editMinOrderEl = editCouponForm.querySelector('#editMinOrder');
+
+                    function updateEditMinOrder() {
+                        const discountType = editDiscountTypeEl.value;
+                        const discount = parseFloat(editDiscountEl.value) || 0;
+
+                        if (discountType === 'fixed') {
+                            editMinOrderEl.value = Math.ceil(discount * 1.2);
+                            editMinOrderEl.readOnly = true;
+                        } else {
+                            editMinOrderEl.readOnly = false;
+                            editMinOrderEl.value = coupon.minOrder || 60000;
+                        }
+                    }
+
+                    editDiscountTypeEl.addEventListener('change', updateEditMinOrder);
+                    editDiscountEl.addEventListener('input', updateEditMinOrder);
+
+                    // Set initial minOrder
+                    updateEditMinOrder();
+
                     editCouponForm.querySelector('#editMaxOrder').value = coupon.maxOrder || 700000;
                     editCouponForm.querySelector('#editValidFrom').value = new Date(coupon.validFrom).toISOString().split('T')[0];
                     editCouponForm.querySelector('#editValidUpto').value = new Date(coupon.validUpto).toISOString().split('T')[0];
@@ -293,15 +337,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const discount = parseFloat(data.discount);
         if (isNaN(discount) || discount <= 0) {
             errors.discount = 'Discount is required and must be a positive number';
-        } else if(discount > 2000000) {
-            errors.discount = 'Discount should under 20,00,000!!'
-        } else if (data.discountType === 'percentage' && (discount <= 0 || discount > 100)) {
-            errors.discount = 'Percentage discount must be between 1 and 100';
+        } else if(discount > 60000) {
+            errors.discount = 'Discount should under 60,000!!'
+        } else if (data.discountType === 'percentage' &&  discount > 80) {
+            errors.discount = 'Percentage discount must be between 1 and 80';
         }
 
-        const minOrder = parseFloat(data.minOrder);
+        const minOrder = Math.floor(parseFloat(data.minOrder))
         if (isNaN(minOrder) || minOrder <= 0) {
             errors.minOrder = 'Minimum order amount is required and must be positive';
+        } else if ( data.minOrder && data.discountType === 'fixed'){
+            const minAmount = discount + (discount * 0.2)
+            if(minOrder < minAmount)
+            errors.minOrder = `Minimum order should be ${minAmount} or above!!`
         }
 
         const maxOrder = parseFloat(data.maxOrder)
@@ -406,8 +454,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${coupon.couponLimit || 'N/A'}</td>
                 <td>${new Date(coupon.validUpto) < new Date() ? 'Expired' : (coupon.isList ? 'Active' : 'Inactive')}</td>
                 <td>
-                    <a href="#" class="action-icon editCouponButton" data-coupon-id="${coupon.id}" aria-label="Edit coupon"><i class="fas fa-edit"></i></a>
-                    <a href="#" class="action-icon deleteCoupon" data-coupon-id="${coupon.id}" aria-label="Delete coupon"><i class="fas fa-trash"></i></a>
+                    <a href="#" class="action-icon editCouponButton" data-coupon-id="${coupon._id}" aria-label="Edit coupon"><i class="fas fa-edit"></i></a>
+                    <a href="#" class="action-icon deleteCoupon" data-coupon-id="${coupon._id}" aria-label="Delete coupon"><i class="fas fa-trash"></i></a>
                 </td>
             `;
             tbody.appendChild(tr);

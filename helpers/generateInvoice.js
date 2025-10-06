@@ -1,7 +1,7 @@
 const PDFDocument = require('pdfkit');
 
 
-function generateInvoice(order){
+function generateInvoice(order, res){
   const doc = new PDFDocument({ margin: 20 });
     const fileName = `invoice-${order.id}.pdf`;
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);

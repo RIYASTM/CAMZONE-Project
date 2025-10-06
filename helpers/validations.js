@@ -360,13 +360,20 @@ const validateCoupon = (data) => {
     const discount = parseFloat(data.discount);
     if (isNaN(discount) || discount <= 0) {
         errors.discount = 'Discount is required and must be a positive number';
-    } else if (data.discountType === 'percentage' && (discount <= 0 || discount > 100)) {
-        errors.discount = 'Percentage discount must be between 1 and 100';
+    } else if(discount > 60000) {
+        errors.discount = 'Discount should under 60,000!!'
+    } else if (data.discountType === 'percentage' && discount > 80) {
+        errors.discount = 'Percentage discount must be between 1 and 80';
     }
     const minOrder = parseFloat(data.minOrder);
     if (isNaN(minOrder) || minOrder <= 0) {
         errors.minOrder = 'Minimum order amount is required and must be positive';
+    } else if (data.minOrder && data.discountType === 'fixed'){
+        const minAmount = discount + (discount * 0.2)
+        if(minOrder < minAmount)
+        errors.minOrder = `Minimum order should be ${minAmount} or above!!`
     }
+
     const validFrom = new Date(data.validFrom);
     const validUpto = new Date(data.validUpto);
     const today = new Date();
