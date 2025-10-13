@@ -55,31 +55,74 @@ connectDB().then(() => {
     app.use('/user', nocache());
 
     // Single session middleware with dynamic config based on path
-    app.use((req, res, next) => {
-        const isAdmin = req.path.startsWith('/admin');
-        const sessionConfig = {
-            name: isAdmin ? 'admin.sid' : 'user.sid',
-            secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
-            resave: false,
-            saveUninitialized: false,
-            store: MongoStore.create({
-                mongoUrl: process.env.MONGODB_URI,
-                touchAfter: 24 * 3600,
-                crypto: {
-                    secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
-                },
-                autoRemove: 'native',
-                collectionName: isAdmin ? 'adminSessions' : 'sessions'
-            }),
-            cookie: {
-                secure: process.env.NODE_ENV === 'production',
-                httpOnly: true,
-                sameSite: 'lax',
-                maxAge: 1000 * 60 * 60 * 24
-            }
-        };
-        session(sessionConfig)(req, res, next);
+    // app.use((req, res, next) => {
+    //     const isAdmin = req.path.startsWith('/admin');
+    //     const sessionConfig = {
+    //         name: isAdmin ? 'admin.sid' : 'user.sid',
+    //         secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
+    //         resave: false,
+    //         saveUninitialized: false,
+    //         store: MongoStore.create({
+    //             mongoUrl: process.env.MONGODB_URI,
+    //             touchAfter: 24 * 3600,
+    //             crypto: {
+    //                 secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
+    //             },
+    //             autoRemove: 'native',
+    //             collectionName: isAdmin ? 'adminSessions' : 'sessions'
+    //         }),
+    //         cookie: {
+    //             secure: process.env.NODE_ENV === 'production',
+    //             httpOnly: true,
+    //             sameSite: 'lax',
+    //             maxAge: 1000 * 60 * 60 * 24
+    //         }
+    //     };
+    //     session(sessionConfig)(req, res, next);
+    // });
+
+    const userSession = session({
+        name: 'user.sid',
+        secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGODB_URI,
+            touchAfter: 24 * 3600,
+            crypto: { secret: process.env.SESSION_SECRET || 'supersecretkey1234567890' },
+            autoRemove: 'native',
+            collectionName: 'sessions'
+        }),
+        cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: 1000 * 60 * 60 * 24
+        }
     });
+
+    const adminSession = session({
+        name: 'admin.sid',
+        secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGODB_URI,
+            touchAfter: 24 * 3600,
+            crypto: { secret: process.env.SESSION_SECRET || 'supersecretkey1234567890' },
+            autoRemove: 'native',
+            collectionName: 'adminSessions'
+        }),
+        cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: 1000 * 60 * 60 * 24
+        }
+    });
+
+    app.use('/admin', adminSession, adminRouter);
+    app.use('/', userSession, userRouter);
 
     app.use((err, req, res, next) => {
         console.error('Error:', err.stack);
@@ -100,8 +143,8 @@ connectDB().then(() => {
     app.use(express.urlencoded({ extended: true }));
 
     // ====== ROUTES ======
-    app.use('/admin', adminRouter);
-    app.use('/', userRouter);
+    // app.use('/admin', adminRouter);
+    // app.use('/', userRouter);
 
     // ====== START SERVER ======
     app.listen(port, () => {
