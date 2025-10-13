@@ -13,11 +13,10 @@ const morgan = require('morgan');
 const passport = require('./config/passport');
 const mongoose = require('mongoose');
 
-// ====== Routers ======
 const userRouter = require('./routes/userRouter');
 const adminRouter = require('./routes/adminRouter');
+const {userSession , adminSession} = require('./helpers/sessions')
 
-// ====== GLOBAL ERROR HANDLERS ======
 process.on("uncaughtException", (err) => {
     if (err.message.includes("Unable to find the session to touch") ||
         err.message.includes("session")) {
@@ -37,7 +36,6 @@ process.on('unhandledRejection', (reason, promise) => {
     process.exit(1);
 });
 
-// ====== VIEW ENGINE ======
 app.set('view engine', 'ejs');
 app.set('views', [
     path.join(__dirname, 'views/user'),
@@ -45,116 +43,23 @@ app.set('views', [
 ]);
 app.set("trust proxy", 1);
 
-// ====== DATABASE CONNECT ======
 connectDB().then(() => {
-    // ====== MIDDLEWARES ======
-    // app.use(morgan('dev')); 
-
-    // No-cache only for sensitive routes, not static assets
-    app.use('/admin', nocache());
-    app.use('/user', nocache());
-
-    // Single session middleware with dynamic config based on path
-    // app.use((req, res, next) => {
-    //     const isAdmin = req.path.startsWith('/admin');
-    //     const sessionConfig = {
-    //         name: isAdmin ? 'admin.sid' : 'user.sid',
-    //         secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
-    //         resave: false,
-    //         saveUninitialized: false,
-    //         store: MongoStore.create({
-    //             mongoUrl: process.env.MONGODB_URI,
-    //             touchAfter: 24 * 3600,
-    //             crypto: {
-    //                 secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
-    //             },
-    //             autoRemove: 'native',
-    //             collectionName: isAdmin ? 'adminSessions' : 'sessions'
-    //         }),
-    //         cookie: {
-    //             secure: process.env.NODE_ENV === 'production',
-    //             httpOnly: true,
-    //             sameSite: 'lax',
-    //             maxAge: 1000 * 60 * 60 * 24
-    //         }
-    //     };
-    //     session(sessionConfig)(req, res, next);
-    // });
-
-    const userSession = session({
-        name: 'user.sid',
-        secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
-        resave: false,
-        saveUninitialized: false,
-        store: MongoStore.create({
-            mongoUrl: process.env.MONGODB_URI,
-            touchAfter: 24 * 3600,
-            crypto: { secret: process.env.SESSION_SECRET || 'supersecretkey1234567890' },
-            autoRemove: 'native',
-            collectionName: 'sessions'
-        }),
-        cookie: {
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-            sameSite: 'lax',
-            maxAge: 1000 * 60 * 60 * 24
-        }
-    });
-
-    const adminSession = session({
-        name: 'admin.sid',
-        secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
-        resave: false,
-        saveUninitialized: false,
-        store: MongoStore.create({
-            mongoUrl: process.env.MONGODB_URI,
-            touchAfter: 24 * 3600,
-            crypto: { secret: process.env.SESSION_SECRET || 'supersecretkey1234567890' },
-            autoRemove: 'native',
-            collectionName: 'adminSessions'
-        }),
-        cookie: {
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-            sameSite: 'lax',
-            maxAge: 1000 * 60 * 60 * 24
-        }
-    });
-
-    app.use('/admin', adminSession, adminRouter);
-    app.use('/', userSession, userRouter);
-
-    app.use((err, req, res, next) => {
-        console.error('Error:', err.stack);
-        res.status(500).send('Internal Server Error');
-    });
-
-    app.use(passport.initialize());
-    app.use(passport.session());
-
-    // Static files with caching
-    app.use(express.static(path.join(__dirname, 'public'), {
-        maxAge: '1d', // cache static assets for 1 day
-        etag: true
-    }));
-    app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    // ====== ROUTES ======
-    // app.use('/admin', adminRouter);
-    // app.use('/', userRouter);
+    app.use('/admin', nocache(), adminSession, passport.initialize(), passport.session(), adminRouter);
 
-    // ====== START SERVER ======
+    app.use('/', nocache(), userSession, passport.initialize(), passport.session(), userRouter);
+
+    app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d', etag: true }));
+    app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
     app.listen(port, () => {
-        console.log("=======================================================");
-        console.log(`\x1b[36m Server is running on ${port} - http://localhost:${port} \x1b[0m`);
-        console.log("=======================================================");
+        console.log(`Server running on http://localhost:${port}`);
     });
 });
 
-// ====== GRACEFUL SHUTDOWN ======
 process.on('SIGINT', async () => {
     console.log("Shutting down gracefully...");
     await mongoose.connection.close();
