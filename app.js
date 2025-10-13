@@ -48,7 +48,7 @@ app.set("trust proxy", 1);
 // ====== DATABASE CONNECT ======
 connectDB().then(() => {
     // ====== MIDDLEWARES ======
-    // app.use(morgan('dev')); // enable only in dev
+    // app.use(morgan('dev')); 
 
     // No-cache only for sensitive routes, not static assets
     app.use('/admin', nocache());
@@ -73,12 +73,17 @@ connectDB().then(() => {
             }),
             cookie: {
                 secure: process.env.NODE_ENV === 'production',
-                httpOnly: false,
+                httpOnly: true,
                 sameSite: 'lax',
                 maxAge: 1000 * 60 * 60 * 24
             }
         };
         session(sessionConfig)(req, res, next);
+    });
+
+    app.use((err, req, res, next) => {
+        console.error('Error:', err.stack);
+        res.status(500).send('Internal Server Error');
     });
 
     app.use(passport.initialize());
