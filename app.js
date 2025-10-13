@@ -73,7 +73,7 @@ connectDB().then(() => {
             }),
             cookie: {
                 secure: process.env.NODE_ENV === 'production',
-                httpOnly: true,
+                httpOnly: false,
                 sameSite: 'lax',
                 maxAge: 1000 * 60 * 60 * 24
             }
