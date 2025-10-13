@@ -1,5 +1,3 @@
-
-// Filter functionality
 document.addEventListener('DOMContentLoaded', function () {
 
 
@@ -13,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const filterDropdown = document.querySelector('.filter-dropdown');
     const transactions = filterDropdown.dataset.transactions
-    console.log('transactions : ', transactions)
 
 
     if (filterDropdown) {
@@ -71,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault()
 
         addMoneyButton.disabled = true
-
         const amount = moneyInput.value
 
         setTimeout(() => {
@@ -82,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     async function addAmount(amount) {
-        console.log('money : ', amount)
         try {
 
             const response = await fetch('/addtoWallet', {
@@ -100,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 closeAddMoneyModal()
                 const { razorpayOrder, user } = data
-                console.log("hello")
 
                 const options = {
                     key: 'rzp_test_t9knqvOVCcMCfu',
@@ -125,20 +119,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (verifyData.success) {
                                 window.location.href = `/wallet`;
                             } else {
-                                console.log('Razorpay responses : ', response)
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Payment Verification failed!!',
-                                    text: verifyData.message || 'Something went wrong!!'
-                                });
+                                showNotification(verifyData.message || 'Payment verification failed!!', 'error');
                             }
                         } catch (error) {
                             console.error('Payment verification error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Verification Error',
-                                text: 'Failed to verify payment. Please contact support.'
-                            });
+                            return showNotification('Something went wrong. Try again later', 'error');
                         }
                     },
                     prefill: {
@@ -169,19 +154,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const rzp = new Razorpay(options);
                 rzp.open();
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Failed',
-                    text: data.message || 'Failed to adding money to your Wallet.'
-                })
+                showNotification(data.message || 'failed to adding money to your Wallet', 'error')
             }
 
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Order Failed',
-                text: error || 'Failed to place order.'
-            });
+            console.error('Order failed : ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
@@ -209,13 +187,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
+        if (searchValue && e.key === 'Enter') {
+            console.log('search : ', searchValue)
             // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
@@ -223,4 +201,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+// Show notification function
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
 
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

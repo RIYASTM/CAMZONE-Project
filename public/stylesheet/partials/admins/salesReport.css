@@ -330,8 +330,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Responsive Design */
@@ -339,7 +344,7 @@
     .charts-section {
         grid-template-columns: 1fr;
     }
-    
+
     .sales-summary {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
@@ -350,35 +355,35 @@
         width: 98%;
         margin: 10px;
     }
-    
+
     .report-filters {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filter-group {
         width: 100%;
     }
-    
+
     .filter-select,
     .filter-input {
         min-width: auto;
         width: 100%;
     }
-    
+
     .sales-summary {
         grid-template-columns: 1fr;
     }
-    
+
     .payment-stats,
     .insights-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .modal-footer {
         flex-direction: column;
     }
-    
+
     .modal-btn {
         width: 100%;
         justify-content: center;
@@ -389,21 +394,21 @@
     .modal-body {
         padding: 15px;
     }
-    
+
     .summary-card {
         padding: 15px;
     }
-    
+
     .metric-value {
         font-size: 20px;
     }
-    
+
     .sales-report-table th,
     .sales-report-table td {
         padding: 10px 8px;
         font-size: 12px;
     }
-    
+
     .chart-container {
         padding: 15px;
     }
@@ -415,19 +420,19 @@
         position: static !important;
         background: none !important;
     }
-    
+
     .modal-content {
         box-shadow: none !important;
         border: none !important;
         background: white !important;
         color: black !important;
     }
-    
+
     .modal-header,
     .modal-footer {
         display: none !important;
     }
-    
+
     .close-btn {
         display: none !important;
     }

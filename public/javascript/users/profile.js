@@ -103,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (data.newPassword !== data.confirmPassword) {
             errors.confirmPassword = "Passwords do not match!";
         }
-
         return Object.keys(errors).length > 0 ? errors : null;
     }
 
@@ -122,12 +121,12 @@ document.addEventListener('DOMContentLoaded', function () {
     fileInput.addEventListener('change', function () {
         if (this.files && this.files[0]) {
             if (this.files[0].size > 5 * 1024 * 1024) {
-                Swal.fire('Error', 'Profile picture must be less than 5MB.', 'error');
+                showNotification('Profile picture must be less than 5MB.', 'error');
                 this.value = '';
                 return;
             }
             if (!this.files[0].type.startsWith('image/')) {
-                Swal.fire('Error', 'Please upload a valid image file.', 'error');
+                showNotification('Please upload a valid image file.', 'error');
                 this.value = '';
                 return;
             }
@@ -227,8 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const otpData = await otpRes.json();
             if (!otpData.success) {
-                Swal.fire('Error', otpData.message, 'error');
-                return;
+                return showNotification(otpData.message || 'Failed', 'error');
             }
 
             const { value: enteredOtp } = await Swal.fire({
@@ -253,10 +251,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const verifyData = await verifyRes.json();
             if (!verifyData.success) {
-                Swal.fire('Error', verifyData.message, 'error');
-                return;
+                return showNotification (verifyData.message || 'failed to verify', 'error');
+
             }
-            Swal.fire('Verified', verifyData.message, 'success');
+            showNotification(verifyData.message || 'Verified', 'success');
         }
 
         try {
@@ -270,18 +268,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.errors) {
                     displayFormErrors(profileForm, data.errors);
                 } else {
-                    Swal.fire('Error', data.message || 'Failed to update profile.', 'error');
+                    showNotification(data.message || 'Failed to update Profile', 'error');
                 }
                 return;
             }
 
-            Swal.fire('Success', data.message || 'Profile updated successfully!', 'success')
-                .then(() => {
-                    window.location.replace(data.redirectUrl);
-                });
+            showNotification(data.message || 'Profiled updated successfully', 'success');
+            window.location.replace(data.redirectUrl);
         } catch (error) {
             console.error('Error submitting form:', error);
-            Swal.fire('Error', 'Something went wrong while updating the profile.', 'error');
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
@@ -320,22 +316,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.errors) {
                     displayFormErrors(changePasswordForm, data.errors);
                 } else {
-                    Swal.fire('Error', data.message || 'Failed to update password.', 'error');
+                    showNotification(data.message || 'Failed to update password', 'error');
                 }
                 return;
             }
 
-            Swal.fire('Success', data.message || 'Password updated successfully!', 'success')
-                .then(() => {
-                    changePasswordForm.reset();
-                    profileSection.style.display = 'block';
-                    passwordModal.style.display = 'none';
-                    cancelPasswordButton.style.display = 'none';
-                });
+            showNotification(data.message || 'Password updated successfully', 'success')
+            changePasswordForm.reset();
+            profileSection.style.display = 'block';
+            passwordModal.style.display = 'none';
+            cancelPasswordButton.style.display = 'none';
 
         } catch (error) {
             console.error('Error updating password:', error);
-            Swal.fire('Error', 'Something went wrong while updating the password.', 'error');
+            return showNotification('Something went wrong. Try again later', 'error');
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Update Password';
@@ -366,9 +360,71 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if( searchValue && e.key === 'Enter' ){
             console.log('search : ',searchValue)
-            // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })
-
 });
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            padding: 15px 20px;
+                            border-radius: 5px;
+                            color: white;
+                            font-weight: 500;
+                            z-index: 1000;
+                            animation: slideIn 0.3s ease;
+                            ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                        `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                            @keyframes slideIn {
+                                from {
+                                    transform: translateX(100%);
+                                    opacity: 0;
+                                }
+                                to {
+                                    transform: translateX(0);
+                                    opacity: 1;
+                                }
+                            }
+                            @keyframes slideOut {
+                                from {
+                                    transform: translateX(0);
+                                    opacity: 1;
+                                }
+                                to {
+                                    transform: translateX(100%);
+                                    opacity: 0;
+                                }
+                            }
+                        `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

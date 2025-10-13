@@ -505,7 +505,7 @@ body {
 }
 
 /* Date Inputs */
-.date-inputs{
+.date-inputs {
     display: flex;
     gap: 8px;
 }
@@ -515,7 +515,9 @@ body {
     .sales-summary {
         grid-template-columns: repeat(2, 1fr);
     }
-    .payment-stats, .insights-grid {
+
+    .payment-stats,
+    .insights-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
@@ -524,35 +526,38 @@ body {
     .container {
         flex-direction: column;
     }
-    
+
     .main-content {
         padding: 15px;
     }
-    
-    .sales-summary, .payment-stats, .insights-grid {
+
+    .sales-summary,
+    .payment-stats,
+    .insights-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .report-filters {
         flex-direction: column;
         align-items: stretch;
     }
-    
-    .filter-select, .filter-input {
+
+    .filter-select,
+    .filter-input {
         min-width: auto;
         width: 100%;
     }
-    
+
     .section-header {
         flex-direction: column;
         gap: 15px;
         align-items: stretch;
     }
-    
+
     .section-title {
         justify-content: center;
     }
-    
+
     .section-actions {
         justify-content: center;
     }
@@ -562,20 +567,25 @@ body {
     .main-content {
         padding: 10px;
     }
-    
-    .summary-card, .report-section, .payment-method-card, .insight-card {
+
+    .summary-card,
+    .report-section,
+    .payment-method-card,
+    .insight-card {
         padding: 15px;
     }
-    
-    .metric-value, .insight-value {
+
+    .metric-value,
+    .insight-value {
         font-size: 24px;
     }
-    
-    .report-table th, .report-table td {
+
+    .report-table th,
+    .report-table td {
         padding: 10px 8px;
         font-size: 12px;
     }
-    
+
     .welcome-section h1 {
         font-size: 24px;
     }
@@ -602,8 +612,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
 }
 
 /* Print Styles */
@@ -612,42 +627,52 @@ body {
         background: white !important;
         color: black !important;
     }
-    
-    .sidebar, .header {
+
+    .sidebar,
+    .header {
         display: none !important;
     }
-    
+
     .main-content {
         padding: 0 !important;
     }
-    
-    .report-filters, .section-actions {
+
+    .report-filters,
+    .section-actions {
         display: none !important;
     }
-    
-    .summary-card, .report-section, .payment-method-card, .insight-card {
+
+    .summary-card,
+    .report-section,
+    .payment-method-card,
+    .insight-card {
         border: 1px solid #000 !important;
         background: white !important;
         box-shadow: none !important;
     }
-    
-    .card-icon, .progress-bar {
+
+    .card-icon,
+    .progress-bar {
         background: #ccc !important;
     }
-    
-    .metric-value, .insight-value, .payment-percentage, .report-table td, .report-table th {
+
+    .metric-value,
+    .insight-value,
+    .payment-percentage,
+    .report-table td,
+    .report-table th {
         color: #000 !important;
     }
-    
+
     .status {
         background: #ccc !important;
         color: #000 !important;
     }
-    
+
     .dropdown {
         display: none !important;
     }
-    
+
     .report-section {
         page-break-inside: avoid;
         margin-bottom: 20px;

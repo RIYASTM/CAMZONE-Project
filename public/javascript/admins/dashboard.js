@@ -33,9 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
         console.error('Error initializing dashboard:', error);
+        showNotification('Something went wrong. Try again later...', 'error');
     }
 });
-
 
 let debounceTimeout = null;
 

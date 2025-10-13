@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification(data.message, 'success');
             window.location.replace(data.redirectUrl);
         } catch (error) {
-            console.error('Something went wrong: ', error.message);
-            showNotification('Something went wrong while adding product: ' + error.message, 'error');
+            console.error('Something went wrong: ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
 
@@ -180,8 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.replace(data.redirectUrl);
             hideEditProductModal();
         } catch (error) {
-            console.error('Something went wrong on editing: ', error.message);
-            showNotification('Something went wrong while editing product: ' + error.message, 'error');
+            console.error('Something went wrong on editing: ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
 
@@ -497,6 +497,7 @@ async function deleteProduct(productId) {
         }
     } catch (error) {
         console.log('Product removal failed: ', error);
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
 

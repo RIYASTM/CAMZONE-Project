@@ -1,7 +1,4 @@
-
-
 document.addEventListener('DOMContentLoaded', () => {
-
 
   const search = document.getElementById('search')
   const clearButton = document.getElementById('clear-button')
@@ -12,11 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (searchValue && e.key === 'Enter') {
       console.log('search : ', searchValue)
-      // window.location = `/shop?search=${searchValue}`
       window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
     }
   })
-
 
   const closeButton = document.getElementById('retryPaymentClose')
   const retryPaymentButton = document.getElementById('retryPayment') || ''
@@ -113,7 +108,7 @@ function confirmAction() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        Swal.fire('success', data.message || `${modalType === 'cancel' ? 'Order cancelled' : 'Return request'} submitted successfully!`)
+        showNotification(data.message || `${modalType === 'cancel' ? 'Order cancelled' : 'Return request'} submitted successfully!`, 'success')
         location.reload();
       } else {
         document.getElementById('errorMessage').textContent = data.message || 'Failed to process request.';
@@ -139,7 +134,7 @@ function downloadInvoice(orderId) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Failed to download invoice');
+        return showNotification('Failed to download invoice. Try again later', 'error');
       }
       return response.blob();
     })
@@ -152,10 +147,11 @@ function downloadInvoice(orderId) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      Swal.fire('Success', 'Invoice downloaded successfully!', 'success');
+      showNotification('Invoice downloaded successfully!', 'success');
     })
     .catch((error) => {
-      Swal.fire('Error', 'Failed to download invoice. Please try again.', 'error');
+      console.error('Failed to download invoice. Please try again.', error)
+      showNotification('Something went wrong. Try again later', 'error');
     });
 }
 
@@ -170,7 +166,6 @@ function closePaymentModal() {
 }
 
 async function retryPayment(method, orderId, oldMethod) {
-
   try {
     if (method !== oldMethod) {
       const result = await Swal.fire({
@@ -183,9 +178,9 @@ async function retryPayment(method, orderId, oldMethod) {
         confirmButtonText: 'Yes, change it!',
         cancelButtonText: 'No, keep current'
       });
-
+      
       if (!result.isConfirmed) return;
-
+      
       const res = await fetch('/retryPayment', {
         method: 'POST',
         body: JSON.stringify({ method, orderId }),
@@ -194,15 +189,11 @@ async function retryPayment(method, orderId, oldMethod) {
           'Accept': 'application/json'
         }
       });
-
+      
       const response = await res.json();
 
       if (!response.success) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: response.message || 'Failed to repay'
-        });
+        showNotification(response.message || 'Failed to repay', 'error');
       } else {
         if (response.message === 'Razorpay Order Created!') {
           const { razorpayOrder, amount, orderId, user } = response;
@@ -237,18 +228,10 @@ async function retryPayment(method, orderId, oldMethod) {
 
               const verifyData = await verifyRes.json();
               if (verifyData.success) {
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Success',
-                  text: verifyData.message || 'Repayment with Razorpay is successfull!!'
-                })
+                showNotification(verifyData.message || 'Repayment with razorpay is successfull', 'success');
                 window.location.reload();
               } else {
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Payment Verification failed!',
-                  text: verifyData.message || 'Something went wrong!'
-                });
+                showNotification(verifyData.message || 'Payment verification failed!!', 'error');
               }
             },
             prefill: {
@@ -265,14 +248,10 @@ async function retryPayment(method, orderId, oldMethod) {
           rzp.open();
 
         } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: response.message
-          }).then(() => window.location.reload());
+          showNotification(response.message, 'success');
+          window.location.reload();
         }
       }
-
     } else {
       const res = await fetch('/retryPayment', {
         method: 'POST',
@@ -285,10 +264,8 @@ async function retryPayment(method, orderId, oldMethod) {
 
       const data = await res.json();
 
-      if (data.success && data.message === 'Razorpay Order Created!') {
+      if (data.success && data.message === 'Successfull') {
         const { razorpayOrder, amount, orderId, user } = data;
-
-        console.log('Razorpay')
 
         if (amount > 100000) {
           await Swal.fire({
@@ -320,18 +297,10 @@ async function retryPayment(method, orderId, oldMethod) {
 
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: verifyData.message || 'Repayment with Razorpay is successfull!!'
-              })
+              showNotification(verifyData.message || 'Repayment with Razorpay is successfull', 'success');
               window.location.reload();
             } else {
-              Swal.fire({
-                icon: 'error',
-                title: 'Payment Verification failed!',
-                text: verifyData.message || 'Something went wrong!'
-              });
+              return showNotification(verifyData.message || 'Something went wrong!', 'error');
             }
           },
           prefill: {
@@ -348,33 +317,79 @@ async function retryPayment(method, orderId, oldMethod) {
         rzp.open();
 
       } else if (data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: data.message || `Your repayment with ${data.method} successful!!`
-        }).then(() => window.location.reload());
+        showNotification(data.message || `Your repayment with ${data.method} successful!!`, 'success');
+        window.location.reload()
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: data.message || 'Your repayment failed!!'
-        });
+        showNotification(data.message || 'Your repayment failed!!', 'error');
       }
     }
 
   } catch (error) {
     console.log('Something went wrong with repayment: ', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Unexpected error occurred.'
-    });
+    showNotification('Something went wrong. Try again later..', 'error')
   }
 }
 
+function showNotification(message, type) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
 
+  // Add styles
+  notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
 
+  // Add animation styles
+  const style = document.createElement('style');
+  style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
 
+  if (!document.querySelector('style[data-notification]')) {
+    style.setAttribute('data-notification', 'true');
+    document.head.appendChild(style);
+  }
 
+  // Add to page
+  document.body.appendChild(notification);
 
-
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}

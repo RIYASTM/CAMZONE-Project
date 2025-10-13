@@ -3,6 +3,7 @@ const Users = require('../../model/userModel')
 const Categories = require('../../model/categoryModel');
 const Brand = require('../../model/brandModel');
 
+const { handleStatus } = require('../../helpers/status');
 
 const loadReports = async (req, res) => {
     try {
@@ -40,7 +41,7 @@ const loadReports = async (req, res) => {
         console.log('======================================');
         console.log('failed to load reports', error);
         console.log('======================================');
-        res.status(500).send("Server Error")
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' })
     }
 }
 

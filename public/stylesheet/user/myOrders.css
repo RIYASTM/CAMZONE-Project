@@ -1,17 +1,17 @@
 /* Reset and base styles */
 
 :root {
-    --primary-color: #ff9800; /* Orange for links and highlights */
-    --secondary-color: #fff; /* White section background */
-    --accent-color: #ff9800; /* Orange for buttons and badges */
-    --text-color: #333; /* Dark text for light theme */
-    --light-gray: #fff; /* White background for container */
-    --border-color: #ddd; /* Light border */
-    --background-color: #fff; /* Body background */
-    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    --success-color: #4caf50; /* Green for success states */
-    --pending-color: #ff9800; /* Orange for pending states */
-    --cancelled-color: #f44336; /* Red for cancelled states */
+    --primary-color: #ff9800;
+    --secondary-color: #fff;
+    --accent-color: #ff9800;
+    --text-color: #333;
+    --light-gray: #fff;
+    --border-color: #ddd;
+    --background-color: #fff;
+    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --success-color: #4caf50;
+    --pending-color: #ff9800;
+    --cancelled-color: #f44336;
 }
 
 
@@ -29,12 +29,11 @@ body {
 }
 
 .container {
-    /* max-width: 1200px; */
     margin: 0 auto;
     padding: 0 20px;
 }
 
- /* Breadcrumb Navigation */
+/* Breadcrumb Navigation */
 .breadcrumb {
     display: flex;
     align-items: center;
@@ -42,65 +41,65 @@ body {
     padding: 20px 0;
 }
 
- .breadcrumb a {
+.breadcrumb a {
     color: var(--text-color);
     text-decoration: none;
     font-size: 14px;
 }
 
- .breadcrumb a:hover {
+.breadcrumb a:hover {
     color: var(--primary-color);
 }
 
- .breadcrumb .separator {
+.breadcrumb .separator {
     margin: 0 10px;
     color: #999;
 }
 
- .breadcrumb .current {
+.breadcrumb .current {
     color: var(--primary-color);
     font-weight: 500;
     font-size: 14px;
 }
 
 
-   /* Orders page */
+/* Orders page */
 .orders-page {
     padding-bottom: 30px;
 }
 
- .orders-layout {
+.orders-layout {
     display: grid;
     grid-template-columns: 250px 1fr;
     gap: 30px;
     min-height: 421px;
 }
 
- /* Sidebar */
+/* Sidebar */
 .orders-sidebar {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     /* height: fit-content; */
 }
 
- .orders-sidebar h3 {
+.orders-sidebar h3 {
     color: #e67e22;
     margin-bottom: 20px;
     font-size: 18px;
 }
 
- .order-filters {
+.order-filters {
     margin-left: 24px;
     list-style: none;
 }
 
- .order-filters li {
+.order-filters li {
     margin-bottom: 10px;
 }
 
- .order-filters a {
+.order-filters a {
     text-decoration: none;
     color: #333;
     padding: 8px 12px;
@@ -109,23 +108,24 @@ body {
     transition: background-color 0.3s;
 }
 
- .order-filters a:hover{
+.order-filters a:hover {
     color: #e67e22;
 }
+
 .order-filters a.active {
     background-color: #e67e22;
     color: white;
 }
 
- /* Orders content */
+/* Orders content */
 .orders-content {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
- .orders-header {
+.orders-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -134,18 +134,18 @@ body {
     border-bottom: 2px solid #e67e22;
 }
 
- .orders-header h2 {
+.orders-header h2 {
     color: #e67e22;
     font-size: 24px;
 }
 
- .orders-actions {
+.orders-actions {
     display: flex;
     gap: 15px;
     align-items: center;
 }
 
- .filter-btn {
+.filter-btn {
     background-color: #e67e22;
     color: white;
     border: none;
@@ -155,7 +155,7 @@ body {
     font-size: 14px;
 }
 
- .search-orders input {
+.search-orders input {
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -163,7 +163,7 @@ body {
     width: 200px;
 }
 
- /* Orders list */
+/* Orders list */
 .orders-list {
     margin-bottom: 30px;
 }
@@ -266,7 +266,7 @@ body {
     opacity: 0.9;
 }
 
- /* Pagination */
+/* Pagination */
 .pagination {
     display: flex;
     justify-content: center;
@@ -274,7 +274,7 @@ body {
     gap: 10px;
 }
 
- /* .pagination-btn {
+/* .pagination-btn {
     padding: 8px 12px;
     border: 1px solid #ddd;
     background: white;
@@ -294,11 +294,11 @@ body {
     gap: 5px;
 } */
 
-.pagination-controls{
+.pagination-controls {
     display: flex;
 }
 
- .pagination {
+.pagination {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -306,7 +306,7 @@ body {
     gap: 10px;
 }
 
- .pagination button {
+.pagination button {
     width: 30px;
     height: 30px;
     display: flex;
@@ -319,32 +319,31 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
- .pagination button:hover {
+.pagination button:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
 }
 
- .pagination .active {
+.pagination .active {
     /* background-color: var(--primary-color); */
     /* color: #fff; */
     color: var(--primary-color);
     border-color: var(--primary-color);
 }
+
 /* Responsive design */
 @media (max-width: 768px) {
     .orders-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .orders-sidebar {
         order: 2;
     }
-    
+
     .order-item {
         grid-template-columns: 1fr;
         gap: 15px;
         text-align: center;
     }
 }
-
- 

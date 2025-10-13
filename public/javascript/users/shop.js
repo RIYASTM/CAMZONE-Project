@@ -14,8 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearButton = document.getElementById('clear-button')
     let searchValue = search?.value || ''
 
-    // console.log('search : ', searchValue.toLowerCase().slice(0, -1))
-
     function applyFilters() {
         const selectedBrands = Array.from(brandCheckboxes)
             .filter(cb => cb.checked)
@@ -88,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
             applyFilters();
         });
     }
-      
+
     brandCheckboxes.forEach(cb => {
         const labelName = cb.parentElement.textContent.trim().toLowerCase()
         const search = searchValue.trim().toLowerCase()
@@ -97,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         cb.addEventListener('change', applyFilters)
     });
+
     categoryCheckBoxes.forEach(cb => {
         const labelName = cb.parentElement.textContent.trim().toLowerCase()
         const search = searchValue.trim().toLowerCase()
@@ -105,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         cb.addEventListener('change', applyFilters)
     });
-    
+
     filterPrices.forEach(radio => radio.addEventListener('change', applyFilters));
     sortNames.forEach(radio => radio.addEventListener('change', applyFilters));
     stockSort.forEach(radio => radio.addEventListener('change', applyFilters));
@@ -173,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Set radio for price filter
     const price = params.get('price');
     if (price) {
-        const input = document.querySelector(`.filterPrice[value="${price}"]`); 
+        const input = document.querySelector(`.filterPrice[value="${price}"]`);
         if (input) input.checked = true;
     }
 
@@ -211,20 +210,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-
 function addtoWishlist(productId) {
     fetch('/addtowishlist', {
         method: 'POST',
         body: JSON.stringify({ productId }),
         headers: {
-            'Content-Type': 'application/json', 
+            'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
 
-                // showNotification('Product added to Your Wishlist!', 'success');
                 const icon = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
 
                 if (icon) {
@@ -238,11 +235,11 @@ function addtoWishlist(productId) {
             } else {
                 showNotification(data.message || 'Failed to add to wishlist!', 'error');
             }
-        }).catch(() => {
-            showNotification('Request failed!', 'error');
+        }).catch((error) => {
+            console.log('Request Failed : ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         });
 }
-
 
 function showNotification(message, type) {
     // Create notification element

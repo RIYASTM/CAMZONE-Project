@@ -3,21 +3,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalAmountEl = document.getElementById('totalAmount')
     const savedAmountEl = document.getElementById('saved')
     const subtotalEl = document.getElementById('subtotal')
+    const gstEl = document.getElementById('gst')
 
     const totalAmount = Number(totalAmountEl.textContent.replace(/[₹,\s]/g, ''))
     const savedAmount = Number(savedAmountEl.textContent.replace(/[-₹,\s]/g, ''))
     const subtotal = Number(subtotalEl.textContent.replace(/[₹,\s]/g, ''))
+    const gst = Number(gstEl.textContent.replace(/[₹,\s]/g, ''))
 
     if (savedAmount) {
-        const total = totalAmount + savedAmount
+        const total = totalAmount + savedAmount - gst
         subtotalEl.textContent = `₹ ${total.toLocaleString('en-IN')}`
     }
 
     const addressInput = document.querySelectorAll('input[name="address"]')
-    console.log("addresses : ", addressInput)
     const shippingInput = document.getElementById('shipping')
     const addresses = JSON.parse(document.querySelector('.address-list').dataset.address)
-    const gstEl = document.getElementById('gst')
     const couponEl = document.getElementById('couponDiscount')
 
     const couponAmount = Number(couponEl.textContent.replace(/[-₹,\s]/g, '')) || 0
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const newAddressButton = document.getElementById('newAddressBtn')
-    if(addressInput.length > 3 && newAddressButton ){
+    if (addressInput.length > 3 && newAddressButton) {
         // newAddressButton.disabled = true
         newAddressButton.style.display = 'none'
     }
@@ -344,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('/addAddress', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' , 'Accept': 'application/json'},
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(formData)
             });
 
@@ -360,7 +360,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 showNotification(data.message || 'Failed to add address', 'error')
             }
         } catch (error) {
-            console.error('Something went wrong : ', error)
+            console.error('Something went wrong : ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         } finally {
             addAddressBtn.disabled = false;
             addAddressBtn.textContent = 'Add Address';
@@ -402,20 +403,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 closeEditModal();
                 window.location.reload();
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Failed',
-                    text: data.message || 'Failed to update address.'
-                });
+                showNotification(data.message || 'Failed to update address.', 'error');
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: navigator.onLine
-                    ? 'Error updating address: ' + error.message
-                    : 'No internet connection. Please check your network and try again.'
-            });
+            console.log('Something went wrong : ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         } finally {
             updateAddressBtn.disabled = false;
             updateAddressBtn.textContent = 'Update Address';
@@ -438,12 +430,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: 'Please select a delivery address.'
             });
             placeOrderBtn.disabled = true;
-            setTimeout(()=>{
+            setTimeout(() => {
                 placeOrderBtn.disabled = false
-            },2000)
+            }, 2000)
             return;
         }
-        
+
         if (!paymentMethod) {
             Swal.fire({
                 icon: 'warning',
@@ -451,9 +443,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: 'Please select a payment method.'
             });
             placeOrderBtn.disabled = true;
-            setTimeout(()=>{
+            setTimeout(() => {
                 placeOrderBtn.disabled = false
-            },2000)
+            }, 2000)
             return;
         }
 
@@ -550,19 +542,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     const rzp = new Razorpay(options);
                     rzp.open();
                 } else {
-                    window.location.href = data.redirectUrl || '/orderSuccess';
+                    return window.location.href = data.redirectUrl || '/orderSuccess';
                 }
             } else {
-                showNotification(data.message || 'Failed to place order.')
+                return showNotification(data.message || 'Failed to place order.')
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: navigator.onLine
-                    ? 'Error placing order: ' + error.message
-                    : 'No internet connection. Please check your network and try again.'
-            });
+            console.error('Something went wrong : ', error);
+            return showNotification('Something went wrong. Try again later..', 'error');
         } finally {
             placeOrderBtn.disabled = false;
             placeOrderBtn.textContent = 'Place Order';
@@ -666,7 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (response.message === 'Razorpay Order Created!') {
+            if (response.message.toLowerCase() === 'successfull') {
                 const { razorpayOrder, amount: retryAmount, orderId: retryOrderId } = response;
 
                 if (retryAmount > 500000) {
@@ -703,14 +690,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                 showNotification(verifyData.message || 'Payment completed successfully!')
                                 window.location.href = '/orderSuccess'
                             } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Payment Verification Failed',
-                                    text: verifyData.message || 'Something went wrong!'
-                                });
+                                showNotification('Payment verification failed', 'error');
+                                if (verifyData.message) {
+                                    console.log('Something went wrong : ', verifyData.message);
+                                }
                             }
                         } catch (verifyError) {
                             console.error('Retry payment verification error:', verifyError);
+                            showNotification('Something went wrong. Try again later', 'error');
                         }
                     },
                     prefill: {
@@ -752,7 +739,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         } catch (error) {
-            console.error('Retry payment error:', error);
+            showNotification('Something went wrong. Try again later', 'error');
+            return console.error('Retry payment error:', error);
         }
     }
 
@@ -877,7 +865,6 @@ document.addEventListener("DOMContentLoaded", () => {
             didOpen: () => {
                 Swal.showLoading();
             },
-            // timeOut : 1500
         });
 
         try {
@@ -891,18 +878,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            Swal.close()
+            Swal.close();
 
             if (data.success) {
-                showNotification(data.message || 'Coupon applied successfully..', 'success')
-
-
+                showNotification(data.message || 'Coupon applied successfully..', 'success');
                 const discount = data.discount || 0;
                 const finalAmount = data.finalAmount || 0
-                const gst = data.totalGst
 
                 document.getElementById('couponDiscount').textContent = `-₹ ${discount.toLocaleString('en-IN')}`;
-                document.getElementById('gst').textContent = `₹ ${gst.toLocaleString('en-IN')}`
                 document.getElementById('totalAmount').textContent = `₹ ${finalAmount.toLocaleString('en-IN')}`;
                 applyButton.textContent = 'Remove'
 
@@ -913,6 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             Swal.close()
             console.log('something went wrong : ', error)
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
@@ -941,13 +925,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.success) {
                 showNotification(data.message || 'Coupon has been removed!!', 'success')
-
                 const finalAmount = data.finalAmount || 0;
-                const gst = data.totalGst || 0;
 
-                // Reset coupon UI values
                 document.getElementById('couponDiscount').textContent = `-₹ 0`;
-                document.getElementById('gst').textContent = `₹ ${gst.toLocaleString('en-IN')}`;
                 document.getElementById('totalAmount').textContent = `₹ ${finalAmount.toLocaleString('en-IN')}`;
 
                 couponInput.value = '';
@@ -960,25 +940,23 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             Swal.close()
             console.error('Something went wrong : ', error)
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
-
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
+        if (searchValue && e.key === 'Enter') {
+            console.log('search : ', searchValue)
             // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })
-
-
 });
 
 function showNotification(message, type) {

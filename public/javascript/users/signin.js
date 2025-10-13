@@ -8,8 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const email = document.getElementById('email').value
         const password = document.getElementById('password').value
 
-
-
         let errors = validateForm({ email, password })
         if (errors) {
             displayFormError(signinForm, errors)
@@ -25,15 +23,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json()
 
             if (!data.success) {
-                Swal.fire('Error', data.message || 'Validation error', 'error')
+                showNotification(data.message || 'Vallidation error', 'error');
             } else {
                 window.location.replace(data.redirectUrl)
             }
         } catch (error) {
             console.error('Signup error:', error);
-            Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     })
+    
     function displayFormError(signinform, errors) {
         clearErrors(signinform)
 
@@ -91,3 +90,66 @@ function validateForm({ email, password }) {
     return Object.keys(error).length > 0 ? error : null
 }
 
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            padding: 15px 20px;
+                            border-radius: 5px;
+                            color: white;
+                            font-weight: 500;
+                            z-index: 1000;
+                            animation: slideIn 0.3s ease;
+                            ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                        `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                            @keyframes slideIn {
+                                from {
+                                    transform: translateX(100%);
+                                    opacity: 0;
+                                }
+                                to {
+                                    transform: translateX(0);
+                                    opacity: 1;
+                                }
+                            }
+                            @keyframes slideOut {
+                                from {
+                                    transform: translateX(0);
+                                    opacity: 1;
+                                }
+                                to {
+                                    transform: translateX(100%);
+                                    opacity: 0;
+                                }
+                            }
+                        `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

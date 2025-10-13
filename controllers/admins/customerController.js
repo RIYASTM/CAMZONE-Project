@@ -1,5 +1,8 @@
 const { name } = require('ejs');
-const User = require('../../model/userModel')
+
+const User = require('../../model/userModel');
+
+const { handleStatus } = require('../../helpers/status');
 
 const loadCustomers = async (req, res) => {
     try {
@@ -53,8 +56,7 @@ const loadCustomers = async (req, res) => {
         const totalPages = Math.ceil(count / limit);
 
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            return res.status(200).json({
-                success: true,
+            return handleStatus(res, 200, null, {
                 datas: userData,
                 currentPages: page,
                 totalPages,
@@ -80,14 +82,12 @@ const loadCustomers = async (req, res) => {
         console.log('failed to load customers', error);
         console.log('======================================');
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            return res.status(500).json({
-                success: false,
-                message: 'Server error while loading customers'
+            return handleStatus(res, 500, 'Server error while loading customers', {
+                redirectURL: '/admin/page404'
             });
         }
-        res.status(500).render('error', {
-            pageTitle: 'Error',
-            message: 'Failed to load coupons',
+        return handleStatus(res, 500, 'Server error while loading customers', {
+            redirectURL: '/admin/page404',
             iconClass: 'fa-exclamation-triangle'
         });
     }
@@ -105,23 +105,31 @@ const customerBlocked = async (req, res) => {
 
         if (user.isBlocked) {
             activity = await User.updateOne({ _id: id }, { $set: { isBlocked: false } })
-            return res.status(200).json({ success: true, message: 'Customer is Unblocked!!', redirectURL: `/admin/customers?page=${currentPages}`, done: 'Unblocked' })
+            return handleStatus(res, 200, 'Customer is Unblocked', {
+                redirectURL: `/admin/customers?page=${currentPages}`,
+                done: 'Unblocked'
+            })
         }
 
         activity = await User.updateOne({ _id: id }, { $set: { isBlocked: true } })
 
         if (!activity) {
-            return res.status(400).json({ success: false, message: 'Failed to block customer!!', redirectURL: `/admin/customers?page=${currentPages}` })
+            return handleStatus(res, 400, 'Failed to block customer!!', {
+                redirectURL: `/admin/customers?page=${currentPages}`
+            });
         }
 
-        return res.status(200).json({ success: true, message: 'Customer is blocked!!', redirectURL: `/admin/customers?page=${currentPages}`, done: 'Blocked', currentPages })
+        return handleStatus(res, 200, 'Customer is blocked!!', {
+            redirectURL: `/admin/customers?page=${currentPages}`,
+            done: 'Blocked',
+            currentPages
+        })
 
     } catch (error) {
-
-        return console.log('Something went wrong while editing customer : ', error.message)
-
+        console.log('Something went wrong while editing customer : ', error);
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
 
 const unblockCustomer = async (req, res) => {
     try {
@@ -130,14 +138,17 @@ const unblockCustomer = async (req, res) => {
 
         await User.updateOne({ _id: id }, { $set: { isBlocked: false } })
 
-        res.redirect('/admin/customers')
+        return handleStatus(res, 200, null, {
+            redirectURL: '/admin/customers'
+        })
 
     } catch (error) {
 
-        return console.log('Something went wrong while editing customer : ', error.message)
-
+        console.log('Something went wrong while editing customer : ', error)
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
+
 
 module.exports = {
     loadCustomers,

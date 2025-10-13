@@ -1,5 +1,3 @@
-
-
 :root {
     --primary-color: #003049;
     --secondary-color: #FCA311;
@@ -37,7 +35,7 @@ body {
 
 .breadcrumb-separator {
     margin: 0 10px;
-    color:  var(--border-color);
+    color: var(--border-color);
 }
 
 /* Verification container styles */
@@ -50,8 +48,8 @@ body {
 
 /* Image section styles */
 .image-section {
-    align-items: center; 
-    justify-content: center; 
+    align-items: center;
+    justify-content: center;
     flex: 1;
     position: relative;
 }
@@ -125,8 +123,8 @@ body {
     transition: 0.3s ease all;
 }
 
-.otp-input:focus ~ label,
-.otp-input:not(:placeholder-shown) ~ label {
+.otp-input:focus~label,
+.otp-input:not(:placeholder-shown)~label {
     top: -20px;
     font-size: 14px;
     color: #f5a623;
@@ -149,10 +147,10 @@ body {
 }
 
 #verify-btn:disabled {
-  background-color: #ccc;
-  color: #666;           
-  cursor: not-allowed;   
-  opacity: 0.6;          
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 
@@ -185,11 +183,11 @@ body {
     .verification-container {
         flex-direction: column;
     }
-    
+
     .image-section {
         height: 200px;
     }
-    
+
     .form-section {
         padding: 30px 20px;
     }

@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addressForm.reset();
         } catch (error) {
             console.error(`Error ${isUpdate ? 'updating' : 'adding'} address:`, error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
 
@@ -220,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification(data.message || 'Address deleted', 'success')
             } catch (error) {
                 console.error('Error deleting address:', error);
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         }
     };
@@ -297,15 +299,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return Object.keys(errors).length > 0 ? errors : null;
     }
 
-    const search = document.getElementById('search')
-    const clearButton = document.getElementById('clear-button')
+    const search = document.getElementById('search');
+    const clearButton = document.getElementById('clear-button');
 
     search.addEventListener('keypress', async (e) => {
 
-        const searchValue = search.value.trim()
+        const searchValue = search.value.trim();
 
         if (searchValue && e.key === 'Enter') {
-            console.log('search : ', searchValue)
+            console.log('search : ', searchValue);
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })

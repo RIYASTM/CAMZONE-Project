@@ -23,16 +23,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json()
 
             if (!response.ok && data.success !== true) {
-                Swal.fire('Error', data.message || 'Validation error', 'error')
+                showNotification(  data.message || 'Validation error', 'error')
             } else {
-                Swal.fire('Success', data.message || 'Signin Success', 'success')
-                    .then(() => {
-                        window.location.replace(data.redirectUrl)
-                    })
+                showNotification( data.message || 'Signin Success', 'success')
+                window.location.replace(data.redirectUrl)
             }
         } catch (error) {
             console.error('Signup error:', error);
-            Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     })
     
@@ -58,9 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
         signinform.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
         signinForm.querySelectorAll('.invalid-feedback').forEach(el => el.textcontent = '')
     }
-
 })
-
 
 function validateForm({ email, password }) {
     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
@@ -79,3 +75,66 @@ function validateForm({ email, password }) {
     return Object.keys(error).length > 0 ? error : null
 }
 
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Add styles
+    notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
+                `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+    if (!document.querySelector('style[data-notification]')) {
+        style.setAttribute('data-notification', 'true');
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}

@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
         console.error('Error initializing reports:', error);
+        showAlert('Something went wrong. Try again later..', 'error');
     }
 });
 
@@ -792,7 +793,6 @@ function exportCompleteReportToPDF() {
     }
 }
 
-
 // ==============================================
 // INDIVIDUAL SECTION EXPORT FUNCTIONS
 // ==============================================
@@ -916,10 +916,6 @@ function exportCustomerReport() {
         });
     }
 }
-
-// ==============================================
-// HELPER FUNCTIONS FOR INDIVIDUAL EXPORTS
-// ==============================================
 
 // Generic Single Section Excel Export
 function exportSingleSectionToExcel(sectionName, tableId, headers) {
@@ -1085,10 +1081,6 @@ function exportCustomerAnalyticsToPDF() {
         showAlert('Error exporting customer analytics PDF report', 'error');
     }
 }
-
-// ==============================================
-// UTILITY FUNCTIONS
-// ==============================================
 
 // Generic table data extraction
 function getTableData(tableId, headers) {

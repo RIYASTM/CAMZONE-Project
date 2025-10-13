@@ -124,7 +124,8 @@ body {
     overflow: hidden;
 }
 
-.brands-table th, .brands-table td {
+.brands-table th,
+.brands-table td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #444;
@@ -157,7 +158,9 @@ body {
         gap: 10px;
     }
 
-    .top-left, .top-center, .top-right {
+    .top-left,
+    .top-center,
+    .top-right {
         width: 100%;
     }
 
@@ -171,14 +174,17 @@ body {
         flex-direction: column;
     }
 
-    .brands-table th, .brands-table td {
+    .brands-table th,
+    .brands-table td {
         padding: 10px;
         font-size: 14px;
     }
 }
 
 @media (max-width: 480px) {
-    .brands-table th, .brands-table td {
+
+    .brands-table th,
+    .brands-table td {
         padding: 8px;
         font-size: 12px;
     }
@@ -188,7 +194,8 @@ body {
         gap: 10px;
     }
 
-    .filter, .add-brand {
+    .filter,
+    .add-brand {
         width: 100%;
         margin-right: 0;
     }

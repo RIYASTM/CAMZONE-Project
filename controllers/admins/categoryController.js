@@ -6,6 +6,7 @@ const path = require('path');
 const sanitizeHtml = require('sanitize-html');
 
 const { validateCategoryForm } = require('../../helpers/validations');
+const { handleStatus } = require('../../helpers/status');
 
 
 const loadCategory = async (req, res) => {
@@ -45,7 +46,7 @@ const loadCategory = async (req, res) => {
         });
     } catch (error) {
         console.error('Failed to load category:', error);
-        return res.redirect('/page404');
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
@@ -59,11 +60,7 @@ const addCategory = async (req, res) => {
         const findCategory = categories.find(cat => cat.name.toLowerCase() === normalizedName)
 
         if (findCategory) {
-            return res.status(409).json({
-                success: false,
-                message: 'Category already exists!',
-                errors: { categoryName: 'Category already exists!' },
-            });
+            return handleStatus(res, 402, 'Category already exist!!', { errors: { categoryName: 'Category alredy exists!!' } })
         }
 
         const categoryData = {
@@ -74,7 +71,7 @@ const addCategory = async (req, res) => {
 
         const errors = validateCategoryForm(categoryData);
         if (errors) {
-            return res.status(400).json({ success: false, errors });
+            return handleStatus(res, 400, 'Validation Failed', { errors })
         }
 
         const newCategory = new Category({
@@ -87,17 +84,10 @@ const addCategory = async (req, res) => {
 
         await newCategory.save();
 
-        return res.status(200).json({
-            success: true,
-            message: 'Category Added Successfully',
-            redirectUrl: '/admin/category',
-        });
+        return handleStatus(res, 200, 'Category added successfully!!', { redirectUrl: '/admin/category' });
     } catch (error) {
         console.error('Category adding error:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Something went wrong while adding category: ' + error.message,
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
@@ -105,19 +95,13 @@ const editCategory = async (req, res) => {
     try {
         const { id, categoryName, categoryDescription, offerPrice, listCategory } = req.body;
 
-        if (offerPrice && parseFloat(offerPrice) >= 100) {
-            return res.json({
-                success: false,
-                message: 'Category offer should be under 100!',
-            });
-        }
-
         const category = await Category.findById(id);
         if (!category) {
-            return res.status(404).json({
-                success: false,
-                message: 'Category not found!',
-            });
+            return handleStatus(res, 404, 'Category not found!!');
+        }
+
+        if (offerPrice && parseFloat(offerPrice) >= 100) {
+            return handleStatus(res, 401, 'Category offer should be under 100!!');
         }
 
         const normalizedName = sanitizeHtml(categoryName.trim().toLowerCase());
@@ -125,10 +109,7 @@ const editCategory = async (req, res) => {
         const findCategory = categories.find(cat => cat.name.toLowerCase() === normalizedName)
 
         if (findCategory && findCategory._id.toString() !== id) {
-            return res.status(400).json({
-                success: false,
-                message: 'Category already exists with this name!',
-            });
+            return handleStatus(res, 400, 'Category alredy exists with this name!!');
         }
 
         const categoryData = {
@@ -139,7 +120,7 @@ const editCategory = async (req, res) => {
 
         const errors = validateCategoryForm(categoryData);
         if (errors) {
-            return res.status(400).json({ success: false, errors });
+            return handleStatus(res, 400, 'Validation error', { errors });
         }
 
         let imageFilename = category.categoryImage;
@@ -150,12 +131,13 @@ const editCategory = async (req, res) => {
                     await cloudinary.uploader.destroy(`Camzone_IMG/category/${publicId}`);
                 } catch (err) {
                     console.error('Failed to delete old image from Cloudinary:', err);
+                    return handleStatus(res, 401, 'Failed ot delet image!')
                 }
             }
             imageFilename = req.file?.path;
         }
 
-        const updateCategory = await Category.findByIdAndUpdate(
+        const updatedCategory = await Category.findByIdAndUpdate(
             id,
             {
                 name: sanitizeHtml(categoryName.trim()),
@@ -167,54 +149,43 @@ const editCategory = async (req, res) => {
             { new: true }
         );
 
-        if (!updateCategory) {
-            return res.status(404).json({
-                success: false,
-                message: 'Category not found!',
-            });
+        if (!updatedCategory) {
+            return handleStatus(res, 404, 'Category not found!!');
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'Category Successfully Updated',
-            category: updateCategory
-        });
+        return handleStatus(res, 200, 'Category updated successfully!!', { category: updatedCategory });
     } catch (error) {
         console.error('Category editing failed:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'An error occurred while editing category!',
-            error: error.message,
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
 const addCategoryOffer = async (req, res) => {
     try {
         const percentage = parseInt(req.body.percentage);
-        if (isNaN(percentage) || percentage < 0 || percentage >= 100) {
-            return res.json({ status: false, message: 'Invalid percentage value! Must be between 0 and 99.' });
-        }
 
         const { categoryId } = req.body;
         const category = await Category.findById(categoryId);
         if (!category) {
-            return res.status(404).json({ status: false, message: 'Category not found!' });
+            return handleStatus(res, 404, 'Category not found!!');
+        }
+
+        if (isNaN(percentage) || percentage < 0 || percentage >= 100) {
+            return handleStatus(res, 401, 'Offer must be beween 0 and 99');
         }
 
         const products = await Products.find({ category: category._id });
         const hasProductOffer = products.some((product) => product.productOffer > percentage);
         if (hasProductOffer) {
-            return res.json({ status: false, message: 'Products within this category already have a higher offer!' });
+            return handleStatus(res, 401, 'Products within this category already have a higher offer!');
         }
 
         const updatedCategory = await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
 
-
-        return res.status(200).json({ status: true, message: 'Category offer added successfully', category: updatedCategory });
+        return handleStatus(res, 200, 'Caetegory offer added successfully!!', { category: updatedCategory });
     } catch (error) {
         console.error('Failed to add category offer:', error);
-        return res.status(500).json({ status: false, message: 'Internal server error' });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
@@ -223,16 +194,16 @@ const removeCategoryOffer = async (req, res) => {
         const { categoryId } = req.body;
         const category = await Category.findById(categoryId);
         if (!category) {
-            return res.status(404).json({ status: false, message: 'Category not found!' });
+            return handleStatus(res, 404, 'Category not found!!');
         }
 
         category.categoryOffer = 0;
         await category.save();
 
-        return res.status(200).json({ status: true, message: 'Category offer removed successfully', category });
+        return handleStatus(res, 200, 'Category offer removed successfully', { category });
     } catch (error) {
         console.error('Failed to remove category offer:', error);
-        return res.status(500).json({ status: false, message: 'Internal server error' });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 

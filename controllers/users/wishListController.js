@@ -5,6 +5,7 @@ const Cart = require('../../model/cartModel')
 const Category = require('../../model/categoryModel')
 const Brand = require('../../model/brandModel')
 
+const { handleStatus } = require('../../helpers/status')
 
 
 const loadWishList = async (req, res) => {
@@ -70,10 +71,9 @@ const loadWishList = async (req, res) => {
 
     } catch (error) {
         console.error('Error while launching wish List:', error);
-        return res.status(500).redirect('/pageNotFound');
+        return handleStatus(res, 500)
     }
 };
-
 
 const addtoWishlist = async (req, res) => {
     try {
@@ -83,15 +83,15 @@ const addtoWishlist = async (req, res) => {
         const [user, product, cart] = await Promise.all([
             User.findById(userId),
             Product.findById(productId),
-            Cart.findOne({ userId }).populate('items.productId')            
+            Cart.findOne({ userId }).populate('items.productId')
         ])
 
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found.' });
+            return handleStatus(res, 401, 'User not found!!');
         }
 
         if (!product) {
-            return res.status(404).json({ success: false, message: 'Product not found.' });
+            return handleStatus(res, 404, 'Product not found!!');
         }
 
         const existInCart = cart?.items.find(
@@ -99,9 +99,7 @@ const addtoWishlist = async (req, res) => {
         );
 
         if (existInCart) {
-            return res
-                .status(402)
-                .json({ success: false, message: 'Item already in your cart!!!' });
+            return handleStatus(res, 402, 'Item already in your cart!!');
         }
 
         let wishlist = await Wishlist.findOne({ userId });
@@ -114,11 +112,9 @@ const addtoWishlist = async (req, res) => {
 
             await wishlist.save();
 
-            return res.status(200).json({
-                success: true,
-                message: 'Product successfully added to Wish List.',
+            return handleStatus(res, 200, 'Product added to wish list!', {
                 done: 'Added',
-                wishlist,
+                wishlist
             });
         }
 
@@ -132,10 +128,8 @@ const addtoWishlist = async (req, res) => {
                 { $pull: { items: { product: product._id } } }
             );
 
-            return res.status(200).json({
-                success: true,
-                message: 'Product successfully removed from the Wish List.',
-                done: 'Removed',
+            return handleStatus(res, 200, 'Product removed from the wish list!!', {
+                done: 'Removed'
             });
         }
 
@@ -143,17 +137,13 @@ const addtoWishlist = async (req, res) => {
 
         await wishlist.save();
 
-        return res.status(200).json({
-            success: true,
-            message: 'Product successfully added to Wish List.',
+        return handleStatus(res, 200, 'Product added to Wish List!!', {
             done: 'Added',
-            wishlist,
+            wishlist
         });
     } catch (error) {
         console.error('Error while adding to wishList:', error);
-        return res
-            .status(500)
-            .json({ success: false, message: 'Internal server error.' });
+        return handleStatus(res, 500);
     }
 };
 
@@ -168,10 +158,10 @@ const removeFromWishList = async (req, res) => {
         ])
 
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found.' });
+            return handleStatus(res, 401, 'User not found!!');
         }
         if (!wishlist) {
-            return res.status(404).json({ success: false, message: 'Wishlist not found.' });
+            return handleStatus(res, 404, 'Wishlist not found!');
         }
 
         const result = await Wishlist.updateOne(
@@ -180,17 +170,14 @@ const removeFromWishList = async (req, res) => {
         );
 
         if (result.modifiedCount === 0) {
-            return res.status(400).json({ success: false, message: 'Product not found in wishlist.' });
+            return handleStatus(res, 400, 'Product not found in Wishlist!!');
         }
 
-        res.status(200).json({
-            success: true,
-            message: 'Product successfully removed from the Wish List.',
-        });
+        return handleStatus(res, 200, 'Product removed from the Wish List');
 
     } catch (error) {
         console.log('Error while removing from wishlist:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return handleStatus(res, 500);
     }
 };
 

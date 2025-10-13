@@ -1,4 +1,3 @@
-
 const search = document.getElementById('search')
 const searchValue = search.value
 
@@ -11,9 +10,7 @@ document.getElementById('search').addEventListener('keypress', function (e) {
 })
 
 if (searchValue) {
-
     document.getElementById('clear-button').addEventListener('click', function (e) {
-
         window.location.href = `/admin/customers`
     })
 }
@@ -83,9 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 updatePagination(parseInt(result.currentPages), parseInt(result.totalPages));
             } else {
                 console.error('Failed to fetch customers:', result.message);
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         } catch (error) {
             console.error('Something went wrong:', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
@@ -182,8 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-
     async function blockCustomer(id, page, btn) {
         try {
             console.log('clicked : ', id)
@@ -211,13 +208,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification(data.message || 'Customer modification failed!!', 'error')
             }
         } catch (error) {
-            console.log('Customer updation failed : ', error)
+            console.log('Customer updation failed : ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
     function hideBlockCustomerModal() {
-
         blockCustomerModal.style.display = 'none'
     }
+
     function showBlockCustomerModal(id, name, page, btn, isBlocked) {
 
         blockCustomerModal.style.display = 'block'
@@ -300,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 300);
         }, 3000);
     }
-
 })
 
 

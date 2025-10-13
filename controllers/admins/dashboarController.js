@@ -3,6 +3,8 @@ const Users = require('../../model/userModel');
 const Category = require('../../model/categoryModel');
 const Brand = require('../../model/brandModel');
 
+const { handleStatus } = require('../../helpers/status');
+
 const loadDashboard = async (req, res) => {
     try {
 
@@ -37,7 +39,7 @@ const loadDashboard = async (req, res) => {
         console.log('===========================================');
         console.log('failed to load dashboard page', error);
         console.log('===========================================');
-        res.status(500).send("server error");
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 

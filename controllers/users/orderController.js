@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 
 const { addToWallet } = require('../../helpers/wallet')
 const { cancelItem, orderCancel } = require('../../helpers/orderCancelling')
+const { handleStatus } = require("../../helpers/status")
 
 
 const loadOrderSuccess = async (req, res) => {
@@ -16,18 +17,22 @@ const loadOrderSuccess = async (req, res) => {
         const userId = req.session.user
         const orderId = req.session.orderId
 
+        if (!req.session.orderSuccess || req.session.orderSuccess === false) {
+            return handleStatus(res, 402, 'There is not orders!');
+        }
+
         const [user, userOrder] = await Promise.all([
             User.findById(userId),
             Order.findOne({ orderId })
                 .populate('orderedItems.product')
-        ])
+        ]);
 
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found!' })
+            return handleStatus(res, 401, 'User not found!!');
         }
 
         if (!userOrder) {
-            return res.status(401).json({ success: false, message: 'Order not found!' })
+            return handleStatus(res, 401, 'Order not found!!');
         }
 
         if (req.session.orderSuccess = true) {
@@ -39,10 +44,10 @@ const loadOrderSuccess = async (req, res) => {
             return req.session.orderSuccess = false
         }
 
-        return res.redirect('/')
+        return handleStatus(res, 402, 'Order not success');
     } catch (error) {
         console.log('Failed to render success : ', error)
-        return res.redirect('/pageNotFound')
+        return handleStatus(res, 500);
     }
 }
 
@@ -66,16 +71,16 @@ const loadMyOrders = async (req, res) => {
                 .populate("orderedItems.product"),
             Order.find().countDocuments(),
             Order.updateMany(
-                    { expiresAt: { $lt: new Date() } },
-                    {
-                        $set: {
+                { expiresAt: { $lt: new Date() } },
+                {
+                    $set: {
                         status: 'Cancelled',
                         reason: 'Order Expired',
                         'orderedItems.$[].status': 'Cancelled',
                         'orderedItems.$[].reason': 'Order Expired'
-                        }
                     }
-                )
+                }
+            )
         ])
 
         totalPages = Math.ceil(totalOrders / limit)
@@ -92,6 +97,7 @@ const loadMyOrders = async (req, res) => {
 
     } catch (error) {
         console.log('Error while load my Order page : ', error)
+        return handleStatus(res, 500);
     }
 }
 
@@ -106,20 +112,20 @@ const loadOrderDetails = async (req, res) => {
             Cart.findOne({ userId }),
             Order.find({ userId }).populate("orderedItems.product"),
             Order.updateMany(
-                    { expiresAt: { $lt: new Date() } },
-                    {
-                        $set: {
+                { expiresAt: { $lt: new Date() } },
+                {
+                    $set: {
                         status: 'Cancelled',
                         reason: 'Order Expired',
                         'orderedItems.$[].status': 'Cancelled',
                         'orderedItems.$[].reason': 'Order Expired'
-                        }
                     }
-                )
+                }
+            )
         ])
 
         if (!userOrders) {
-            return res.status(401).json({ success: false, message: 'User Orders not found!!' })
+            return handleStatus(res, 401, 'User order not found!!')
         }
 
         const orderId = req.query.id
@@ -136,8 +142,10 @@ const loadOrderDetails = async (req, res) => {
 
         const isUser = order.userId.toString() === userId.toString()
 
+        const finalAmount = order.orderedItems.reduce((total, item) => total + item.price, 0)
+
         if (!isUser) {
-            return res.status(401).json({ success: false, message: 'Wrong order details!!!' })
+            return handleStatus(res, 401, 'Wrong order detailes!!');
         }
 
         return res.render('orderDetails', {
@@ -145,11 +153,12 @@ const loadOrderDetails = async (req, res) => {
             search,
             user,
             cart,
+            finalAmount,
             currentPage: 'orderDetails'
         })
     } catch (error) {
         console.log('failed to load the order details : ', error)
-        return res.status(500).json({ success: false, message: 'An error occurred while loading the order details!!' })
+        return handleStatus(res, 500);
     }
 }
 
@@ -160,11 +169,11 @@ const cancelOrder = async (req, res) => {
 
         const order = await Order.findById(orderId);
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found.' });
+            return handleStatus(res, 404, 'Order not found!');
         }
 
         if (!['Confirmed', 'Pending', 'Processing', 'Shipped', 'Out of Delivery', 'Payment Failed'].includes(order.status)) {
-            return res.status(400).json({ success: false, message: 'Order cannot be cancelled anymore.' });
+            return handleStatus(res, 400, 'Your order cannot be canelled!!');
         }
 
         const cancelItemIds = items.map(id => id.toString());
@@ -175,7 +184,7 @@ const cancelOrder = async (req, res) => {
             cancelItemIds.includes(String(item.product))
         );
         if (!cancelItems.length) {
-            return res.status(400).json({ success: false, message: 'No cancellable items found.' });
+            return handleStatus(res, 400, 'No cancellable items found!!');
         }
 
         const isFullCancellation =
@@ -189,7 +198,7 @@ const cancelOrder = async (req, res) => {
 
         if (isFullCancellation || allCancelled) {
             ({ refundAmount, refundReason } = orderCancel(order, reason))
-        }else {
+        } else {
             ({ refundAmount, refundReason } = cancelItem(cancelItems, reason))
         }
 
@@ -210,7 +219,6 @@ const cancelOrder = async (req, res) => {
         await order.save();
 
         if (['Razorpay', 'Wallet'].includes(order.paymentMethod) && (order.status === 'Confirmed' || order.paymentStatus === 'Paid')) {
-            console.log('wallet userID : ', userId)
             await addToWallet(userId, refundAmount, refundReason);
         }
 
@@ -222,16 +230,12 @@ const cancelOrder = async (req, res) => {
             }
         }
 
-        return res.status(200).json({
-            success: true,
-            message: isFullCancellation
-                ? 'Order successfully cancelled.'
-                : 'Selected item(s) cancelled successfully.'
-        });
-
+        return handleStatus(res, 200, isFullCancellation
+            ? 'Order successfully cancelled.'
+            : 'Selected item(s) cancelled successfully.')
     } catch (error) {
         console.error('Cancel Order Error:', error);
-        return res.status(500).json({ success: false, message: 'Server error during cancellation.' });
+        return handleStatus(res, 500);
     }
 };
 
@@ -242,11 +246,24 @@ const returnRequest = async (req, res) => {
 
         const order = await Order.findById(orderId);
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found...' });
+            return handleStatus(res, 404, 'Order not found!!');
         }
 
-        if (!['Return Request', 'Returned', 'Cancelled', 'Delivered'].includes(order.status)) {
-            return res.status(400).json({ success: false, message: 'This order cannot be returned anymore.' });
+        if (['Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
+            return handleStatus(res, 402, `This order already ${order.status}`)
+        }
+        if (order.status !== 'Delivered') {
+            return handleStatus(res, 402, `Only delivered orders can be returned. Current status: ${order.status}`)
+        }
+
+        if (order.deliveredDate) {
+            const deliveredTime = new Date(order.deliveredDate).getTime();
+            const sevenDaysLater = deliveredTime + 7 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            if (now > sevenDaysLater) {
+                return handleStatus(res, 402, 'This order is past 7 days after delivery');
+            }
         }
 
         const returnItemIds = items.map(id => id.toString());
@@ -255,8 +272,6 @@ const returnRequest = async (req, res) => {
         const returnItems = order.orderedItems.filter(item =>
             returnItemIds.includes(item.product.toString())
         );
-
-        let refundAmount
 
         const isFullReturn =
             orderedProducts.length === returnItemIds.length &&
@@ -267,21 +282,19 @@ const returnRequest = async (req, res) => {
             order.reason = reason
             order.orderedItems.forEach(item => {
                 item.itemStatus = 'Return Request';
-                item.reason = reason
+                item.reason = reason;
             });
 
         } else {
             returnItems.forEach(item => {
                 item.itemStatus = 'Return Request';
-                item.reason = reason
+                item.reason = reason;
             });
         }
 
         const everyItem = order.orderedItems.every(
             item => item.itemStatus && item.itemStatus.trim().toLowerCase() === "return request".toLowerCase().trim()
         );
-
-        order.orderedItems.forEach(item => console.log('item status : ', item.itemStatus))
 
         if (everyItem) {
             order.status = 'Return Request'
@@ -290,18 +303,13 @@ const returnRequest = async (req, res) => {
 
         await order.save();
 
-
-        return res.status(200).json({
-            success: true,
-            message: isFullReturn
-                ? 'Successfully requested for Return Order.'
-                : 'Successfully requested for Return Ordered Items.'
-        });
-
+        return handleStatus(res, 200, isFullReturn
+            ? 'Successfully requested for Return Order.'
+            : 'Successfully requested for Return Ordered Items.')
 
     } catch (error) {
         console.error('Return Order Error:', error);
-        return res.status(500).json({ success: false, message: 'Server error during return request.' });
+        return handleStatus(res, 500)
     }
 }
 

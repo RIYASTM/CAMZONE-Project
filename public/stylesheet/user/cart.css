@@ -14,7 +14,7 @@ body {
     /* background-color: var(--background-color) ; */
 }
 
-a{
+a {
     text-decoration: none;
     color: var(--text-color);
 }
@@ -52,15 +52,15 @@ a{
 }
 
 .cart-items-actions {
-  display: flex;
-  /* gap: 10px; */
+    display: flex;
+    /* gap: 10px; */
 }
 
 .cart-items-actions button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
 }
 
 /* Cart Items Section */
@@ -69,7 +69,7 @@ a{
     background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .cart-header {
@@ -176,7 +176,7 @@ a{
     background: #f8f9fa;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .cart-total h2 {
@@ -261,11 +261,11 @@ a{
     .cart-actions {
         flex-direction: column;
     }
-    
+
     .cart-item {
         grid-template-columns: 3fr 2fr 1fr;
     }
-    
+
     .cart-product span {
         font-size: 14px;
     }
@@ -275,6 +275,7 @@ a{
     text-decoration: line-through;
     color: #999;
 }
+
 .offer-price {
     font-weight: bold;
     color: green;

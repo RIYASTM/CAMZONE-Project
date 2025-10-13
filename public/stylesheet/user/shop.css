@@ -104,22 +104,56 @@ nav a {
 }
 
 .product-card {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    position: relative;
-    background-color: #fff;
-    transition: transform 0.3s;
-    max-height: 380px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  background-color: #fff;
+  cursor: pointer;
+  max-height: 380px;
+
+  /* ✅ Combine both transitions */
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.product-card a, .sidebar a {
-    cursor: pointer;
+/* Dim effect without dimming message */
+.product-card.dimmed {
+  position: relative;
+  pointer-events: auto;
 }
 
+.product-card.dimmed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6); /* overlay dim */
+  z-index: 1;
+}
+
+.product-card.dimmed .stock-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 5px 10px;
+  border-radius: 5px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Hover animation */
 .product-card:hover {
-    transform: translateY(-10px);
+  transform: translateY(-10px);
 }
+
 
 .product-card img {
     display: block;
@@ -153,9 +187,19 @@ nav a {
     margin-left: 10px;
 }
 
+.bottom-msg{
+    display: flex;
+    gap: 50px;
+}
+
 .rating {
     font-size: 0.9em;
     color: var(--accent-color);
+}
+
+.stock-msg{
+    color: red;
+    font-size: small;
 }
 
 .rating .star.filled {

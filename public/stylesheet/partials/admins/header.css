@@ -3,7 +3,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px ;
+    margin-bottom: 20px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
 
@@ -37,8 +37,8 @@
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.logoutbtn:hover{
-    background-color:#202020 ;
+.logoutbtn:hover {
+    background-color: #202020;
 }
 
 .notifications {

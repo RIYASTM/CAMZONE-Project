@@ -14,11 +14,11 @@ const Cart = require('../../model/cartModel')
 const Wishlist = require('../../model/wishlistModel')
 const OTP = require('../../model/otpModal')
 
-//helper Functions
-const {securePassword} = require('../../helpers/hashPass')
+//Helper Functions
+const { securePassword } = require('../../helpers/hashPass')
 const { sendOTPForgott, generateOtp, sendOTP } = require('../../helpers/OTP')
 const { validateForm, validateUser } = require('../../helpers/validations')
-
+const { handleStatus } = require('../../helpers/status')
 
 
 //Home Page
@@ -28,26 +28,28 @@ const loadHomePage = async (req, res) => {
         const search = req.query.search || ''
         const userId = req.session.user
 
-        const user = await User.findById(userId)
+        const [user, brands, categories] = await Promise.all([
+            User.findById(userId),
+            Brands.find({ isDeleted: false, isBlocked: false }),
+            Category.find({ isListed: true })
+        ])
 
         const cart = userId ? await Cart.findOne({ userId }) : 0;
-
-        const brands = await Brands.find({ isDeleted: false, isBlocked: false });
-        const categories = await Category.find({ isListed: true });
 
         const query = { isBlocked: false, isDeleted: false };
 
         if (search) {
 
-            const brandIds = await Brands.find({
-                brandName: { $regex: search.trim(), $options: 'i' },
-                isBlocked: false
-            }).distinct('_id');
-
-            const categoryIds = await Category.find({
-                name: { $regex: search.trim(), $options: 'i' },
-                isListed: true
-            }).distinct('_id');
+            const [brandIds, categoryIds] = await Promise.all([
+                Brands.find({
+                    brandName: { $regex: search.trim(), $options: 'i' },
+                    isBlocked: false
+                }).distinct('_id'),
+                Category.find({
+                    name: { $regex: search.trim(), $options: 'i' },
+                    isListed: true
+                }).distinct('_id')
+            ])
 
             query.$or = [
                 { productName: { $regex: search.trim(), $options: 'i' } },
@@ -83,7 +85,7 @@ const loadHomePage = async (req, res) => {
             };
         });
 
-        const wishList = await Wishlist.findOne({userId }).populate('items.product')
+        const wishList = await Wishlist.findOne({ userId }).populate('items.product')
 
         let wishlistItems = wishList ? wishList.items.map(item => item.product._id.toString()) : []
 
@@ -107,7 +109,7 @@ const loadHomePage = async (req, res) => {
         console.log('================================================');
         console.log('Failed to load home!!', error);
         console.log('================================================');
-        return res.status(500).redirect('/pageNotFound');
+        return handleStatus(res, 500)
     }
 }
 
@@ -264,16 +266,16 @@ const loadShop = async (req, res) => {
             };
         });
 
-        const brands = await Brands.find({ isDeleted: false, isBlocked: false });
-        const categories = await Category.find({ isListed: true });
-
-        const totalProducts = await Products.countDocuments({
-            isDeleted: false,
-            isBlocked: false,
-            ...query
-        });
-
-        const wishList = await Wishlist.findOne({userId }).populate('items.product')
+        const [brands, categories, totalProducts, wishList] = await Promise.all([
+            Brands.find({ isDeleted: false, isBlocked: false }),
+            Category.find({ isListed: true }),
+            Products.countDocuments({
+                isDeleted: false,
+                isBlocked: false,
+                ...query
+            }),
+            Wishlist.findOne({ userId }).populate('items.product')
+        ])
 
         let wishlistItems = wishList ? wishList.items.map(item => item.product._id.toString()) : []
 
@@ -297,7 +299,7 @@ const loadShop = async (req, res) => {
         console.log('================================================');
         console.log('Failed to load shop!!', error);
         console.log('================================================');
-        return res.status(500).redirect('/pageNotFound');
+        return handleStatus(res, 500)
     }
 }
 
@@ -315,13 +317,14 @@ const loadProduct = async (req, res) => {
 
         const productId = req.query.id
 
-        const product = await Products.findById(productId, { isBlocked: false }).populate(['category', 'brand'])
+        const [product, wishList] = await Promise.all([
+            Products.findById(productId, { isBlocked: false }).populate(['category', 'brand']),
+            Wishlist.findOne({ userId }).populate('items.product')
+        ])
 
         if (!product) {
-            return res.status(400).json({ success: false, message: 'This products is blocked or unavailable' })
+            return handleStatus(res, 403, 'This products is blocked or unavailable')
         }
-
-        const wishList = await Wishlist.findOne({userId }).populate('items.product')
 
         let wishlistItems = []
 
@@ -360,7 +363,7 @@ const loadProduct = async (req, res) => {
 
     } catch (error) {
         console.error('Error while loading product : ', error)
-        return res.status(500).redirect('/pageNotFound');
+        return handleStatus(res, 500);
     }
 }
 
@@ -368,7 +371,7 @@ const loadProduct = async (req, res) => {
 const loadSignin = async (req, res) => {
     try {
 
-        if(req.session.user) return res.redirect('/')
+        if (req.session.user) return res.redirect('/')
 
         const userId = req.session.user
 
@@ -384,7 +387,7 @@ const loadSignin = async (req, res) => {
         console.log('================================================')
         console.log('Failed to load page!!', error);
         console.log('================================================')
-        return res.status(500).redirect('/pageNotFound')
+        return handleStatus(res, 500)
     }
 }
 
@@ -397,21 +400,13 @@ const signin = async (req, res) => {
         const isUser = await User.findOne({ email })
 
         if (!isUser) {
-            return res.status(400).json({
-                success: false,
-                message: 'User not Exist',
-                errors: { email: 'User not found!!' }
-            })
+            return handleStatus(res, 404, 'User not Exist', { errors: { email: 'User not found!!' } })
         }
 
-        const userBlocked = await User.findOne({ email, isBlocked: true })
+        const isUserBlocked = await User.findOne({ email, isBlocked: true })
 
-        if (userBlocked) {
-            return res.status(400).json({
-                success: false,
-                message: 'You`re Blocked',
-                errors: { email: 'Blocked User' }
-            })
+        if (isUserBlocked) {
+            return handleStatus(res, 403, 'You are blocked', { errors: { email: 'Blocked User' } })
         }
 
         const errors = validateForm(email, password)
@@ -422,11 +417,7 @@ const signin = async (req, res) => {
         const isMatch = await bcrypt.compare(password, isUser.password)
 
         if (!isMatch) {
-            return res.status(400).json({
-                success: false,
-                message: "Password didn`t Match",
-                errors: { password: "Password didn`t Match" }
-            });
+            return handleStatus(res, 400, 'Password didn`t Match', { errors: { password: "Password didn`t Match" } })
         }
 
         console.log("=========================================");
@@ -436,18 +427,12 @@ const signin = async (req, res) => {
         req.session.usermail = isUser.email;
         req.session.user = isUser._id;
 
-        return res.status(200).json({
-            success: true,
-            message: "Signin Success",
-            redirectUrl: '/'
-        })
+
+        return handleStatus(res, 200, null, { redirectUrl: '/' })
 
     } catch (error) {
         console.error("Signin error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong: " + error.message
-        });
+        return handleStatus(res, 500)
     }
 }
 
@@ -455,7 +440,7 @@ const signin = async (req, res) => {
 const loadSignup = async (req, res) => {
     try {
 
-        if(req.session.user) return res.redirect('/')
+        if (req.session.user) return res.redirect('/')
 
         const search = req.query.search || ''
 
@@ -472,7 +457,7 @@ const loadSignup = async (req, res) => {
         console.log('================================================')
         console.log('Failed to load page!!', error);
         console.log('================================================')
-        return res.status(500).redirect('/pageNotFound')
+        return handleStatus(res, 500)
     }
 }
 
@@ -483,18 +468,17 @@ const signup = async (req, res) => {
 
         const findUser = await User.findOne({ email });
         if (findUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User with this email already exists",
-                errors: { email: "User with this email already exists" }
-            });
+            return handleStatus(res, 400, 'User with this email already exists', {
+                errors:
+                    { email: "User with this email already exists" }
+            })
         }
 
         const userData = { name, email, phone, password, confirmPassword };
 
         const errors = validateUser(userData);
         if (errors) {
-            return res.status(400).json({ success: false, errors });
+            return handleStatus(res, 400, 'Validation error', { errors })
         }
 
         const otp = generateOtp();
@@ -502,7 +486,7 @@ const signup = async (req, res) => {
         console.log(`OTP Generated to "${email}" : "${otp}"`);
         console.log('==================================================')
 
-        await OTP.deleteMany({ email });  
+        await OTP.deleteMany({ email });
 
         const signupOtp = new OTP({ otp, email })
 
@@ -516,54 +500,45 @@ const signup = async (req, res) => {
 
         const emailSent = await sendOTP(email, otp);
         if (!emailSent) {
-            return res.status(500).json({
-                success: false,
-                message: "Failed to send OTP. Try again."
-            });
+            return handleStatus(res, 500, 'Failed to send OTP. Try again');
         }
 
         req.session.userData = { name, email, phone, password };
 
-        return res.status(200).json({
-            success: true,
-            message: "OTP Generated",
-            redirectUrl: "/emailVerify"
+        return handleStatus(res, 200, 'OTP Generated', {
+            redirectUrl: '/emailVerify'
         });
 
     } catch (error) {
         console.error("Signup error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong: " + error.message
-        });
+        return handleStatus(res, 500);
     }
 }
 
-//sign Out
+//Sign Out
 const signout = async (req, res) => {
     try {
-
-        req.session.destroy((err) => {
-            if (err) {
-                return res.redirect('/');
-            }
-            res.clearCookie('connect.sid');
-            res.redirect('/');
+        req.logout((err) => {
+            if (err) return next(err);
+            req.session.destroy((err) => {
+                if (err) return res.redirect('/');
+                res.clearCookie('user.sid');
+                res.redirect('/');
+            });
         });
-
-        console.log('Signed out')
+        console.log('Signed out');
     } catch (error) {
-        console.log('================================================')
-        console.log('Failed to signout!!', error)
-        console.log('================================================')
-        return res.status(500).render('page-404')
+        console.log('================================================');
+        console.log('Failed to signout!!', error);
+        console.log('================================================');
+        return handleStatus(res, 500);
     }
-}
+};
 
 const loadVerifyEmail = async (req, res) => {
     try {
 
-        if(req.session.user) return res.redirect('/')
+        if (req.session.user) return res.redirect('/')
 
         const search = req.query.search || ''
 
@@ -594,7 +569,7 @@ const loadVerifyEmail = async (req, res) => {
         console.log('================================================')
         console.log('Failed to load page!!', error);
         console.log('================================================')
-        return res.status(500).redirect('/pageNotFound')
+        return handleStatus(res, 500)
     }
 }
 
@@ -606,10 +581,7 @@ const verifyEmail = async (req, res) => {
         const userOtp = await OTP.findOne({ email, otp });
 
         if (!userOtp) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid OTP or OTP has been expired. Try Again...'
-            });
+            return handleStatus(res, 401, 'Invalid OTP or OTP has been expired. Try again...');
         }
 
         const user = req.session.userData;
@@ -629,17 +601,15 @@ const verifyEmail = async (req, res) => {
 
         await OTP.deleteOne({ _id: userOtp._id });
 
-        return res.status(200).json({
-            success: true,
-            message: "OTP Verification Success",
-            redirectUrl: "/"
-        });
+        return handleStatus(res, 200, 'OTP Verified', {
+            redirectUrl: '/'
+        })
 
     } catch (error) {
         console.log("================================");
         console.log("Failed to load page!!", error);
         console.log("================================");
-        res.status(500).json({ success: false, message: "An error occured" });
+        return handleStatus(res, 500)
     }
 };
 
@@ -650,14 +620,11 @@ const resendOtp = async (req, res) => {
         const { email } = req.session.userData;
 
         if (!email) {
-            res.status(500).json({
-                success: false,
-                message: "Email not found , pls try again!"
-            });
+            return handleStatus(res, 401, 'Email not found')
         }
 
         let otp = generateOtp();
-        await OTP.deleteMany({email})
+        await OTP.deleteMany({ email })
         const userOtp = new OTP({ otp, email })
         await userOtp.save()
         req.session.userOtp = otp;
@@ -667,23 +634,14 @@ const resendOtp = async (req, res) => {
 
         const emailSent = await sendOTP(email, otp)
         if (!emailSent) {
-            return res.status(500).json({
-                success: false,
-                message: "Failed to send email, please try again later"
-            });
+            return handleStatus(res, 500, 'Failed to send OTP. Please try again later');
         }
 
-        return res.status(200).json({
-            success: true,
-            message: "OTP resent successfully",
-            remainingTime
-        });
+        return handleStatus(res, 200, 'OTP send successfully');
+
     } catch (error) {
         console.log("Error resending OTP:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error. Please try again..."
-        });
+        return handleStatus(res, 500)
     }
 }
 
@@ -702,15 +660,14 @@ const loadforgotPass = async (req, res) => {
 
     } catch (error) {
         console.log('Error while loading forgottPass', error)
+        return handleStatus(res, 500)
     }
 
 }
 
 const forgotpass = async (req, res) => {
     try {
-
         const { email } = req.body
-
         const user = await User.findOne({ email: email })
 
         if (user) {
@@ -721,29 +678,18 @@ const forgotpass = async (req, res) => {
                 req.session.email = email
                 req.session.userData = user
                 console.log('OTP for reset pass : ', otp)
-                return res.status(200).json({
-                    success: true,
-                    message: "OTP Generated",
-                    redirectUrl: "/verifyEmailforgot"
+                return handleStatus(res, 200, 'OTP Generated', {
+                    redirectUrl: '/verifyEmailforgot'
                 });
             } else {
-                return res.status(500).json({
-                    success: false,
-                    message: "Failed to send OTP. Try again."
-                });
+                return handleStatus(res, 500, 'Filed to send OTP. Try again later')
             }
         } else {
-            return res.status(500).json({
-                success: false,
-                message: "User not found."
-            });
+            return handleStatus(res, 401, 'User Not Found')
         }
     } catch (error) {
         console.log('Failed to reset password : ', error)
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong: " + error.message
-        });
+        return handleStatus(res, 500)
     }
 }
 
@@ -762,10 +708,9 @@ const loadverifyEmailforgot = async (req, res) => {
             cart
         })
 
-
     } catch (error) {
         console.log('Error while loading forgottPass', error)
-        return res.redirect('/pageNotFound')
+        return handleStatus(res, 500)
     }
 }
 
@@ -777,23 +722,16 @@ const verifyEmailforgot = async (req, res) => {
         console.log('from session : ', req.session.userOtp)
         if (otp === req.session.userOtp) {
             const user = req.session.userData
-            return res.status(200).json({
-                success: true,
-                message: "OTP Verification Success",
-                redirectUrl: "/resetPassword"
-            });
+            return handleStatus(res, 200, 'OTP Verified', {
+                redirectUrl: '/resetPassword'
+            })
         }
-        return res.status(400).json({
-            success: false,
-            message: "Invelid OTP. Please try again!!"
-        })
-
+        return handleStatus(res, 400, 'Invalid OTP. Try again!!')
     } catch (error) {
-        console.log('================================')
+        console.log('================================');
         console.log("Failed to load page!!", error);
-        console.log('================================')
-        res.status(500).json({ success: false, message: "An error occured" })
-
+        console.log('================================');
+        return handleStatus(res, 500);
     }
 }
 
@@ -812,7 +750,7 @@ const loadResetPassword = async (req, res) => {
         })
     } catch (error) {
         console.errpr('Error occurred while loading reset Password Page : ', error)
-        return res.redirect('/pageNotFound')
+        return handleStatus(res, 500)
     }
 }
 
@@ -843,7 +781,8 @@ const resetPassword = async (req, res) => {
         return res.status(200).json({ success: true, message: 'Password changed successfully', redirectUrl: '/signin' })
 
     } catch (error) {
-
+        console.log('Somthing went wrong while resetting password : ', error)
+        return handleStatus(res, 500)
     }
 }
 
@@ -854,7 +793,7 @@ const pageNotFound = async (req, res) => {
         console.log('================================================')
         console.log('Failed to load Page!!', error)
         console.log('================================================')
-        return res.status(500).send('Something went wrong with this page....')
+        return handleStatus(res, 500)
     }
 }
 

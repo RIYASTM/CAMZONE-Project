@@ -93,12 +93,12 @@ async function calculateAmounts(couponCode, totalAmount, cartItems) {
     const totalGST = Math.floor((finalAmount * 18) / 118);
     const priceWithoutGST = Math.floor(finalAmount - totalGST);
 
-    
-    
+
+
     const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
     console.log('totalAmount : ', totalAmount)
     console.log('subTotal : ', subtotal);
-    
+
     const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
 
     const totalOfferedPrice = (totalOfferPrice - subtotal) + couponDiscount;

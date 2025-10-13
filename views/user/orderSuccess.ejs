@@ -72,13 +72,13 @@
               <span>Shipping</span>
               <span><%= typeof order.shipping === 'number' ? order.shipping.toFixed(2) : '0.00' %></span>
             </div>
-            <div class="summary-row discount">
-              <span>Discount</span>
-              <span>-<%= order.discount ? order.discount.toFixed(2) : '0.00' %></span>
-            </div>
             <div class="summary-row gst">
               <span>GST % </span>
               <span><%= typeof order.GST !== 'undefined' ? order.GST.toFixed(2) : '0.00' %></span>
+            </div>
+            <div class="summary-row discount">
+              <span>Discount</span>
+              <span>-<%= order.discount ? order.discount.toFixed(2) : '0.00' %></span>
             </div>
             <div class="summary-row total">
               <span>Total</span>

@@ -1,9 +1,9 @@
 const Wallet = require('../model/walletModal');
 
-async function addToWallet(userId, amount, reason){
+async function addToWallet(userId, amount, reason) {
     try {
 
-        const wallet = await Wallet.findOne({userId})
+        const wallet = await Wallet.findOne({ userId })
 
         const date = new Date();
         const year = date.getFullYear().toString().slice(-2);
@@ -20,23 +20,23 @@ async function addToWallet(userId, amount, reason){
         const transactionID = `TRID${year}${month}${day}${seq}`;
 
         const transactions = {
-                    type : 'Credit',
-                    amount : amount,
-                    description : reason,
-                    transactionId : transactionID,
-                    status : 'Success'
-                }
+            type: 'Credit',
+            amount: amount,
+            description: reason,
+            transactionId: transactionID,
+            status: 'Success'
+        }
 
         let updatedWallet
 
-        if(!wallet){
-            updatedWallet = new Wallet ({
+        if (!wallet) {
+            updatedWallet = new Wallet({
                 userId,
-                transactions : [transactions],
-                balance : amount
+                transactions: [transactions],
+                balance: amount
             })
-            
-        }else{
+
+        } else {
             wallet.balance += amount;
             wallet.transactions.push(transactions)
             updatedWallet = wallet
@@ -44,7 +44,7 @@ async function addToWallet(userId, amount, reason){
 
         await updatedWallet.save()
 
-        return { success: true, message: 'Wallet updated successfully', wallet : updatedWallet };
+        return { success: true, message: 'Wallet updated successfully', wallet: updatedWallet };
 
     } catch (error) {
         console.error('Error adding to wallet:', error);
@@ -52,18 +52,18 @@ async function addToWallet(userId, amount, reason){
     }
 }
 
-async function fromWallet(userId, amount, reason){
+async function fromWallet(userId, amount, reason) {
 
-    const wallet = await Wallet.findOne({userId})
+    const wallet = await Wallet.findOne({ userId })
 
-    if(!wallet){
-        return {success : false, message : 'Your wallet is not created!!'}
+    if (!wallet) {
+        return { success: false, message: 'Your wallet is not created!!' }
     }
-    
+
     const balance = wallet.balance || ''
-    
-    if(!wallet || balance < amount || !balance){
-        return {success : false, message : 'Insufficient balance in your wallet!!'}
+
+    if (!wallet || balance < amount || !balance) {
+        return { success: false, message: 'Insufficient balance in your wallet!!' }
     }
 
     const date = new Date();
@@ -81,12 +81,12 @@ async function fromWallet(userId, amount, reason){
     const transactionID = `TRID${year}${month}${day}${seq}`;
 
     const transactions = {
-                type : 'Debit',
-                amount : amount,
-                description : reason,
-                transactionId : transactionID,
-                status : 'Success'
-            }
+        type: 'Debit',
+        amount: amount,
+        description: reason,
+        transactionId: transactionID,
+        status: 'Success'
+    }
 
     wallet.balance -= amount;
     wallet.transactions.push(transactions)
@@ -94,7 +94,7 @@ async function fromWallet(userId, amount, reason){
 
     await updatedWallet.save()
 
-    return { success: true, message: 'Wallet updated successfully', wallet : updatedWallet };
+    return { success: true, message: 'Wallet updated successfully', wallet: updatedWallet };
 }
 
 module.exports = {

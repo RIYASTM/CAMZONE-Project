@@ -1,6 +1,7 @@
 const Order = require('../../model/orderModel');
 
-const {generateInvoice} = require('../../helpers/generateInvoice')
+const { generateInvoice } = require('../../helpers/generateInvoice');
+const { handleStatus } = require('../../helpers/status');
 
 
 const invoice = async (req, res) => {
@@ -9,16 +10,16 @@ const invoice = async (req, res) => {
 
     const order = await Order.findById(id).populate('orderedItems.product');
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      return handleStatus(res, 404, 'Order not found!!');
     }
 
-    generateInvoice(order, res)
+    generateInvoice(order, res);
 
-    return res.status(200)
-    
+    return handleStatus(res, 200);
+
   } catch (error) {
     console.error('Invoice error:', error);
-    res.status(500).json({ message: 'Error generating invoice' });
+    return handleStatus(res, 500);
   }
 };
 

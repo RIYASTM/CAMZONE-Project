@@ -46,20 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('search').addEventListener('keypress', function (e) {
         const searchValue = search.value
-
         if (e.key === 'Enter') {
             window.location.href = `?search=${searchValue}`
         }
     })
 
     if (searchValue) {
-
         document.getElementById('clear-button').addEventListener('click', function (e) {
-
             window.location.href = `/admin/coupons`
         })
     }
-
     
     const discountTypeEl = document.getElementById('discountType')
     const minOrderEl = document.getElementById('minOrder')
@@ -77,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             minOrderEl.disabled = true;
         } else {
             minOrderEl.disabled = false;
-            minOrderEl.value = ''; // optional: clear for percentage
+            minOrderEl.value = '';
         }
     }
 
@@ -153,11 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     editCouponForm.querySelector('#editDeactivateCoupon').checked = !coupon.isList;
                     editCouponModal.style.display = 'block';
                 } else {
-                    console.error('Failed to fetch coupon details!', error.message || error)
+                    console.error('Failed to fetch coupon details!', error)
                     showNotification('Failed to fetch coupon details!')
                 }
             } catch (error) {
-                console.error(`Error fetching coupon: ${error.message}`)
+                console.error(`Error fetching coupon: ${error}`);
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         } else if (button.classList.contains('deleteCoupon')) {
             const couponName = button.closest('tr').querySelector('td:first-child').textContent;
@@ -226,7 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
             }
         } catch (error) {
-            console.error(`Something went wrong while adding coupon: `,error.message)
+            console.error(`Something went wrong while adding coupon: `,error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
 
@@ -268,11 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Something went wrong while updating coupon: ${error.message}`
-            });
+            console.error('Something went wrong : ', error)
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
 
@@ -285,7 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (!result.success) {
-                showNotification('Failed to delete coupon!!', 'error')
+                console.error('Something went wrong : ', result.message)
+                showNotification(result.message || 'Failed to delete coupon!!', 'error')
                 return;
             }else{
                 showNotification('Coupon has been deleted!!', 'success')
@@ -293,7 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetchCoupons({ search: searchBar.value.trim(), sort: sortBy.value, filter: filter.value, page: currentPages });
             }
         } catch (error) {
-            console.error('Something went wrong while deleting coupon : ', error.message || error)
+            console.error('Something went wrong while deleting coupon : ', error)
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
 
@@ -426,10 +423,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
                 updateCouponTable(result.coupons);
             } else {
-                console.log('Failed to fetch coupons : ', error.message || error)
+                console.error('Failed to fetch coupons : ',result.message);
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         } catch (error) {
-            console.log('Something went wrong : ', error.message || error)
+            console.error('Something went wrong : ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 

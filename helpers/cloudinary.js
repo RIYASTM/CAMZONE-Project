@@ -1,4 +1,4 @@
-require('dotenv').config(); 
+require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -7,7 +7,7 @@ const api_key = process.env.CLOUDINARY_KEY?.trim();
 const api_secret = process.env.CLOUDINARY_SECRET?.trim();
 
 if (!cloud_name || !api_key || !api_secret) {
-    throw new Error("Cloudinary environment variables are missing!");
+  throw new Error("Cloudinary environment variables are missing!");
 }
 
 
@@ -21,7 +21,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'Camzone_IMG', 
+    folder: 'Camzone_IMG',
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   },
 });

@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             preview.innerHTML = '';
             if (file) {
                 if (file.size > 5 * 1024 * 1024) {
-                    Swal.fire('Error', 'File size exceeds 5MB limit!', 'error');
+                    showNotification('File size exceeds 5MB limit!', 'error');
                     e.target.value = '';
                     return;
                 }
@@ -49,7 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
             preview.innerHTML = '';
             if (file) {
                 if (file.size > 5 * 1024 * 1024) {
-                    Swal.fire('Error', 'File size exceeds 5MB limit!', 'error');
+
+                    showNotification('File size exceeds 5MB limit!', 'error');
                     e.target.value = '';
                     return;
                 }
@@ -86,8 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelEditButton = document.getElementById('cancelEditButton');
     const editModalOverlay = editCategoryModal?.querySelector('.modal-overlay');
 
-    document.querySelectorAll('.editCategory').forEach(button =>{
-        button.addEventListener('click', (e)=> {
+    document.querySelectorAll('.editCategory').forEach(button => {
+        button.addEventListener('click', (e) => {
             e.preventDefault()
 
             const categoryId = button.dataset.id
@@ -96,10 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const categoryOffer = button.dataset.offer || 0
             const isListed = button.dataset.listed === ('true' || 'True');
             const image = button.dataset.image
-            const test=button.dataset.riyas
-    
-            showEditCategoryModal(categoryId, categoryname, description, categoryOffer,isListed, image)
-            
+            const test = button.dataset.riyas
+
+            showEditCategoryModal(categoryId, categoryname, description, categoryOffer, isListed, image)
+
         })
     })
 
@@ -147,18 +148,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (!data.success) {
-                    Swal.fire('Error', data.message || 'Validation error', 'error');
+                    showNotification(data.message || 'Validation error', 'error');
                     if (data.errors) {
                         displayFormError(categoryForm, data.errors);
                     }
                 } else {
-                    Swal.fire('Success', data.message || 'Category Added Successfully', 'success').then(() => {
-                        window.location.replace(data.redirectUrl);
-                    });
+                    showNotification(data.message || 'Category Added Successfully', 'success')
+                    window.location.replace(data.redirectUrl);
                 }
             } catch (error) {
                 console.error('Category adding error:', error);
-                Swal.fire('Error', 'Something went wrong: ' + error.message, 'error');
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         });
     }
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    
+
 });
 
 const sort = document.querySelector('.sort-by')
@@ -201,22 +201,22 @@ function applyFilters() {
 
     rows.forEach(row => {
         const status = row.querySelector('td:nth-child(7)')?.textContent.trim().toLowerCase();
-        if(filterValue.toLowerCase() === 'all' || status.toLowerCase() === filterValue.toLowerCase()){
+        if (filterValue.toLowerCase() === 'all' || status.toLowerCase() === filterValue.toLowerCase()) {
             row.style.display = ''
-        }else{
+        } else {
             row.style.display = 'none';
         }
     })
 
-    if(sortValue !== 'default'){
-        rows.sort((a,b) => {
+    if (sortValue !== 'default') {
+        rows.sort((a, b) => {
             let aText = ''
             let bText = ''
 
-            if(sortValue === 'name'){
+            if (sortValue === 'name') {
                 aText = a.querySelector('td:nth-child(2)')?.textContent.trim().toLowerCase()
                 bText = b.querySelector('td:nth-child(2)')?.textContent.trim().toLowerCase()
-            }else if( sortValue === 'description'){
+            } else if (sortValue === 'description') {
                 aText = a.querySelector('td:nth-child(3)')?.textContent.trim().toLowerCase()
                 bText = b.querySelector('td:nth-child(3)')?.textContent.trim().toLowerCase()
             }
@@ -224,7 +224,7 @@ function applyFilters() {
             return aText.localeCompare(bText)
         })
         rows.forEach(row => tableBody.appendChild(row))
-    }else{
+    } else {
         originalRows.forEach(row => tableBody.appendChild(row))
     }
 }
@@ -280,7 +280,6 @@ function showEditCategoryModal(id, name, description, offer, isListed, image) {
     currentImageDiv.innerHTML = image
         ? `<img src="/Uploads/category/${image}" alt="Current Image" style="width: 50px; height: 50px; object-fit: fill;">`
         : 'No Image';
-
     editCategoryModal.style.display = 'block';
 }
 
@@ -341,33 +340,20 @@ async function SaveChanges(event) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Category updated successfully.',
-            }).then(() => location.reload());
+            showNotification('Category updated successfully.', 'success');
+            location.reload()
         } else {
             if (data.errors) {
                 displayFormError(editCategoryForm, data.errors);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: data.message || 'Something went wrong!',
-                });
+                showNotification(data.message || 'Something went wrong!', 'error');
             }
         }
     } catch (err) {
         console.error('Fetch Error:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'An unexpected error occurred.',
-        });
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
-
-
 
 async function addOffer(categoryId) {
     const { value: amount } = await Swal.fire({
@@ -398,16 +384,13 @@ async function addOffer(categoryId) {
                 const offerCell = document.querySelector('.offerCell')
                 offerCell.textContent = `${dd}`
 
-                Swal.fire('Offer Added', 'The Offer Has Been Added', 'success')
-                // .then(() => {
-                //     location.reload();
-                // });
+                return Swal.fire('Offer Added', 'The Offer Has Been Added', 'success')
             } else {
-                Swal.fire('Failed', data.message || 'Offer adding failed', 'error');
+                return showNotification(data.message || 'Offer adding failed', 'error');
             }
         } catch (error) {
-            Swal.fire('Error', 'An error occurred while adding offer', 'error');
             console.error('Offer adding failed:', error.message);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 }
@@ -435,9 +418,9 @@ async function removeOffer(categoryId) {
         }
     } catch (error) {
         console.error('Offer removing failed:', error);
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
-
 
 function displayFormError(form, errors) {
     clearErrors(form);
@@ -471,7 +454,7 @@ function updateCategoryTable(categories) {
     }
 
     categories.forEach(category => {
-        const tr = document.createElement('tr'); 
+        const tr = document.createElement('tr');
         tr.setAttribute('data-id', category._id);
 
         // Image cell

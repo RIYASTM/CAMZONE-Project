@@ -1,11 +1,11 @@
 /* Import base variables and styles from existing CSS */
 :root {
-    --primary-color: #ff9800; 
-    --secondary-color: #fff; 
-    --accent-color: #ff9800; 
-    --text-color: #333; 
-    --light-gray: #fff; 
-    --border-color: #ddd; 
+    --primary-color: #ff9800;
+    --secondary-color: #fff;
+    --accent-color: #ff9800;
+    --text-color: #333;
+    --light-gray: #fff;
+    --border-color: #ddd;
     --background-color: #fff;
     --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -225,7 +225,7 @@ a {
 }
 
 /* Errors */
-.invalid-feedback{
+.invalid-feedback {
     color: red;
     font-size: 14px;
 }
@@ -303,7 +303,8 @@ a {
         justify-content: center;
     }
 
-    .breadcrumb a, .breadcrumb .current {
+    .breadcrumb a,
+    .breadcrumb .current {
         font-size: 13px;
     }
 
@@ -341,7 +342,8 @@ a {
     .form-group input,
     .form-group textarea {
         padding: 12px;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
+        /* Prevent zoom on iOS */
     }
 
     .form-group textarea {
@@ -358,7 +360,8 @@ a {
         padding: 10px 0;
     }
 
-    .breadcrumb a, .breadcrumb .current {
+    .breadcrumb a,
+    .breadcrumb .current {
         font-size: 12px;
     }
 

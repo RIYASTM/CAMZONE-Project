@@ -1,4 +1,3 @@
-
 /* Header */
 
 :root {
@@ -8,6 +7,7 @@
     --light-gray: #f5f5f5;
     --border-color: #ddd;
 }
+
 /* Top Bar */
 .top-bar {
     background: var(--text-color);
@@ -70,12 +70,15 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.5rem; /* Adjust size of the icon */
-    color:var(--text-color); /* Icon color */
+    font-size: 1.5rem;
+    /* Adjust size of the icon */
+    color: var(--text-color);
+    /* Icon color */
 }
 
 .clear:hover {
-    color: var(--secondary-color); /* Red on hover */
+    color: var(--secondary-color);
+    /* Red on hover */
 }
 
 .nav-actions {
@@ -125,7 +128,7 @@
 }
 
 .sub-nav .links a.active {
-    color: var(--secondary-color); 
+    color: var(--secondary-color);
     font-weight: 500;
 }
 
@@ -145,6 +148,7 @@
 .signout {
     color: #e74c3c;
 }
+
 .signout:hover {
     color: #c0392b;
 }
@@ -153,6 +157,7 @@
     position: relative;
     display: inline-block;
 }
+
 .dropdown {
     display: none;
     position: absolute;
@@ -160,9 +165,11 @@
     min-width: 130px;
     z-index: 1;
 }
+
 .user-menu:hover .dropdown {
     display: block;
 }
+
 .dropdown a {
     color: white;
     padding: 10px;
@@ -170,13 +177,14 @@
     text-decoration: none;
 }
 
-.dropdown .name{
+.dropdown .name {
     margin-left: 6px;
 }
 
-.dropdown img{
+.dropdown img {
     padding-right: 2px;
 }
+
 .dropdown a:hover {
     background: #444;
 }
@@ -226,7 +234,7 @@
     .nav-actions img.icon {
         display: none;
     }
-    
+
     .nav-actions a {
         font-size: 14px;
     }

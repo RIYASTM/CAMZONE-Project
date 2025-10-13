@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Something went wrong:', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
@@ -155,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
 // Update orders table
 function updateOrdersTable(orders, currentPages) {
     const tbody = document.querySelector('.orders-table tbody');
@@ -195,7 +195,6 @@ function updateOrdersTable(orders, currentPages) {
     });
 }
 
-
 async function openOrderModal(orderId) { 
     try {
         const response = await fetch(`/admin/order`, {
@@ -214,7 +213,8 @@ async function openOrderModal(orderId) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     } catch (error) {
-        console.error('Error loading order detailes : ', error.message)
+        console.error('Error loading order detailes : ', error);
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
 
@@ -390,7 +390,8 @@ async function updateOrderStatus() {
             showNotification(data.message || 'Failed to update status!!', 'error')
         }
     } catch (error) {
-        console.error('Error on updating status : ', error+message)
+        console.error('Error on updating status : ', error);
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
 
@@ -414,7 +415,8 @@ async function handleReturnDecision(orderId, productId, newStatus, reason) {
             showNotification( data.message || 'Failed to update status!', 'error')
         }
     } catch (error) {
-        console.error('Error on update :  ', error.message)
+        console.error('Error on update :  ', error);
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
 

@@ -3,6 +3,7 @@ const Brands = require('../../model/brandModel')
 const Category = require('../../model/categoryModel')
 
 const { validateProductForm } = require('../../helpers/validations')
+const { handleStatus } = require('../../helpers/status');
 
 
 const loadProducts = async (req, res) => {
@@ -16,15 +17,19 @@ const loadProducts = async (req, res) => {
         const query = { isDeleted: false };
 
         if (search) {
-            const brandIds = await Brands.find({
-                brandName: { $regex: search.trim(), $options: 'i' },
-                isBlocked: false
-            }).distinct('_id');
 
-            const categoryIds = await Category.find({
-                name: { $regex: search.trim(), $options: 'i' },
-                isListed: true
-            }).distinct('_id');
+            const [brandIds, categoryIds] = await Promise.all([
+
+                Brands.find({
+                    brandName: { $regex: search.trim(), $options: 'i' },
+                    isBlocked: false
+                }).distinct('_id'),
+
+                Category.find({
+                    name: { $regex: search.trim(), $options: 'i' },
+                    isListed: true
+                }).distinct('_id')
+            ])
 
             query.$or = [
                 { productName: { $regex: search.trim(), $options: 'i' } },
@@ -33,16 +38,16 @@ const loadProducts = async (req, res) => {
             ];
         }
 
-        const totalProducts = await Products.countDocuments(query)
+        const [totalProducts, category, brand] = await Promise.all([
+            Products.countDocuments(query),
+            Category.find({ isListed: true }),
+            Brands.find({ isBlocked: false })
+        ])
 
         const totalPages = Math.ceil((totalProducts >= 2 ? totalProducts : 1) / limit)
 
-        const category = await Category.find({ isListed: true })
-
-        const brand = await Brands.find({ isBlocked: false })
-
         if (!brand || !category) {
-            return res.redirect('/admin/page404')
+            return handleStatus(res, 402, `Category or Brand is not exist!!`)
         }
 
         const products = await Products.find(query).populate(['brand', 'category']).sort({ createdAt: -1 })
@@ -87,7 +92,7 @@ const loadProducts = async (req, res) => {
         console.log('======================================');
         console.log('failed to load products', error);
         console.log('======================================');
-        res.status(500).redirect('/admin/page404')
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 }
 
@@ -98,23 +103,22 @@ const addProduct = async (req, res) => {
         const existProduct = await Products.findOne({ productName: data.productName }).populate(['category', 'brand']);
 
         if (existProduct) {
-            return res.status(401).json({ success: false, message: 'Product already exists with this name!' });
+            return handleStatus(res, 401, 'Product already exists wth this name!');
         }
 
         const errors = validateProductForm(data);
         if (errors) {
-            return res.status(400).json({ success: false, message: errors });
+            return handleStatus(res, 402, 'Validation error!', { errors });
         }
 
         const productImages = req.files ? req.files.map(file => file.path) : [];
         if (productImages.length === 0) {
-            return res.status(400).json({ success: false, message: 'There is no images added!!!' });
+            return handleStatus(res, 402, 'There is no images added!!')
         }
 
         if (productImages.length < 3) {
-            return res.status(401).json({ success: false, message: 'At least three images needed!!!' })
+            return handleStatus(res, 401, 'Atlease 3 images are required!!')
         }
-        console.log('image : ', productImages)
 
         const regularPrice = parseFloat(data.regularPrice)
         const gst = (regularPrice * 18) / 118
@@ -153,24 +157,17 @@ const addProduct = async (req, res) => {
 
         await newProduct.save();
 
-        return res.status(200).json({
-            success: true,
-            message: 'Product added successfully',
+        return handleStatus(res, 200, 'Product added successfully', {
             redirectUrl: '/admin/products'
         });
     } catch (error) {
         console.error('Product adding error: ', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Something went wrong while adding product: ' + error.message
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
 const editProduct = async (req, res) => {
     try {
-        console.log('req.body:', req.body);
-        console.log('req.files:', req.files);
         const data = req.body;
         const productId = data.id;
         const page = data.currentPages;
@@ -181,22 +178,22 @@ const editProduct = async (req, res) => {
         const isDeleted = product.isDeleted
 
         if (isBlocked || isDeleted) {
-            return res.status(401).json({ success: false, message: `This product is ${isBlocked ? 'Blocked' : 'Deleted'}` })
+            return handleStatus(res, 401, `This product is ${isBlocked ? 'Blocked' : 'Deleted'}!!`);
         }
 
         const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } }).populate('category').populate('brand');
         if (existProduct) {
-            return res.status(401).json({ success: false, message: 'Product already exists with this name!' });
+            return handleStatus(res, 401, 'Product already exista with this name!!');
         }
 
         const errors = validateProductForm(data);
         if (errors) {
-            return res.status(400).json({ success: false, message: errors });
+            return handleStatus(res, 402, 'Validation Error!!', { errors });
         }
 
         const currentProduct = await Products.findById(productId);
         if (!currentProduct) {
-            return res.status(404).json({ success: false, message: 'Product not found!' });
+            return handleStatus(res, 402, 'Product not found!!');
         }
 
         let finalImages = [];
@@ -214,10 +211,7 @@ const editProduct = async (req, res) => {
         finalImages = [...new Set(finalImages.filter(img => img && img !== 'null'))];
 
         if (finalImages.length < 3) {
-            return res.status(400).json({
-                success: false,
-                message: 'At least 3 images are required!'
-            });
+            return handleStatus(res, 401, 'Atlease 3 images are required!!');
         }
 
         if (finalImages.length > 4) {
@@ -258,7 +252,7 @@ const editProduct = async (req, res) => {
         const updatedProduct = await Products.findByIdAndUpdate(productId, updateData, { new: true });
 
         if (!updatedProduct) {
-            return res.status(404).json({ success: false, message: 'Product not found!' });
+            return handleStatus(res, 402, 'Product not found')
         }
 
         const products = await Products.find();
@@ -272,33 +266,25 @@ const editProduct = async (req, res) => {
             }
         });
 
-        return res.status(200).json({
-            success: true,
-            message: 'Product updated successfully',
+        return handleStatus(res, 200, 'Product updated successfully', {
             redirectUrl: `/admin/products?page=${page}`
         });
+
     } catch (error) {
         console.error('Product editing error: ', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Something went wrong while editing product: ' + error.message
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
 const deleteProduct = async (req, res) => {
     try {
-
-        console.log('req.body:', req.body);
-        console.log('req.files:', req.files);
-
         const productId = req.body.productId
 
         const product = await Products.findById(productId)
         const isBlocked = product.isBlocked
         const isDeleted = product.isDeleted
         if (isBlocked || isDeleted) {
-            return res.status(401).json({ success: false, message: `This product already ${isBlocked ? 'Blocked' : 'Deleted'}` })
+            return handleStatus(res, 401, `This product already ${isBlocked ? 'Blocked' : 'Deleted'}`);
         }
 
         const deletedProduct = await Products.findByIdAndUpdate(
@@ -308,18 +294,15 @@ const deleteProduct = async (req, res) => {
         )
 
         if (!deletedProduct) {
-            return res.status(401).json({ success: false, message: 'Failed to delete product!!' })
+            return handleStatus(res, 500, 'Failed to remove product!!', { redirectUrl: '/admin/page404' });
         }
 
-        return res.status(200).json({ success: true, message: 'Product deleted successfully' })
+        return handleStatus(res, 200, 'Product removed successfully');
 
     } catch (error) {
 
         console.error('Product editing error: ', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Something went wrong while editing product: ' + error.message
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 }
 

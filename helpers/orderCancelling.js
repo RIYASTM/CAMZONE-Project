@@ -1,6 +1,6 @@
 
 
-function cancelItem(items , reason){
+function cancelItem(items, reason) {
     let refundAmount = 0
     let refundReason = 'Refund for Cancelled Item(s)'
 
@@ -19,7 +19,7 @@ function cancelItem(items , reason){
 
 }
 
-function orderCancel(order , reason){
+function orderCancel(order, reason) {
 
     let refundAmount = 0
     let refundReason = `Refund for Cancelled Order - ${order.orderId}`
@@ -28,8 +28,8 @@ function orderCancel(order , reason){
     order.reason = reason
     order.orderedItems.forEach(item => {
         item.itemStatus = 'Cancelled',
-        item.reason = reason,
-        refundAmount += item.productPrice * item.quantity
+            item.reason = reason,
+            refundAmount += item.productPrice * item.quantity
     });
 
     return {

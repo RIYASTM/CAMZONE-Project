@@ -1,11 +1,11 @@
 const { options } = require("sanitize-html");
 const Order = require("../../model/orderModel");
-const Product = require('../../model/productModel')
+const Products = require('../../model/productModel')
 const Coupon = require('../../model/couponModel')
 
-const { returnItem, orderReturn } = require('../../helpers/orderReturn')
-const { addToWallet } = require('../../helpers/wallet')
-
+const { returnItem, orderReturn } = require('../../helpers/orderReturn');
+const { addToWallet } = require('../../helpers/wallet');
+const { handleStatus } = require('../../helpers/status');
 
 
 const loadOrders = async (req, res) => {
@@ -52,7 +52,19 @@ const loadOrders = async (req, res) => {
                 sortOption = { createdOn: -1 };
         }
 
-        const products = await Product.find()
+        const products = await Products.find()
+
+        await Order.updateMany(
+            { expiresAt: { $lt: new Date() } },
+            {
+                $set: {
+                    status: 'Cancelled',
+                    reason: 'Order Expired',
+                    'orderedItems.$[].itemStatus': 'Cancelled',
+                    'orderedItems.$[].reason': 'Order Expired'
+                }
+            }
+        );
 
         const orders = await Order.find(query)
             .populate('orderedItems.product')
@@ -61,25 +73,13 @@ const loadOrders = async (req, res) => {
             .skip(skip)
             .limit(limit)
 
-        await Order.updateMany(
-            { expiresAt: { $lt: new Date() } },
-            {
-                $set: {
-                    status: 'Cancelled',
-                    reason: 'Order Expired',
-                    'orderedItems.$[].status': 'Cancelled',
-                    'orderedItems.$[].reason': 'Order Expired'
-                }
-            }
-        );
 
         const totalOrders = await Order.countDocuments(query)
 
         const totalPages = Math.ceil(totalOrders / limit)
 
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            return res.json({
-                success: true,
+            return handleStatus(res, 200, null, {
                 orders,
                 currentPages: parseInt(page),
                 totalPages,
@@ -105,22 +105,54 @@ const loadOrders = async (req, res) => {
         console.log('======================================');
         console.log('failed to load orders', error);
         console.log('======================================');
-        res.status(500).send("Server Error")
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
 
 const updateStatus = async (req, res) => {
     try {
         const { orderId, status } = req.body;
 
+        if (!orderId || !status) {
+            return handleStatus(res, 400, 'Missing orderId or status');
+        }
+
         const order = await Order.findOne({ orderId });
 
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found' });
+            return handleStatus(res, 404, 'Order not found!!');
         }
 
         if (['Cancelled', 'Returned'].includes(order.status)) {
-            return res.status(401).json({ success: false, message: `This order is already ${order.status}` })
+            return handleStatus(res, 409, `This order already ${order.status}`);
+        }
+
+        if (status === 'Cancelled') {
+            await Order.updateOne(
+                { orderId },
+                {
+                    $set: {
+                        status: 'Cancelled',
+                        reason: 'Order cancelled by System.',
+                        'orderedItems.$[].itemStatus': 'Cancelled',
+                        'orderedItems.$[].reason': 'Order cancelled by System.',
+                    },
+                }
+            );
+
+            await Promise.all(
+                order.orderedItems.map(async (item) => {
+                    const product = await Products.findById(item.product);
+                    if (product) {
+                        product.quantity += item.quantity;
+                        await product.save();
+                    } else {
+                        console.warn(`Product not found for item ${item.product}`);
+                    }
+                })
+            );
+
+            return handleStatus(res, 200, 'Order cancelled successfully.');
         }
 
         order.status = status;
@@ -131,15 +163,19 @@ const updateStatus = async (req, res) => {
             }
         });
 
+        if (order.status === 'Delivered') {
+            order.deliveredDate = new Date();
+        }
+
         await order.save();
 
-        return res.status(200).json({ success: true, message: 'Status updated successfully' });
-
+        return handleStatus(res, 200, 'Status updated successfully!!');
     } catch (error) {
         console.error('Update status error:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error' });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
+
 
 const currentOrder = async (req, res) => {
     try {
@@ -149,16 +185,18 @@ const currentOrder = async (req, res) => {
         const order = await Order.findById(orderId).populate('orderedItems.product')
 
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order Not found...' })
+            return handleStatus(res, 404, 'Order not found!!');
         }
 
-        return res.status(200).json({ success: true, message: 'Order found...', order })
+        return handleStatus(res, 200, 'Order found..', {
+            order
+        })
 
     } catch (error) {
         console.log('Some thing went wrong : ', error)
-        return res.status(500).json({ success: false, message: 'Server error' });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
 
 const returnOrder = async (req, res) => {
     try {
@@ -167,11 +205,11 @@ const returnOrder = async (req, res) => {
         const order = await Order.findById(orderId);
 
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found...' });
+            return handleStatus(res, 404, 'Order not found!!');
         }
 
         if (order.status === 'Returned') {
-            return res.status(401).json({ success: false, message: 'This order already returned...' })
+            return handleStatus(res, 401, 'This order already Returned!!')
         }
 
         const productIds = Array.isArray(productId) ? productId.map(id => id.toString()) : [productId.toString()];
@@ -184,7 +222,7 @@ const returnOrder = async (req, res) => {
         const alreadyReturned = returnItems.some(item => item.itemStatus === 'Returned')
 
         if (alreadyReturned) {
-            return res.status(401).json({ success: false, message: 'This items is already returned...' })
+            return handleStatus(res, 401, 'This items already returned!!')
         }
 
         const isFullReturn = products.length === productIds.length &&
@@ -207,7 +245,7 @@ const returnOrder = async (req, res) => {
                 }
             }));
 
-            await Product.bulkWrite(bulkOps);
+            await Products.bulkWrite(bulkOps);
 
 
             let finalPrice = order.finalAmount - refundAmount
@@ -238,7 +276,7 @@ const returnOrder = async (req, res) => {
                     ? 'Order returned successfully.'
                     : 'Selected items returned successfully.';
 
-            return res.status(200).json({ success: true, message });
+            return handleStatus(res, 200, message)
 
         } else {
 
@@ -271,15 +309,15 @@ const returnOrder = async (req, res) => {
                     update: { $inc: { quantity: item.quantity } }
                 }
             }));
-            await Product.bulkWrite(bulkOps);
+            await Products.bulkWrite(bulkOps);
 
+            return handleStatus(res, 200, 'Order updated with return status.');
 
-            return res.status(200).json({ success: true, message: 'Order updated with return status.' });
         }
 
     } catch (error) {
         console.log('Error in returnRequest:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error' });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 

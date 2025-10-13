@@ -2,13 +2,15 @@ const User = require('../../model/userModel')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 
+const { handleStatus } = require('../../helpers/status')
+
 const loadpage404 = async (req, res) => {
     try {
         return res.render('page404')
     } catch (error) {
-        res.status(500).send("server error")
+        return handleStatus(res, 500)
     }
-}
+};
 
 const loadSignin = async (req, res) => {
     try {
@@ -22,9 +24,9 @@ const loadSignin = async (req, res) => {
         console.log('======================================');
         console.log('failed to load signin', error);
         console.log('======================================');
-        res.status(500).send("Server Error")
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
 
 const signin = async (req, res) => {
     try {
@@ -34,29 +36,27 @@ const signin = async (req, res) => {
         const admin = await User.findOne({ email, isAdmin: true });
 
         if (!admin) {
-            return res.status(401).json({ success: false, message: 'Admin not found' });
+            return handleStatus(res, 401, 'Admin not found')
         }
 
         const passwordMatch = await bcrypt.compare(password, admin.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ success: false, message: 'Incorrect password' });
+            return handleStatus(res, 401, 'Password didn`t match')
         }
 
         req.session.admin = true
         req.session.adminId = admin._id;
 
-        return res.status(200).json({ success: true, message: 'Signed in Successfully', redirectUrl: '/admin/dashboard' })
+        return handleStatus(res, 200, 'Signed in Successfully', { redirectUrl: '/admin/dashboard' })
 
     } catch (error) {
-
         console.log('===========================================')
         console.log('failed to load the page', error)
         console.log('===========================================')
-        res.status(500).json({ success: false, message: 'An error occurred while signin for admin ' })
-
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
 
 const logout = async (req, res) => {
     try {
@@ -65,17 +65,17 @@ const logout = async (req, res) => {
             if (err) {
                 return res.redirect('/admin/dashboard')
             }
-            res.clearCookie('connect.sid');
+            res.clearCookie('admin.sid');
             res.redirect('/admin/');
         })
 
     } catch (error) {
+        console.log('===================================');
         console.log("Failed to logout", error)
         console.log('===================================');
-        res.status(500).redirect('/page404')
-        console.log('===================================');
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
-}
+};
 
 
 module.exports = {

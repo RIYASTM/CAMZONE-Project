@@ -89,17 +89,17 @@
                             <% } %>
                         </div>
                         <div class="item-details">
-                            <h3 class="item-name"><%= item.product.productName %></h3>
+                            <h3 class="item-name"><%= item.product.productName %></h3> 
                             <div class="item-specs">
                                 <span class="quantity">Quantity: <%= item.quantity %></span>
                                 <span class="unit-price">Unit Price: ₹<%= item.productPrice.toFixed(2) %></span>
-                                <%if(item.itemStatus === 'Cancelled' || item.itemStatus === 'Returned' || item.itemStatus === 'Return Request') { %>
-                                  <span class="item-status"><%= item.itemStatus === 'Cancelled' ? 'Cancelled' : item.itemStatus === 'Returned' ? 'Returned' : 'Return Request' %></span>
+                                <%if(['Cancelled', 'Returned', 'Return Request'].includes(item.itemStatus)) { %>  `
+                                  <span class="item-status"><%= item.itemStatus %></span>
                                 <% }%>
                             </div>
                         </div>
                         <div class="item-total">
-                            <span class="total-price"><%= item.itemStatus !== 'Cancelled' ? '₹' + item.price.toFixed(2) : '' %></span>
+                            <span class="total-price">₹ <%= item.price.toFixed(2) %></span>
                         </div>
                         <% } else { %>
                         <div class="item-details">
@@ -112,55 +112,59 @@
             </div>
 
             <!-- Order Summary -->
-            <div class="order-summary">
-                <h2>Order Summary</h2>
-                <div class="summary-table">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>Subtotal</td>
-                                <td>₹<%= (order.totalPrice + (order.offerDiscount || 0)).toFixed(2) %></td>
-                            </tr>
-                            <tr>
-                              <td>Offer Discount</td>
-                              <td class="discount">-₹<%= (order.discount || 0).toFixed(2) %></td>
-                            </tr>
-                            <tr>
-                              <td>Shipping</td>
-                              <td><%= !order.shipping || order.shipping === 0 ? 'Free' : '₹' + order.shipping.toFixed(2) %></td>
-                            </tr>
-                            <tr>
-                              <td>GST (18%)</td>
-                              <td>₹<%= (order.GST || 0).toFixed(2) %></td>
-                            </tr>
-                            <tr class="total-row">
-                              <td><strong>Total Amount</strong></td>
-                              <td><strong>₹<%= order.finalAmount.toFixed(2) %></strong></td>
-                            </tr>
-                            <tr>
-                              <td>Paid By</td>
-                              <td><%= order.paymentMethod %></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Delivery Address -->
-            <div class="delivery-address">
+            <div class="order-details" style="display: flex; justify-content: space-between;">
+              
+              <!-- Delivery Address -->
+              <div class="delivery-address">
                 <h2>Delivery Address</h2>
                 <div class="address-card">
-                    <div class="customer-info">
+                  <div class="customer-info">
                     <h3><%= order.address.name || 'N/A' %></h3>
                     <p class="phone"><%= order.address.phone || '' %></p>
-                    </div>
-                    <div class="address-details">
+                  </div>
+                  <div class="address-details">
                     <p><%= order.address.streetAddress || '' %></p>
                     <p><%= order.address.city || '' %>, <%= order.address.state || '' %></p>
                     <p><%= order.address.district || '' %> - <%= order.address.pincode || '' %></p>
-                    </div>
+                  </div>
                 </div>
-            </div>
+
+              </div>
+              <div class="order-summary">
+                  <h2>Order Summary</h2>
+                  <div class="summary-table">
+                      <table>
+                          <tbody>
+                              <tr>
+                                  <td>Subtotal</td>
+                                  <td>₹<%= (order.totalPrice + (order.offerDiscount || 0)).toFixed(2) %></td>
+                              </tr>
+                              <tr>
+                                <td>Shipping</td>
+                                <td><%= !order.shipping || order.shipping === 0 ? 'Free' : '₹' + order.shipping.toFixed(2) %></td>
+                              </tr>
+                              <tr>
+                                <td>GST (18%)</td>
+                                <td>₹<%= (order.GST || 0).toFixed(2) %></td>
+                              </tr>
+                              <tr>
+                                <td>Offer Discount</td>
+                                <td class="discount">-₹<%= (order.discount || 0).toFixed(2) %></td>
+                              </tr>
+                              <tr class="total-row">
+                                <td><strong>Total Amount</strong></td>
+                                <td><strong>₹ <%= finalAmount.toFixed(2) %></strong></td>
+                              </tr>
+                              <tr>
+                                <td>Paid By</td>
+                                <td><%= order.paymentMethod %></td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+
+             </div>
             <p class="warning-message">Return is accepted till over 7 days from Delevered</p>
 
             <!-- Action Buttons -->

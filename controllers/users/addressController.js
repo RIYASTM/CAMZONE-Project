@@ -3,6 +3,7 @@ const Address = require('../../model/addressModel');
 const Cart = require('../../model/cartModel')
 
 const { validateAddress } = require('../../helpers/validations')
+const { handleStatus } = require('../../helpers/status');
 
 const loadAddress = async (req, res) => {
     try {
@@ -17,7 +18,7 @@ const loadAddress = async (req, res) => {
         ])
 
         if (!user) {
-            return res.status(404).render('error', { message: 'User not found.' });
+            return handleStatus(res, 402, 'User not found')
         }
 
         const addresses = addressDoc ? addressDoc.address.filter(addr => !addr.isDeleted) : [];
@@ -31,7 +32,7 @@ const loadAddress = async (req, res) => {
         });
     } catch (error) {
         console.error('Failed to load the Address Page:', error);
-        return res.status(500).render('error', { message: 'Failed to load address page.' });
+        return handleStatus(res, 500)
     }
 };
 
@@ -42,14 +43,14 @@ const addAddress = async (req, res) => {
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
+            return handleStatus(res, 404, 'User not found!');
         }
 
         const data = req.body;
 
         let errors = validateAddress(data)
         if (errors) {
-            return res.status(400).json({ success: false, message: 'Validation error', errors });
+            return handleStatus(res, 401, 'Validation Error!', { errors })
         }
 
         const newAddress = {
@@ -72,10 +73,7 @@ const addAddress = async (req, res) => {
         });
 
         if (existAddress) {
-            return res.status(401).json({
-                success: false,
-                message: `${newAddress.addressType} address already exists.`
-            });
+            return handleStatus(res, 409, `${newAddress.addressType} address already exists!`);
         }
 
         let addressDoc = await Address.findOne({ userId });
@@ -90,28 +88,21 @@ const addAddress = async (req, res) => {
                 addr.pincode === newAddress.pincode
             );
             if (exists) {
-                return res.status(409).json({ success: false, message: 'Duplicate address found.' });
+                return handleStatus(res, 409, 'Duplicate address found!!');
             }
             addressDoc.address.push(newAddress);
         }
 
         const savedAddress = await addressDoc.save();
         if (!savedAddress) {
-            return res.status(400).json({ success: false, message: 'Failed to save address.' });
+            return handleStatus(res, 500, 'Failed to save address!!');
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'Address saved successfully',
-            address: newAddress
-        });
+        return handleStatus(res, 200, 'Addresss added successfully!', { address: newAddress });
 
     } catch (error) {
         console.error('Error adding address:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Something went wrong while adding address: ' + error.message
-        });
+        return handleStatus(res, 500)
     }
 };
 
@@ -123,22 +114,22 @@ const editAddress = async (req, res) => {
         const userId = req.session.user
         const user = await User.findById(userId)
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found!' })
+            return handleStatus(res, 402, 'User not found!!')
         }
 
         let errors = validateAddress(data)
         if (errors) {
-            return res.status(401).json({ success: false, message: 'Validation error', errors })
+            return handleStatus(res, 401, 'Validation Error!!', { errors });
         }
 
         const addressDoc = await Address.findOne({ userId });
         if (!addressDoc) {
-            return res.status(401).json({ success: false, message: 'Address not found!!' });
+            return handleStatus(res, 401, 'Address not found!!');
         }
 
         const existAddress = addressDoc.address.findIndex(add => !add.isDeleted && add._id.toString() === data.addressId)
         if (existAddress === -1) {
-            return res.status(401).json({ success: false, message: 'Address id not found!!' });
+            return handleStatus(res, 401, 'Address id not found!!');
         }
 
         const existFields = addressDoc.address.some((add, index) => {
@@ -149,7 +140,7 @@ const editAddress = async (req, res) => {
                 add.city === data.city
         })
         if (existFields) {
-            return res.status(400).json({ success: false, message: 'Duplicate fields found' })
+            return handleStatus(res, 400, 'Duplicate fields found!')
         }
 
         const updatingAddress = {
@@ -171,10 +162,7 @@ const editAddress = async (req, res) => {
             'addresses.addressType': updatingAddress.addressType
         });
         if (exist) {
-            return res.status(401).json({
-                success: false,
-                message: `${updatingAddress.addressType} address already exists.`
-            });
+            return handleStatus(res, 402, `${updatingAddress.addressType} address already exists!`)
         }
 
         const addressUpdate = await Address.updateOne(
@@ -186,24 +174,19 @@ const editAddress = async (req, res) => {
             }
         );
 
-        if (result.modifiedCount === 0 || !addressUpdate) {
-            return res.status(400).json({
-                success: false,
-                message: "Failed to update address!",
-            });
+        if (addressUpdate.modifiedCount === 0 || !addressUpdate) {
+            return handleStatus(res, 500, 'Failed to update address!');
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'Address updated successfully!',
+        return handleStatus(res, 200, 'Address updated successfully!', {
             address: updatingAddress
-        })
+        });
 
     } catch (error) {
         console.log('Error occurred while updating address : ', error)
-        return res.status(500).json({ success: false, message: 'Error occurred while updating address', error })
+        return handleStatus(res, 500)
     }
-}
+};
 
 const deleteAddress = async (req, res) => {
     try {
@@ -212,12 +195,12 @@ const deleteAddress = async (req, res) => {
         const userId = req.session.user
         const user = await User.findById(userId)
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found!' })
+            return handleStatus(res, 402, 'User not found!')
         }
 
         const findAddress = await Address.findOne({ userId, 'address._id': addressId })
         if (!findAddress) {
-            return res.status(404).json({ success: false, message: 'Address not found!' })
+            return handleStatus(res, 402, 'Address not found!');
         }
 
         const deleteAddress = await Address.findOneAndUpdate(
@@ -231,28 +214,17 @@ const deleteAddress = async (req, res) => {
         );
 
         if (!deleteAddress) {
-            return res.status(400).json({
-                success: false,
-                message: 'Failed to delete address!',
-                error
-            })
+            return handleStatus(res, 500, 'Failed to delete address!', { error })
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'Address deleted successfully!'
-        })
+        return handleStatus(res, 200, 'Address removed successfully!');
 
     } catch (error) {
 
         console.log('Error occurred while deleting address : ', error)
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to delete address because error occurred!',
-            error
-        })
+        return handleStatus(res, 500);
     }
-}
+};
 
 module.exports = {
     loadAddress,

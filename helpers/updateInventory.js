@@ -1,35 +1,30 @@
 const Cart = require('../model/cartModel');
-const Product = require('../model/productModel');
-const Orders = require('../model/orderModel')
+const Products = require('../model/productModel');
+const Orders = require('../model/orderModel');
 
 async function updateInventory(userId) {
     const cart = await Cart.findOne({ userId });
-
-    if (!cart || !cart.items || !cart.items.length) {
-        console.warn(`No cart or items found for user: ${userId}`);
-        return;
-    }
+    if (!cart?.items?.length) return;
 
     await Cart.findOneAndUpdate(
         { userId },
         { $set: { items: [], discount: 0, totalAmount: 0, GST: 0 } }
     );
 
-    for (let item of cart.items) {
-        const productId = item.productId._id || item.productId;
-        const product = await Product.findById(productId);
-        if (product) {
-            product.quantity -= item.quantity;
-            if (product.quantity < 0) product.quantity = 0;
-            await product.save();
+    const bulkOps = cart.items.map(item => ({
+        updateOne: {
+            filter: { _id: item.productId },
+            update: { $inc: { quantity: -item.quantity } }
         }
+    }));
+
+    if (bulkOps.length > 0) {
+        await Products.bulkWrite(bulkOps);
     }
 }
 
 async function updateInventoryOrder(userId, orderId) {
-
-    const cart = await Cart.findOne({ userId }) || []
-
+    const cart = await Cart.findOne({ userId });
     if (cart) {
         await Cart.findOneAndUpdate(
             { userId },
@@ -37,25 +32,22 @@ async function updateInventoryOrder(userId, orderId) {
         );
     }
 
-    const order = await Orders.findOne({ orderId, userId }).populate('orderedItems.product')
-    if (!order) {
-        return;
-    }
+    const order = await Orders.findOne({ orderId, userId }).populate('orderedItems.product');
+    if (!order?.orderedItems?.length) return;
 
-    const orderedItems = order.orderedItems
-
-    for (let item of orderedItems) {
-        const productId = item.product._id || item.product;
-        const product = await Product.findById(productId);
-        if (product) {
-            product.quantity -= item.quantity;
-            if (product.quantity < 0) product.quantity = 0;
-            await product.save()
+    const bulkOps = order.orderedItems.map(item => ({
+        updateOne: {
+            filter: { _id: item.product._id },
+            update: { $inc: { quantity: -item.quantity } }
         }
+    }));
+
+    if (bulkOps.length > 0) {
+        await Products.bulkWrite(bulkOps);
     }
 }
 
 module.exports = {
     updateInventory,
     updateInventoryOrder
-}
+};

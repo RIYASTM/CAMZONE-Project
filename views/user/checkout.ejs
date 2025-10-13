@@ -307,9 +307,9 @@
         <section class="order-summary" aria-labelledby="order-summary-heading">
             <h3 id="order-summary-heading">Order Summary</h3>
             <div class="summary-details"> 
-                <p>Subtotal: <span id="subtotal">₹<%= cart.totalAmount.toLocaleString('en-IN') %></span></p> 
+                <p>Subtotal: <span id="subtotal">₹<%= withoutGst.toLocaleString('en-IN') %></span></p> 
                 <p>Shipping: <span id="shipping">₹<%= (cart.shippingCost || 0).toLocaleString('en-IN') %></span></p>
-                <p>Saved: <span id="saved">-₹<%= totalOfferedPrice.toLocaleString('en-IN') %></span></p>
+                <p>Saved: <span id="saved">-₹<%= totalOffer.toLocaleString('en-IN') %></span></p>
                 
                 <!-- Enhanced Coupon Section -->
                 <div class="coupon-section">
@@ -337,8 +337,8 @@
                 </div>
                 
                 <p>Coupon Discount: <span id="couponDiscount">-₹ <%= (cart.couponDiscount || 0).toLocaleString('en-IN') %></span></p>
-                <p>GST (18%): <span id="gst">₹ <%= Number(Math.floor(cart.GST.toFixed(2))).toLocaleString('en-IN') %></span></p>
-                <h4>Total: <span id="totalAmount">₹ <%= Math.floor(cart.totalAmount).toLocaleString('en-IN') %></span></h4>
+                <p>GST (18%): <span id="gst">₹ <%= gst.toLocaleString('en-IN') %></span></p>
+                <h4>Total: <span id="totalAmount">₹ <%= finalTotal.toLocaleString('en-IN') %></span></h4>
             </div>
 
             <!-- Divider -->

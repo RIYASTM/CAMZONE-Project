@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.product-card').forEach(btn => {
         const productId = btn.dataset.id
-        btn.addEventListener('click', ()=> {
+        btn.addEventListener('click', () => {
             window.location.href = `/product?id=${productId}`
         })
-    })
+    });
 
     const minusBtn = document.querySelector('.quantity-btn.minus');
     const plusBtn = document.querySelector('.quantity-btn.plus');
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const productId = cartButton.dataset.id;
             addToCart(productId);
         });
-    }
+    };
 
     // Quantity decrease
     if (minusBtn) {
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 quantityInput.value = quantity - 1;
             }
         });
-    }
+    };
 
     // Quantity increase
     if (plusBtn) {
@@ -36,16 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
             let quantity = parseInt(quantityInput.value);
             quantityInput.value = quantity + 1;
         });
-    }
+    };
 
     async function addToCart(productId) {
         const quantity = document.querySelector('#quantity-input').value;
+        if (quantity > 15) {
+            return showNotification('Max 15 count is allowed at an order!!')
+        }
 
         if (quantity > 0) {
             const response = await fetch('/addtocart', {
                 method: "POST",
                 body: JSON.stringify({ productId, quantity }),
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -54,16 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json()
 
-            if(data.success){
+            if (data.success) {
                 showNotification(data.message || 'Prduct added to  cart successfully', 'success')
                 window.location.replace(data.redirectUrl);
                 const icon = document.querySelector(`.wishlist-btn`);
                 if (icon) icon.classList.remove('active');
-            }else{
+            } else {
                 showNotification(data.message || 'Product adding to cart failed!!', 'error')
             }
         }
-    }
+    };
 
     // Thumbnail Carousel Logic
     const thumbnailWrapper = document.getElementById('thumbnailWrapper');
@@ -71,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const mainImage = document.getElementById('mainImage');
-    
+
     let currentOffset = 0;
     let activeIndex = 0;
     const visibleThumbnails = 3;
@@ -80,12 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize carousel
     if (thumbnails.length > 0) {
         initializeThumbnailCarousel();
-    }
+    };
 
     function initializeThumbnailCarousel() {
         // Show only 3 thumbnails initially
         updateCarouselPosition();
-        
+
         // Add event listeners to thumbnails
         thumbnails.forEach((thumbnail, index) => {
             thumbnail.addEventListener('click', () => {
@@ -100,49 +103,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     navigateCarousel(-1);
                 });
             }
-            
+
             if (nextBtn) {
                 nextBtn.addEventListener('click', () => {
                     navigateCarousel(1);
                 });
             }
         }
-    }
+    };
 
     function selectThumbnail(index) {
-        // Remove active class from all thumbnails
         thumbnails.forEach(t => t.classList.remove('active'));
-        
-        // Add active class to selected thumbnail
+
         thumbnails[index].classList.add('active');
-        
-        // Update main image
+
         const newSrc = thumbnails[index].getAttribute('data-src');
         mainImage.src = newSrc;
-        
-        // Update active index
+
         activeIndex = index;
-        
-        // Adjust carousel position to keep selected image centered
+
         adjustCarouselForActiveImage();
-    }
+    };
 
     function adjustCarouselForActiveImage() {
         if (thumbnails.length <= visibleThumbnails) {
-            return; // No need to adjust if all images are visible
+            return;
         }
 
         let newOffset = currentOffset;
 
-        // If active image is the first one, show from beginning
         if (activeIndex === 0) {
             newOffset = 0;
         }
-        // If active image is the last one, show last 3 images
         else if (activeIndex === thumbnails.length - 1) {
             newOffset = thumbnails.length - visibleThumbnails;
         }
-        // Otherwise, try to center the active image
         else {
             newOffset = Math.max(0, Math.min(activeIndex - 1, thumbnails.length - visibleThumbnails));
         }
@@ -150,24 +145,24 @@ document.addEventListener('DOMContentLoaded', () => {
         currentOffset = newOffset;
         updateCarouselPosition();
         updateNavigationButtons();
-    }
+    };
 
     function navigateCarousel(direction) {
         const maxOffset = Math.max(0, thumbnails.length - visibleThumbnails);
-        
+
         currentOffset += direction;
         currentOffset = Math.max(0, Math.min(currentOffset, maxOffset));
-        
+
         updateCarouselPosition();
         updateNavigationButtons();
-    }
+    };
 
     function updateCarouselPosition() {
         if (thumbnailWrapper) {
             const translateX = -currentOffset * thumbnailWidth;
             thumbnailWrapper.style.transform = `translateX(${translateX}px)`;
         }
-    }
+    };
 
     function updateNavigationButtons() {
         if (!prevBtn || !nextBtn || thumbnails.length <= visibleThumbnails) {
@@ -175,21 +170,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const maxOffset = thumbnails.length - visibleThumbnails;
-        
+
         prevBtn.disabled = currentOffset === 0;
         nextBtn.disabled = currentOffset >= maxOffset;
-        
+
         prevBtn.style.opacity = currentOffset === 0 ? '0.3' : '0.8';
         nextBtn.style.opacity = currentOffset >= maxOffset ? '0.3' : '0.8';
-    }
+    };
 
-    // Zoom functionality
     const mainImageContainer = document.querySelector('.main-image-container');
     const zoomLens = document.getElementById('zoomLens');
 
-    // Zoom Lens (magnifier following cursor)
     if (mainImage && zoomLens) {
-        const zoomRatio = 2; // zoom level
+        const zoomRatio = 2;
 
         mainImageContainer.addEventListener('mousemove', (e) => {
             const rect = mainImage.getBoundingClientRect();
@@ -199,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let lensX = x - zoomLens.offsetWidth / 2;
             let lensY = y - zoomLens.offsetHeight / 2;
 
-            // Keep lens inside the image
             const maxX = rect.width - zoomLens.offsetWidth;
             const maxY = rect.height - zoomLens.offsetHeight;
             lensX = Math.max(0, Math.min(lensX, maxX));
@@ -208,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
             zoomLens.style.left = `${lensX}px`;
             zoomLens.style.top = `${lensY}px`;
 
-            // Apply zoom effect inside lens
             zoomLens.style.backgroundColor = `#fff`
             zoomLens.style.backgroundImage = `url(${mainImage.src})`;
             zoomLens.style.backgroundSize = `${rect.width * zoomRatio}px ${rect.height * zoomRatio}px`;
@@ -226,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainImageContainer.addEventListener('mouseleave', () => {
             zoomLens.style.opacity = '0';
         });
-    }
+    };
 
     // Tab functionality
     document.querySelectorAll('.tab').forEach(tab => {
@@ -242,28 +233,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Search functionality
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
+
     if (search) {
-        search.addEventListener('keypress', async (e)=> {
+        search.addEventListener('keypress', async (e) => {
             const searchValue = search.value.trim()
 
-            if( searchValue && e.key === 'Enter' ){
-                console.log('search : ',searchValue)
+            if (searchValue && e.key === 'Enter') {
+                console.log('search : ', searchValue)
                 window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
             }
         })
-    }
+    };
 
-}); // DOMContentLoaded Ends
+});
 
 function addtoWishlist(productId) {
     fetch('/addtowishlist', {
         method: 'POST',
         body: JSON.stringify({ productId }),
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
@@ -278,16 +268,14 @@ function addtoWishlist(productId) {
                     else if (data.done === 'Removed') icon.classList.remove('active');
                 }
             } else {
-                // Swal.fire('Oops', data.message || 'Something went wrong', 'error');
                 showNotification(data.message || 'Failed to add to wish list', 'error')
             }
         })
-        .catch(() => {
-            Swal.fire('Oops', 'Request failed', 'error');
-            console.error ('Request failed :  ', error)
+        .catch((error) => {
+            console.error('Request failed :  ', error);
+            return showNotification('Something went wrong. Try again later', 'error');
         });
-}
-
+};
 
 function showNotification(message, type) {
     // Create notification element
@@ -351,4 +339,4 @@ function showNotification(message, type) {
             }
         }, 300);
     }, 3000);
-}
+};

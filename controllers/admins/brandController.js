@@ -3,6 +3,8 @@ const Brand = require('../../model/brandModel')
 const Product = require('../../model/productModel')
 
 const { ValidateBrand } = require('../../helpers/validations')
+const { handleMulterError } = require('../../helpers/multer')
+const { handleStatus } = require('../../helpers/status')
 
 
 const loadBrands = async (req, res) => {
@@ -42,8 +44,7 @@ const loadBrands = async (req, res) => {
         console.log('======================================');
         console.log('Failed to load brands', error);
         console.log('======================================');
-        return res.status(500).redirect('/page404');
-
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 }
 
@@ -54,35 +55,31 @@ const addBrand = async (req, res) => {
 
         const existBrand = await Brand.findOne({ brandName: { $regex: new RegExp(`^${brandName}$`, 'i') } })
         if (existBrand) {
-            return res.status(500).json({ success: false, message: 'Brand is already exist with this name!!' })
+            return handleStatus(res, 402, 'Brand is exist with this name!!')
         }
 
         const brandData = { brandName, description, brandOffer }
         const errors = ValidateBrand(brandData)
 
         if (errors) {
-            return res.status(400).json({ success: false, errors })
+            return handleStatus(res, 401, 'Validation error!!', { errors });
         }
 
         const newBrand = new Brand({
             brandName: brandName,
             description: description,
             brandImage: req.file?.path
-
         })
 
         await newBrand.save()
 
-        return res.status(200).json({ success: true, message: 'Brand added successfully', redirectUrl: '/admin/brands' })
+        return handleStatus(res, 200, 'Brand addedd successfully', { redirectUrl: '/admin/brands' })
 
     } catch (error) {
         console.log('=================================')
         console.error("Brand adding error : ", error);
         console.log('=================================')
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong while adding brand: " + error.message
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 }
 
@@ -95,26 +92,19 @@ const editBrand = async (req, res) => {
         const errors = ValidateBrand(brandData)
 
         if (errors) {
-            console.log('err : ', errors)
-            return res.status(400).json({ success: false, message: errors })
+            return handleStatus(res, 401, 'Validation error!!', { errors });
         }
 
         const brand = await Brand.findById(id)
 
         if (!brand) {
-            return res.status(401).json({
-                success: false,
-                message: 'Brand not found!!'
-            })
+            return handleStatus(res, 401, 'Brand Not found!!')
         }
 
         const existBrand = await Brand.findOne({ brandName: brandName })
 
         if (existBrand && existBrand._id.toString() !== id) {
-            return res.status(401).json({
-                success: false,
-                message: 'Brand already exist with this name'
-            })
+            return handleStatus(res, 401, 'Brand already exist with this name!!')
         }
 
         let imageUrl = brand.brandImage;
@@ -125,6 +115,7 @@ const editBrand = async (req, res) => {
                     await cloudinary.uploader.destroy(`Camzone_IMG/brands/${publicId}`);
                 } catch (err) {
                     console.error('Failed to delete old image from Cloudinary:', err);
+                    return handleStatus(res, 404, 'Failed to delete old image from')
                 }
             }
             imageUrl = req.file?.path;
@@ -142,32 +133,21 @@ const editBrand = async (req, res) => {
         const updatedBrand = await Brand.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
 
         if (!updatedBrand) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to update brand'
-            });
+            return handleStatus(res, 500, 'Failed to update brand!!', { redirectUrl: '/admin/page404' })
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'Brand updated successfully',
-            redirectUrl: '/admin/brands'
-        })
+        return handleStatus(res, 200, 'Brand updated successfully', { redirectUrl: '/admin/brands' })
 
     } catch (error) {
         console.log('=================================')
         console.error("Brand updating error : ", error);
         console.log('=================================')
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong while updating brand: " + error.message
-        });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 }
 
 const deleteBrand = async (req, res) => {
     try {
-
         const id = req.body.brandId
         const deleteBrand = await Brand.findByIdAndUpdate(
             id,
@@ -176,15 +156,14 @@ const deleteBrand = async (req, res) => {
         );
 
         if (!deleteBrand) {
-            return res.status(400).json({ success: false, message: 'Brand not found' })
+            return handleStatus(res, 400, 'Brand not found!!')
         }
-
-        await Brand.findByIdAndDelete(id)
-        return res.status(200).json({ success: true, message: "Category offer removed" })
+        return handleStatus(res, 200, 'Brand removed successfully!!')
 
     } catch (error) {
 
         console.log('Failed to delete : ', error)
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
 
     }
 }

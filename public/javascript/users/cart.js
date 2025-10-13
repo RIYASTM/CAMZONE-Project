@@ -68,10 +68,10 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const response = await fetch('/updateCart', {
                 method: 'PATCH',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
-                 },
+                },
                 body: JSON.stringify({ productId, quantity })
             });
             const data = await response.json();
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             input.value = originalQuantity;
             console.error('Error updating cart:', error);
-            showNotification(data.message || 'Something went wrong while updating the cart!', 'error');
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     }
 
@@ -119,12 +119,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const response = await fetch('/cartTowishlist', {
                     method: 'PATCH',
                     body: JSON.stringify({ productId }),
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     }
                 });
-                const data = await response.json(); 
+                const data = await response.json();
 
                 if (data.success) {
                     showNotification(data.message || 'Successfully moved to wishlist!', 'success');
@@ -140,12 +140,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } catch (error) {
                 console.error(error);
-                showNotification(data.message || 'Something went wrong!', 'error');
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         });
     }
 
-    // Remove cart item
     async function removeCartItem(productId) {
         Swal.fire({
             title: 'Remove item from cart?',
@@ -161,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 const response = await fetch('/cartRemove', {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json','Accept': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({ productId })
                 });
                 const data = await response.json();
@@ -179,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } catch (error) {
                 console.error('Error removing item:', error);
-                showNotification(data.message || 'Something went wrong while removing the item!', 'error');
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         });
     }
@@ -190,13 +189,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
+        if (searchValue && e.key === 'Enter') {
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })
@@ -206,8 +204,8 @@ document.addEventListener('DOMContentLoaded', function () {
 async function toCheckout() {
     try {
         const response = await fetch('/toCheckout', {
-            method : 'POST',
-             headers: {
+            method: 'POST',
+            headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
@@ -215,15 +213,15 @@ async function toCheckout() {
 
         const data = await response.json()
 
-        if(data.success){
+        if (data.success) {
             window.location.href = data.redirectUrl
-        }else{
+        } else {
             showNotification(data.message || 'Failed to proceed', 'error')
-            if(data.productId){
+            if (data.productId) {
                 const itemRow = document.querySelector(`.cart-item [data-id="${data.productId}"]`)?.closest('.cart-item');
-                if(itemRow){
+                if (itemRow) {
                     itemRow.classList.add('error-highlight');
-                    itemRow.scrollIntoView({ behavior : 'smooth', block : "center"})
+                    itemRow.scrollIntoView({ behavior: 'smooth', block: "center" })
 
                     setTimeout(() => itemRow.classList.remove('error-highlight'), 2000);
                 }
@@ -231,7 +229,7 @@ async function toCheckout() {
         }
     } catch (error) {
         console.log("Something went wrong to proceed...", error)
-        showNotification('Something went wrong', 'error')
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
 

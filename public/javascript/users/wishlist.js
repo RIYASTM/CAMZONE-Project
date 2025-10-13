@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         button.addEventListener('click', handleAddToCart);
     });
 
-    function handleAddToCart( event) {
+    function handleAddToCart(event) {
         const button = event.currentTarget;
         const productId = button.dataset.id;
         addToCart(productId, button);
@@ -45,12 +45,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch((error) => {
-                console.error(error);
-                showNotification('Something went wrong', 'error');
+                console.error('Something went wrong : ', error);
+                return showNotification('Something went wrong. Try again later', 'error');
             });
     }
-
-
 
     const wishlistButtons = document.querySelectorAll('.wishlist-btn');
 
@@ -94,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error:', error);
-                showNotification('Something went wrong', 'error');
+                return showNotification('Something went wrong. Try again later', 'error');
             });
     }
 
@@ -216,13 +214,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
+        if (searchValue && e.key === 'Enter') {
+            console.log('search : ', searchValue)
             // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }

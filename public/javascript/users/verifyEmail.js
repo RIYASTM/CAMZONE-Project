@@ -1,59 +1,53 @@
-
-
-// Timer functionality
-
 document.addEventListener('DOMContentLoaded', function () {
     const verifyOtpForm = document.getElementById('verifyOtpForm');
 
     let inputValue = document.getElementById('remaining').value
     // force it to be a number
-    let ms = parseInt(inputValue, 10) || 0;  
+    let ms = parseInt(inputValue, 10) || 0;
 
     let remaining = Math.ceil(ms / 1000);
 
     let remainSecond = remaining > 0 ? remaining : 0;
-    
+
     verifyOtpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const otp = document.getElementById('otp').value
-        
+
         try {
             const response = await fetch('/verify-email', {
                 method: 'POST',
                 body: JSON.stringify({ otp }),
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 window.location.href = data.redirectUrl || '/';
             } else {
                 if (remaining <= 0) {
-                    console.log('OTP expired : ', remaining);
                     showNotification(data.message || 'OTP expired, please request a new one', 'error');
                 } else {
-                    console.log('Invalid OTP, seconds left:', remainSecond);
                     showNotification('Invalid OTP', 'error');
                 }
             }
         } catch (error) {
             console.error('Signup error:', error);
-            showNotification(`Something went wrong : ${error.message}`, 'error')
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     });
-    
+
     let timerElement = document.getElementById('timer');
     let resendLink = document.getElementById('resend-link');
     const verifyButton = document.getElementById('verify-btn')
     let remainingTime = Math.ceil(document.getElementById('remaining').value / 1000)
     let seconds = remainingTime > 0 ? remainingTime : 0
-    
-    
-    
+
+
+
     console.log('remaining time : ', remainingTime)
     let countdownInterval = setInterval(() => {
-        
+
         if (seconds <= 0) {
             clearInterval(countdownInterval);
             verifyButton.disabled = true
@@ -85,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log('Resend Response : ', data);
                     if (data.success) {
                         document.getElementById('verify-btn').disabled = false,
-                        showNotification('OTP Resend successfully', 'success')
+                            showNotification('OTP Resend successfully', 'success')
                         let remainingTime = data.remainingTime ? data.remainingTime / 1000 : 0
                         let remainSeconds = remainingTime <= 0 ? 0 : remainingTime
                         remaining = remainingTime
@@ -99,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     clearInterval(countdownInterval);
                                     countdownInterval = null;
                                     document.getElementById('verify-btn').disabled = true,
-                                    resendLink.classList.add('active');
+                                        resendLink.classList.add('active');
                                     return
                                 }
                                 remainSeconds--;
@@ -110,20 +104,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             }, 1000);
                         }
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message || 'Failed to resend OTP'
-                        });
+                        showNotification(data.message || 'Failed to resend OTP!!', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Resend OTP error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to resend OTP: ' + (error.message || 'Unknown error')
-                    });
+                    return showNotification('Something went wrong. Try again later', 'error');
                 });
         }
     });
@@ -131,13 +117,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
+        if (searchValue && e.key === 'Enter') {
+            console.log('search : ', searchValue)
             // window.location = `/shop?search=${searchValue}`
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }

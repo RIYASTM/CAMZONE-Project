@@ -1,6 +1,6 @@
 
 
-function returnItem(items , reason , status){
+function returnItem(items, reason, status) {
     let refundAmount = 0
     let refundReason = 'Refund for Returned Item(s)'
     let returnedItems = items.map(item => {
@@ -17,7 +17,7 @@ function returnItem(items , reason , status){
     }
 }
 
-function orderReturn (order , reason , status) {
+function orderReturn(order, reason, status) {
     let refundAmount = 0
     let refundReason = `Refund for Returned Order - ${order.orderId}`
 
@@ -26,7 +26,7 @@ function orderReturn (order , reason , status) {
 
     order.orderedItems.forEach(item => {
         item.itemStatus = status,
-        item.reason = reason
+            item.reason = reason
         refundAmount += item.productPrice * item.quantity
         return item
     })

@@ -1,60 +1,60 @@
-const mongoose = require ('mongoose')
-const {Schema} = mongoose
+const mongoose = require('mongoose')
+const { Schema } = mongoose
 
-const couponSchema = new Schema ({
-    couponCode : {
-        type : String,
-        required : true,
-        unique : true
+const couponSchema = new Schema({
+    couponCode: {
+        type: String,
+        required: true,
+        unique: true
     },
-    couponName : {
-        type : String,
-        required : true
+    couponName: {
+        type: String,
+        required: true
     },
-    description : {
-        type : String,
-        required : true
+    description: {
+        type: String,
+        required: true
     },
-    createdOn : {
-        type : Date,
-        default : Date.now,
-        required : true
+    createdOn: {
+        type: Date,
+        default: Date.now,
+        required: true
     },
-    validFrom : {
-        type : Date,
-        required : true
+    validFrom: {
+        type: Date,
+        required: true
     },
-    validUpto : {
-        type : Date,
-        required : true
+    validUpto: {
+        type: Date,
+        required: true
     },
-    discountType : {
-        type : String,
+    discountType: {
+        type: String,
         enum: ['percentage', 'fixed'],
-        required : true
+        required: true
     },
-    discount : {
-        type : Number,
-        required : true
+    discount: {
+        type: Number,
+        required: true
     },
-    minOrder : {
-        type : Number,
-        required : true
+    minOrder: {
+        type: Number,
+        required: true
     },
-    maxOrder : {
-        type : Number,
+    maxOrder: {
+        type: Number,
     },
-    isList : {
-        type : Boolean,
-        default : true
+    isList: {
+        type: Boolean,
+        default: true
     },
-    couponLimit : {
-        type : Number,
-        default : 1
+    couponLimit: {
+        type: Number,
+        default: 1
     },
-    isDeleted : {
-        type : Boolean,
-        default : false
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 })
 

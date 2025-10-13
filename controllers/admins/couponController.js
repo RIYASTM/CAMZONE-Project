@@ -1,7 +1,11 @@
-const Coupons = require('../../model/couponModel');
 const { v4: uuidv4 } = require('uuid');
-const { validateCoupon } = require('../../helpers/validations')
 const mongoose = require('mongoose')
+
+const Coupons = require('../../model/couponModel');
+
+const { validateCoupon } = require('../../helpers/validations')
+const { handleStatus } = require('../../helpers/status');
+
 
 const loadCoupons = async (req, res) => {
     try {
@@ -55,8 +59,7 @@ const loadCoupons = async (req, res) => {
         const totalPages = Math.ceil(totalCoupons / limit);
 
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            return res.status(200).json({
-                success: true,
+            return handleStatus(res, 200, null, {
                 coupons,
                 totalPages,
                 currentPage: parseInt(page)
@@ -75,11 +78,7 @@ const loadCoupons = async (req, res) => {
 
     } catch (error) {
         console.error('Failed to load coupons:', error);
-        res.status(500).render('error', {
-            pageTitle: 'Error',
-            message: 'Failed to load coupons',
-            iconClass: 'fa-exclamation-triangle'
-        });
+        return handleStatus(res, 500, 'Failed to load coupons', { redirectUrl: '/admin/page404', iconClass: 'fa-exclamation-triangle' });
     }
 };
 
@@ -88,11 +87,10 @@ const getCoupon = async (req, res) => {
 
         const coupon = await Coupons.findById(req.params.id);
         if (!coupon) {
-            return res.status(404).json({ success: false, message: 'Coupon not found' });
+            return handleStatus(res, 404, 'Coupon not found')
         }
 
-        return res.status(200).json({
-            success: true,
+        return handleStatus(res, 200, null, {
             coupon: {
                 id: coupon._id,
                 couponCode: coupon.couponCode,
@@ -112,8 +110,7 @@ const getCoupon = async (req, res) => {
     } catch (error) {
 
         console.error('Error fetching coupons:', error);
-        return res.status(500).json({ success: false, message: `Error fetching coupon: ${error.message}` });
-
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
@@ -123,7 +120,7 @@ const addCoupon = async (req, res) => {
         console.log(data)
         const errors = validateCoupon(data);
         if (errors) {
-            return res.status(400).json({ success: false, message: 'Validation failed', errors });
+            return handleStatus(res, 400, 'Validation failed!!', { errors });
         }
 
         const date = new Date();
@@ -133,12 +130,12 @@ const addCoupon = async (req, res) => {
 
         const existingCode = await Coupons.findOne({ couponCode });
         if (existingCode) {
-            return res.status(400).json({ success: false, message: 'Generated coupon code already exists' });
+            return handleStatus(res, 400, 'Coupon code already exists!!')
         }
 
         const existingCoupon = await Coupons.findOne({ couponName: data.couponName.trim() });
         if (existingCoupon) {
-            return res.status(400).json({ success: false, message: 'Coupon name already exists' });
+            return handleStatus(res, 400, 'Coupon name already exists!!')
         }
 
         const coupon = new Coupons({
@@ -157,9 +154,7 @@ const addCoupon = async (req, res) => {
 
         const savedCoupon = await coupon.save();
 
-        return res.status(201).json({
-            success: true,
-            message: 'Coupon created successfully!',
+        return handleStatus(res, 200, 'Coupon created successfully', {
             coupon: {
                 id: savedCoupon._id,
                 couponCode: savedCoupon.couponCode,
@@ -178,10 +173,11 @@ const addCoupon = async (req, res) => {
     } catch (error) {
         console.error('Error creating coupon:', error);
         if (error.code === 11000) {
-            return res.status(400).json({ success: false, message: 'Coupon code already exists' });
+            return handleStatus(res, 400, 'Coupon code already exists!!');
         }
-        return res.status(500).json({ success: false, message: `Error creating coupon: ${error.message}` });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
+
 };
 
 const updateCoupon = async (req, res) => {
@@ -189,17 +185,17 @@ const updateCoupon = async (req, res) => {
         const data = req.body;
         const errors = validateCoupon(data);
         if (errors) {
-            return res.status(400).json({ success: false, message: 'Validation failed', errors });
+            return handleStatus(res, 400, 'Validations Failed!!', { errors });
         }
 
         const coupon = await Coupons.findById(data.id);
         if (!coupon) {
-            return res.status(404).json({ success: false, message: 'Coupon not found' });
+            return handleStatus(res, 404, 'Coupon not found!!');
         }
 
-        const existingCoupon = await Coupons.findOne({ couponName: data.couponName.trim(), _id: { $ne: data.id } });
-        if (existingCoupon) {
-            return res.status(400).json({ success: false, message: 'Coupon name already exists' });
+        const existingName = await Coupons.findOne({ couponName: data.couponName.trim(), _id: { $ne: data.id } });
+        if (existingName) {
+            return handleStatus(res, 400, 'Coupon name already exists!!');
         }
 
         coupon.couponName = data.couponName.trim();
@@ -215,9 +211,7 @@ const updateCoupon = async (req, res) => {
 
         const updatedCoupon = await coupon.save();
 
-        return res.status(200).json({
-            success: true,
-            message: 'Coupon updated successfully!',
+        return handleStatus(res, 200, 'Coupon updated successfully', {
             coupon: {
                 id: updatedCoupon._id,
                 couponCode: updatedCoupon.couponCode,
@@ -235,7 +229,7 @@ const updateCoupon = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating coupon:', error);
-        return res.status(500).json({ success: false, message: `Error updating coupon: ${error.message}` });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 
@@ -247,14 +241,14 @@ const deleteCoupon = async (req, res) => {
             { new: true, runValidators: true }
         );
         if (!coupon) {
-            return res.status(404).json({ success: false, message: 'Coupon not found' });
+            return handleStatus(res, 404, 'Coupon not found');
         }
 
-        return res.status(200).json({ success: true, message: 'Coupon deleted successfully!' });
+        return handleStatus(res, 200, 'Coupon deleted successfully');
 
     } catch (error) {
         console.error('Error deleting coupon:', error);
-        return res.status(500).json({ success: false, message: `Error deleting coupon: ${error.message}` });
+        return handleStatus(res, 500, null, { redirectUrl: '/admin/page404' });
     }
 };
 

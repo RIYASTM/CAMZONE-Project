@@ -3,6 +3,7 @@ const sanitizeHtml = require('sanitize-html');
 function validateUser(data) {
     const namepattern = /^[A-Za-z\s]+$/;
     const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
+    const phonePattern = /^(?:\+91|91)?[6-9]\d{9}$/;
     const alpha = /[a-zA-Z]/
     const digit = /\d/
     let error = {};
@@ -11,11 +12,11 @@ function validateUser(data) {
         error.name = "User name is required!!"
     } else if (!namepattern.test(data.name)) {
         error.name = "Name can only contain Alphabets and spaces!!"
-    } else if(!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())){
+    } else if (!(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/).test(data.name.trim())) {
         error.name = "Name can't allow multiple spaces!!"
-    } else if (data.name.trim().length > 15){
+    } else if (data.name.trim().length > 15) {
         error.name = 'Name is too long!!'
-    } else if (data.name.trim().length < 4){
+    } else if (data.name.trim().length < 4) {
         error.name = 'Name should contains min 4 charectors!!'
     }
 
@@ -23,6 +24,14 @@ function validateUser(data) {
         error.email = "Email is required";
     } else if (!emailpattern.test(data.email)) {
         error.email = "Invalid Format!!"
+    }
+
+    if (!data.phone) {
+        error.phone = "Phone is required !!"
+    } else if (!phonePattern.test(data.phone)) {
+        error.phone = "Invalid Phone Number!!"
+    } else if (data.phone.length !== 10) {
+        error.phone = "Phone number should 10 digits"
     }
 
     if (!data.password) {
@@ -72,16 +81,16 @@ function validateCategoryForm(data) {
     } else if (!namePattern.test(data.categoryName)) {
         const fieldName = data.categoryName !== undefined ? 'categoryName' : 'name';
         error.categoryName = 'Name includes only alphabets';
-    } else if (data.categoryName.trim().length < 4){
+    } else if (data.categoryName.trim().length < 4) {
         error.categoryName = 'Name should contains min 4 charectors!!'
-    } else if (data.categoryName.trim().length > 10){
+    } else if (data.categoryName.trim().length > 10) {
         error.categoryName = 'Name is too long!!'
     }
 
     if (!data.categoryDescription) {
         const fieldName = data.categoryDescription !== undefined ? 'categoryDescription' : 'description';
         error.categoryDescription = 'Please enter the description';
-    } else if (data.categoryDescription.trim().length > 50){
+    } else if (data.categoryDescription.trim().length > 50) {
         error.categoryDescription = 'Description is too long!!'
     }
 
@@ -108,9 +117,9 @@ function validateProductForm(data) {
 
     if (!data.productName) {
         errors.productName = 'Name is required!';
-    } else if (data.productName.trim().length > 30){
+    } else if (data.productName.trim().length > 30) {
         errors.productName = 'Name is too long!!'
-    }else if (data.productName.trim().length < 4){
+    } else if (data.productName.trim().length < 4) {
         errors.productName = 'Name should contain min 4 charecters!!'
     }
 
@@ -159,31 +168,31 @@ function validateProductForm(data) {
     return Object.keys(errors).length > 0 ? errors : null;
 }
 
-function ValidateBrand(data){
+function ValidateBrand(data) {
     const namePattern = /^[a-zA-Z\s]+$/
     const digit = /^\d+$/;
-    const error= {}
+    const error = {}
 
-    if(!data.brandName){
+    if (!data.brandName) {
         error.brandName = 'Brand name is required!!'
-    }else if(!namePattern.test(data.brandName)){
+    } else if (!namePattern.test(data.brandName)) {
         error.brandName = 'Brand name only included with Alphabets'
-    } else if(data.brandName.trim().length < 4){
+    } else if (data.brandName.trim().length < 4) {
         error.brandName = 'Brand name should contain min 4 characters!!'
-    } else if (data.brandName.trim().length > 10){
+    } else if (data.brandName.trim().length > 10) {
         error.brandName = 'Invalid name!!'
     }
 
-    if(!data.description){
+    if (!data.description) {
         error.description = 'Brand description is required!!'
-    } else if(data.description.trim().length > 50){
+    } else if (data.description.trim().length > 50) {
         error.description = 'Description is too long!!'
     }
 
-    if(data.brandOffer){
-        if(!digit.test(data.brandOffer)){
+    if (data.brandOffer) {
+        if (!digit.test(data.brandOffer)) {
             error.brandOffer = 'Offer should be a number!!'
-        }else if(data.brandOffer >= 99){
+        } else if (data.brandOffer >= 99) {
             error.brandOffer = 'Offer should be under 100 %!!'
         }
     }
@@ -201,121 +210,121 @@ function validateProfile(data) {
 
     let error = {}
 
-    if(!data.name){
+    if (!data.name) {
         error.name = 'Name is required!!'
-    }else if(!namepattern.test(data.name)){
+    } else if (!namepattern.test(data.name)) {
         error.name = "Name should contains only alphabets!!"
-    } else if (data.name.trim().length < 4){
+    } else if (data.name.trim().length < 4) {
         error.name = 'Name should contains 4 characters!!'
-    } else if (data.name.trim().length > 15){
+    } else if (data.name.trim().length > 15) {
         error.name = 'Invalid Name'
     }
-    if(data.email){
-        if(!emailPattern.test(data.email)){
+    if (data.email) {
+        if (!emailPattern.test(data.email)) {
             error.email = 'Invalid Email!!'
         }
     }
-    if(data.phone){
-        if(!phonePattern.test(data.phone)){
+    if (data.phone) {
+        if (!phonePattern.test(data.phone)) {
             error.phone = 'Invalid Phone Number!!'
         }
     }
     return Object.keys(error).length > 0 ? error : null;
 }
 
-function validateAddress(data){
+function validateAddress(data) {
 
-    console.log("phone 1 : ",data.phone)
+    console.log("phone 1 : ", data.phone)
     console.log("altPhone : ", data.altPhone)
-            const phonePattern = {
-                'USA' : /^\+1[2-9]\d{2}[2-9]\d{6}$/,
-                'India' : /^\+91[6-9]\d{9}$/,
-                'UK' : /^\+44\d{10}$/,
-                'UAE' : /^\+971\d{8,9}$/,
-                'KSA' : /^\+966\d{8,9}$/
-            };
-            const pincodePattern = {
-                'India': /^\d{6}$/,
-                'USA': /^\d{5}$/,
-                'UK': /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/,
-                'UAE' : /^\d{3,6}$/,
-                'SAUDI ARABIA' : /^[1-8]\d{4}$/,
-                'KSA' : /^[1-8]\d{4}$/
-            };
-            const namePattern = /^[a-zA-Z\s]+$/;
-            let errors = {};
-    
-            if (!data.name || !namePattern.test(data.name)) {
-                errors.name = "Valid name is required (letters and spaces only).";
-            } else if(data.name.trim().length < 4){
-                errors.name = 'Name should contains min 4 characters!!'
-            } else if (data.name.trim().length > 15){
-                errors.name = 'Invalid Name!!'
-            }
-            if (!data.streetAddress) {
-                errors.streetAddress = "Street address is required.";
-            } else if (data.streetAddress.trim().length > 30){
-                errors.streetAddress = 'Invalid entry!!'
-            }
-            if (!data.city) {
-                errors.city = "Town/City is required.";
-            } else if (data.city.trim().length > 15){
-                errors.city = 'Invalid city'
-            }
-            if (!data.state) {
-                errors.state = "State is required.";
-            }
-            if(!data.landMark){
-                errors.landMark = "LandMark or Apartmetn is required!"
-            } else if (data.landMark.trim().length > 25){
-                errors.landMark = 'Invalid landmard'
-            }
-            if (!data.district) {
-                errors.district = "District is required.";
-            } else if (data.district.trim().length > 15){
-                errors.district = 'District caracters should under 15'
-            }
-            if (!data.country) {
-                errors.country = "Country is required.";
-            }
+    const phonePattern = {
+        'USA': /^\+1[2-9]\d{2}[2-9]\d{6}$/,
+        'India': /^\+91[6-9]\d{9}$/,
+        'UK': /^\+44\d{10}$/,
+        'UAE': /^\+971\d{8,9}$/,
+        'KSA': /^\+966\d{8,9}$/
+    };
+    const pincodePattern = {
+        'India': /^\d{6}$/,
+        'USA': /^\d{5}$/,
+        'UK': /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/,
+        'UAE': /^\d{3,6}$/,
+        'SAUDI ARABIA': /^[1-8]\d{4}$/,
+        'KSA': /^[1-8]\d{4}$/
+    };
+    const namePattern = /^[a-zA-Z\s]+$/;
+    let errors = {};
 
-            if (!data.pincode) {
-                errors.pincode = "Pincode is required!";
-            } else if (data.country && pincodePattern[data.country]) {
-                if (!pincodePattern[data.country].test(data.pincode)) {
-                    errors.pincode = `Invalid pincode format for ${data.country}!`;
-                }
-            } else {
-                errors.pincode = "Pincode format not supported for this country!";
-            }
+    if (!data.name || !namePattern.test(data.name)) {
+        errors.name = "Valid name is required (letters and spaces only).";
+    } else if (data.name.trim().length < 4) {
+        errors.name = 'Name should contains min 4 characters!!'
+    } else if (data.name.trim().length > 15) {
+        errors.name = 'Invalid Name!!'
+    }
+    if (!data.streetAddress) {
+        errors.streetAddress = "Street address is required.";
+    } else if (data.streetAddress.trim().length > 30) {
+        errors.streetAddress = 'Invalid entry!!'
+    }
+    if (!data.city) {
+        errors.city = "Town/City is required.";
+    } else if (data.city.trim().length > 15) {
+        errors.city = 'Invalid city'
+    }
+    if (!data.state) {
+        errors.state = "State is required.";
+    }
+    if (!data.landMark) {
+        errors.landMark = "LandMark or Apartmetn is required!"
+    } else if (data.landMark.trim().length > 25) {
+        errors.landMark = 'Invalid landmard'
+    }
+    if (!data.district) {
+        errors.district = "District is required.";
+    } else if (data.district.trim().length > 15) {
+        errors.district = 'District caracters should under 15'
+    }
+    if (!data.country) {
+        errors.country = "Country is required.";
+    }
 
-            // Phone
-            if (data.phone) {
-                if (data.country && phonePattern[data.country]) {
-                    if (!phonePattern[data.country].test(data.phone)) {
-                        errors.phone = "Invalid phone number format!";
-                    }
-                } else {
-                    errors.phone = "Unsupported country for phone validation!";
-                }
-            } else {
-                errors.phone = "Phone number 1 is required!";
-            }
+    if (!data.pincode) {
+        errors.pincode = "Pincode is required!";
+    } else if (data.country && pincodePattern[data.country]) {
+        if (!pincodePattern[data.country].test(data.pincode)) {
+            errors.pincode = `Invalid pincode format for ${data.country}!`;
+        }
+    } else {
+        errors.pincode = "Pincode format not supported for this country!";
+    }
 
-            // Alternate Phone
-            if (data.altPhone) {
-                if (data.country && phonePattern[data.country]) {
-                    if (!phonePattern[data.country].test(data.altPhone)) {
-                        errors.altPhone = "Invalid phone number format!";
-                    }
-                } else {
-                    errors.altPhone = "Unsupported country for phone validation!";
-                }
-            } else {
-                errors.altPhone = "Phone number 2 is required!";
+    // Phone
+    if (data.phone) {
+        if (data.country && phonePattern[data.country]) {
+            if (!phonePattern[data.country].test(data.phone)) {
+                errors.phone = "Invalid phone number format!";
             }
+        } else {
+            errors.phone = "Unsupported country for phone validation!";
+        }
+    } else {
+        errors.phone = "Phone number 1 is required!";
+    }
 
-            return Object.keys(errors).length > 0 ? errors : null;
+    // Alternate Phone
+    if (data.altPhone) {
+        if (data.country && phonePattern[data.country]) {
+            if (!phonePattern[data.country].test(data.altPhone)) {
+                errors.altPhone = "Invalid phone number format!";
+            }
+        } else {
+            errors.altPhone = "Unsupported country for phone validation!";
+        }
+    } else {
+        errors.altPhone = "Phone number 2 is required!";
+    }
+
+    return Object.keys(errors).length > 0 ? errors : null;
 }
 
 function validatePassword(data) {
@@ -323,11 +332,11 @@ function validatePassword(data) {
     const digit = /\d/
     let error = {};
 
-    if(!data.newPassword){
+    if (!data.newPassword) {
         error.newPassword = 'New password is required!'
-    }else if ( data.newPassword.length < 8){
+    } else if (data.newPassword.length < 8) {
         error.newPassword = 'Enter minimum 8 Charactors!!'
-    }else if (!alpha.test(data.newPassword) || !digit.test(data.newPassword)){
+    } else if (!alpha.test(data.newPassword) || !digit.test(data.newPassword)) {
         error.password = 'Passwords should contains Numbers and Alphabets!!'
     }
 
@@ -346,7 +355,7 @@ const validateCoupon = (data) => {
 
     if (!data.couponName || typeof data.couponName !== 'string' || !/^[a-zA-Z\s]+$/.test(data.couponName.trim())) {
         errors.couponName = 'Coupon name is required and must contain only letters and spaces';
-    } else if (data.couponName.trim().length < 5 ){
+    } else if (data.couponName.trim().length < 5) {
         errors.couponName = 'Coupon name should have minimum 5 Characters!!'
     } else if (data.couponName.trim().length > 15) {
         errors.couponName = 'Coupon name should not have 15 above characters!!'
@@ -360,7 +369,7 @@ const validateCoupon = (data) => {
     const discount = parseFloat(data.discount);
     if (isNaN(discount) || discount <= 0) {
         errors.discount = 'Discount is required and must be a positive number';
-    } else if(discount > 60000) {
+    } else if (discount > 60000) {
         errors.discount = 'Discount should under 60,000!!'
     } else if (data.discountType === 'percentage' && discount > 80) {
         errors.discount = 'Percentage discount must be between 1 and 80';
@@ -368,10 +377,10 @@ const validateCoupon = (data) => {
     const minOrder = parseFloat(data.minOrder);
     if (isNaN(minOrder) || minOrder <= 0) {
         errors.minOrder = 'Minimum order amount is required and must be positive';
-    } else if (data.minOrder && data.discountType === 'fixed'){
+    } else if (data.minOrder && data.discountType === 'fixed') {
         const minAmount = discount + (discount * 0.2)
-        if(minOrder < minAmount)
-        errors.minOrder = `Minimum order should be ${minAmount} or above!!`
+        if (minOrder < minAmount)
+            errors.minOrder = `Minimum order should be ${minAmount} or above!!`
     }
 
     const validFrom = new Date(data.validFrom);

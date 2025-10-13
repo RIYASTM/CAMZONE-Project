@@ -85,7 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification( errorMessage || 'Brand added successfully', 'success')
             window.location.replace(data.redirectUrl);
         } catch (error) {
-            console.error('Something went wrong : ',error.message)
+            console.error('Something went wrong : ',error.message);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     })
 
@@ -125,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.replace(data.redirectUrl);
             }
         } catch (error) {
-            console.log( "Something went wrong while editing brand", error.message)
+            console.log( "Something went wrong while editing brand", error.message);
+            return showNotification('Something went wrong. Try again later', 'error');
         }
     })
 
@@ -178,7 +180,6 @@ function applyFilters() {
         originalRows.forEach(row => tableBody.appendChild(row))
     }
 }
-
 
 function showAddBrandModal() {
     addBrandModal.style.display = 'block'
@@ -241,7 +242,8 @@ async function deleteBrand(brandId) {
                     showNotification(data.message || 'Brand removing failed', 'error')
                 }
             } catch (error) {
-                console.error('Brand removing failed : ', error)
+                console.error('Brand removing failed : ', error);
+                return showNotification('Something went wrong. Try again later', 'error');
             }
         }
     })

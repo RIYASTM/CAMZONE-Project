@@ -1,11 +1,11 @@
 /* Define root variables for light theme */
 :root {
-    --primary-color: #ff9800; 
-    --secondary-color: #fff; 
-    --accent-color: #ff9800; 
-    --text-color: #333; 
-    --light-gray: #fff; 
-    --border-color: #ddd; 
+    --primary-color: #ff9800;
+    --secondary-color: #fff;
+    --accent-color: #ff9800;
+    --text-color: #333;
+    --light-gray: #fff;
+    --border-color: #ddd;
     --background-color: #fff;
     --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -317,7 +317,7 @@ a {
     opacity: 0.7;
 }
 
- /* Pagination */
+/* Pagination */
 .pagination {
     display: flex;
     justify-content: center;
@@ -325,7 +325,7 @@ a {
     gap: 10px;
 }
 
- /* .pagination-btn {
+/* .pagination-btn {
     padding: 8px 12px;
     border: 1px solid #ddd;
     background: white;
@@ -345,7 +345,7 @@ a {
     gap: 5px;
 } */
 
-.pagination-controls{
+.pagination-controls {
     display: flex;
 }
 
@@ -387,30 +387,30 @@ a {
     .content {
         flex-direction: column;
     }
-    
+
     .sidebar {
         width: 100%;
         margin-bottom: 30px;
     }
-    
+
     .balance-cards {
         grid-template-columns: 1fr;
     }
-    
+
     .balance-amount {
         font-size: 28px;
     }
-    
+
     .section-header {
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
     }
-    
+
     .transaction-table {
         font-size: 14px;
     }
-    
+
     .transaction-table th,
     .transaction-table td {
         padding: 10px;
@@ -421,15 +421,15 @@ a {
     .container {
         padding: 15px;
     }
-    
+
     .wallet-main {
         padding: 20px;
     }
-    
+
     .balance-card {
         padding: 20px;
     }
-    
+
     .balance-amount {
         font-size: 24px;
     }
@@ -659,40 +659,40 @@ a {
     .modal-overlay {
         padding: 15px;
     }
-    
+
     .modal-container {
         width: 100%;
         max-width: 400px;
         margin: auto;
     }
-    
+
     .modal-header {
         padding: 15px 20px;
     }
-    
+
     .modal-body {
         padding: 20px;
     }
-    
+
     .modal-header h3 {
         font-size: 16px;
     }
-    
+
     .quick-amount-buttons {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
-    
+
     .quick-amount-btn {
         padding: 8px 12px;
         font-size: 13px;
     }
-    
+
     .modal-actions {
         flex-direction: column-reverse;
         gap: 10px;
     }
-    
+
     .btn-cancel,
     .btn-add-via-razorpay {
         width: 100%;
@@ -704,13 +704,13 @@ a {
     .modal-overlay {
         padding: 10px;
     }
-    
+
     .modal-container {
         width: 100%;
         max-width: none;
         min-height: auto;
     }
-    
+
     .quick-amount-buttons {
         grid-template-columns: 1fr;
     }

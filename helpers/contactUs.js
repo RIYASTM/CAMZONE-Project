@@ -1,15 +1,15 @@
 const nodemailer = require('nodemailer')
 const env = require('dotenv').config()
 
-async function sendMessage(data){
+async function sendMessage(data) {
     try {
-        
+
         const transporter = nodemailer.createTransport({
-            service : 'gmail',
+            service: 'gmail',
             // port : 587,
             // secure : false,
             // require : true
-            auth : {
+            auth: {
                 user: process.env.NODEMAILER_EMAIL,
                 pass: process.env.NODEMAILER_PASSWORD
             }
@@ -19,7 +19,7 @@ async function sendMessage(data){
             from: process.env.NODEMAILER_EMAIL,
             replyTo: data.email,
             to: process.env.NODEMAILER_EMAIL,
-            subject : `I need your support - ${data.name} , ${data.phone}`,
+            subject: `I need your support - ${data.name} , ${data.phone}`,
             html: `
                 <p><strong>Name:</strong> ${data.name}</p>
                 <p><strong>Email:</strong> ${data.email}</p>

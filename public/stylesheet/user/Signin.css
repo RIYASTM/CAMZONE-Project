@@ -12,7 +12,7 @@
     box-sizing: border-box;
 }
 
-a{
+a {
     text-decoration: none;
     color: var(--text-color);
 }
@@ -84,7 +84,7 @@ body {
     padding: 10px 0;
     font-size: 16px;
     border: none;
-    border-bottom: 1px solid  var(--light-gray);
+    border-bottom: 1px solid var(--light-gray);
     background: transparent;
     outline: none;
     transition: border-color 0.3s;
@@ -118,7 +118,8 @@ body {
 .google-signin {
     margin-bottom: 20px;
 }
-.google-signin a{
+
+.google-signin a {
     font-size: 15px;
 }
 
@@ -152,7 +153,7 @@ body {
 }
 
 /* Errors */
-.invalid-feedback{
+.invalid-feedback {
     color: red;
 }
 
@@ -182,4 +183,3 @@ body {
         font-size: 14px;
     }
 }
-

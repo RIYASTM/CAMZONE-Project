@@ -15,6 +15,8 @@
 
 </header>
 
+
+    <input type="hidden" id="allProducts" value="<%= JSON.stringify(products)%>">
     <section class="hero">
         <div class="hero-content">
             <h1>Canon camera</h1>
@@ -46,9 +48,10 @@
 
     <section class="popular-products">
         <h2>Popular Products</h2>
+        <input type="hidden" value="<%= JSON.stringify(newProducts) %>" id="newProducts">
         <div class="product-grid"> 
             <% newProducts.forEach(product=>{ %>
-                <div class="product-card">
+                <div class="product-card" data-id="<%= product._id %>">
                     <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" data-id="<%= product._id %>">
                         <i class="fa fa-heart"></i>
                     </div>
@@ -112,6 +115,7 @@
     <section class="featured-products">
         <div class="section-header">
             <h2>Featured Products</h2>
+            <input type="hidden" id="featured" value="<%= JSON.stringify(products.slice(0, 3))%>">
             <div class="view-controls">
                 <button class="view-all">View All</button>
                 <div class="arrows">
@@ -123,7 +127,7 @@
 
         <div class="featured-grid">
             <% products.slice(0, 3).forEach(product => { %>
-                <div class="product-card featured">
+                <div class="product-card featured" data-id="<%= product._id %>">
                     <div class="wishlist-btn <%= wishlistItems.includes(product._id.toString()) ? 'active' : '' %>" data-id="<%= product._id %>">
                         <i class="fa fa-heart"></i>
                     </div>
@@ -181,11 +185,11 @@
     </section>
     <section class="new-arrivals">
         <h2>New Arrivals</h2>
-        <div class="arrivals-grid">
-
+        <input type="hidden" id="newArrivals" value="<%= JSON.stringify(products.slice(8, Math.min(16, products.length))) %>">
+        <div class="arrivals-grid" id="arrivalsGrid">
             <% if (products.length > 8) { %>
                 <% for (let i = 8; i < Math.min(16, products.length); i++) { %>
-                <div class="product-card">
+                <div class="product-card" data-id="<%= products[i]._id %>">
                     <div class="wishlist-btn <%= wishlistItems.includes(products[i]._id.toString()) ? 'active' : '' %>" data-id="<%= products[i]._id %>">
                         <i class="fa fa-heart"></i>
                     </div>

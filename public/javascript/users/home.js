@@ -1,7 +1,12 @@
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
+
+    const newProducts = JSON.parse(document.getElementById('newProducts').value);
+    const featured = JSON.parse(document.getElementById('featured').value);
+    const arrivals = JSON.parse(document.getElementById('newArrivals').value);
+
+    highlightStock(newProducts);
+    highlightStock(featured);
+    highlightStock(arrivals);
 
     const cartCount = document.querySelector('.cart-count');
 
@@ -29,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest' 
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
                 .then(response => response.json())
@@ -47,8 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         showNotification(data.message || 'Product adding to cart failed!', 'error');
                     }
                 })
-                .catch(() => {
-                    showNotification('Something went wrong!', 'error');
+                .catch((error) => {
+                    console.error('Something went wrong : ',error);
+                    return showNotification('Something went wrong. Try again later', 'error');
                 });
         }
     }
@@ -64,32 +70,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const search = document.getElementById('search')
     const clearButton = document.getElementById('clear-button')
-    
-    search.addEventListener('keypress', async (e)=> {
+
+    search.addEventListener('keypress', async (e) => {
 
         const searchValue = search.value.trim()
 
-        if( searchValue && e.key === 'Enter' ){
-            console.log('search : ',searchValue)
-            // window.location = `/shop?search=${searchValue}`
+        if (searchValue && e.key === 'Enter') {
+            console.log('search : ', searchValue)
             window.location = `/shop?search=${encodeURIComponent(searchValue)}`;
         }
     })
 
 })
 
+function highlightStock(products) {
+    products.forEach(product => {
+        const status = product.status?.toLowerCase();
+        let message = '';
+
+        if (status === 'out of stock') {
+            message = `This item is out of stock`;
+        } else if (status === 'discontinued') {
+            message = `This item is discontinued`;
+        }
+
+        if (message) {
+            const productCard = document.querySelector(`.product-card[data-id="${product._id}"]`);
+            if (productCard) {
+                productCard.classList.add('dimmed');
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'stock-message';
+                messageDiv.textContent = message;
+                productCard.appendChild(messageDiv);
+            }
+        }
+    });
+}
 
 async function addtoWishlist(productId) {
-
     try {
-        
+
         const response = await fetch('/addtowishlist', {
             method: 'POST',
             body: JSON.stringify({ productId }),
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest' 
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
 
@@ -97,7 +125,7 @@ async function addtoWishlist(productId) {
 
         console.log("data : ", data)
 
-        if(data.success){
+        if (data.success) {
             const icons = document.querySelectorAll(`.wishlist-btn[data-id="${productId}"]`);
             console.log(icons)
 
@@ -110,14 +138,14 @@ async function addtoWishlist(productId) {
                     }
                 })
             }
-        }else{
+        } else {
             showNotification(data.message || 'Failed to add to wishlist!', 'error');
         }
     } catch (error) {
-        console.log("something went wrong : ", error)
+        console.log("something went wrong : ", error);
+        return showNotification('Something went wrong. Try again later', 'error');
     }
 }
-
 
 function showNotification(message, type) {
     // Create notification element

@@ -1,6 +1,8 @@
-const User = require('../../model/userModel')
-const Cart = require('../../model/cartModel')
-const Coupon = require('../../model/couponModel')
+const User = require('../../model/userModel');
+const Cart = require('../../model/cartModel');
+const Coupon = require('../../model/couponModel');
+
+const { handleStatus } = require('../../helpers/status');
 
 const loadCoupon = async (req, res) => {
     try {
@@ -40,6 +42,7 @@ const loadCoupon = async (req, res) => {
 
     } catch (error) {
         console.log('Failed to load the coupon page : ', error)
+        return handleStatus(res, 500)
     }
 }
 
@@ -56,33 +59,37 @@ const applyCoupon = async (req, res) => {
         ])
 
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found...' })
+            return handleStatus(res, 401, 'User not found!!');
         } else if (!coupon) {
-            return res.status(401).json({ success: false, message: 'Coupon not found...' })
+            return handleStatus(res, 401, 'Coupon not found!!');
         } else if (!cart) {
-            return res.status(401).json({ success: false, message: 'Cart not found...' })
+            return handleStatus(res, 401, 'Cart not found!!');
+        }
+
+        if (req.session.appliedCoupon) {
+            return handleStatus(res, 402, 'You have already applied coupon. Remove it first!!')
         }
 
         const timeNow = new Date()
 
         if (timeNow > coupon.validUpto) {
-            return res.status(401).json({ success: false, message: 'Coupon has been expired...' })
+            return handleStatus(res, 401, 'Coupon has been expired!!');
         }
 
         if (coupon.discountType === 'fixed') {
             if (cart.totalAmount <= coupon.discount) {
-                return res.status(401).json({ success: false, message: `Your order needs to be more than - ${coupon.discount}...` })
+                return handleStatus(res, 401, `Your order needs to be more than - ${coupon.discount}...`);
             }
         }
 
         if (cart.totalAmount < coupon.minOrder) {
-            return res.status(401).json({ success: false, message: `Your order needs to be more than RS- ${coupon.minOrder} order...` })
+            return handleStatus(res, 401, `Your order needs to be more than RS- ${coupon.minOrder} order...`);
         } else if (cart.totalAmount > coupon.maxOrder) {
-            return res.status(401).json({ success: false, message: `This order should under RS- ${coupon.maxOrder}..` })
+            return handleStatus(res, 401, `This order should under RS- ${coupon.maxOrder}..`);
         }
 
         if (coupon.couponLimit <= 0) {
-            return res.status(401).json({ success: false, message: 'Coupon limit is over...' })
+            return handleStatus(res, 401, 'Coupon limit is over...');
         }
 
         const couponDiscount = coupon.discount
@@ -91,19 +98,20 @@ const applyCoupon = async (req, res) => {
 
         const finalAmount = Math.floor(totalAmount - discount)
 
-        const totalGst = Math.floor((finalAmount * 18) / 118)
-
         req.session.appliedCoupon = {
             code: couponCode,
             discount,
             finalAmount,
         };
 
-        return res.status(200).json({ success: true, message: 'Coupon applied successfully...', discount, finalAmount, totalGst })
+        return handleStatus(res, 200, 'Coupon applied successfully!!', {
+            discount,
+            finalAmount,
+        })
 
     } catch (error) {
         console.log('Something went wrong while applying coupon : ', error)
-        return res.status(500).json({ success: false, message: `Something went wrong while applying coupon : ${error.message || error.stack}`, error })
+        return handleStatus(res, 500);
     }
 }
 
@@ -120,22 +128,21 @@ const removeCoupon = async (req, res) => {
         ])
 
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found..' })
+            return handleStatus(res, 402, 'User not found!!');
         }
         if (!cart) {
-            return res.status(401).json({ success: false, message: 'Cart not found...' })
+            return handleStatus(res, 402, 'Cart is not found!!');
         }
 
         req.session.appliedCoupon = null;
 
         const finalAmount = cart.totalAmount + Number(shippingCharge)
-        const totalGst = Math.floor(cart.GST)
 
-        return res.status(200).json({ success: true, message: 'Coupon successfully removed..', finalAmount, totalGst })
+        return handleStatus(res, 200, 'Coupon removed!!', { finalAmount });
 
     } catch (error) {
         console.log('Something went wrong while removing coupon : ', error)
-        return res.status(500).json({ success: false, message: `Something went wrong while removing coupon : ${error.message}`, error })
+        return handleStatus(res, 500);
     }
 }
 

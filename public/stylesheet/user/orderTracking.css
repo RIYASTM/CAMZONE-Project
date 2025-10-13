@@ -1,16 +1,27 @@
 /* Order Tracking styles that match with profile CSS theme */
 :root {
-    --primary-color: #ff9800; /* Orange for links and highlights */
-    --secondary-color: #fff; /* White section background */
-    --accent-color: #ff9800; /* Orange for buttons and badges */
-    --text-color: #333; /* Dark text for light theme */
-    --light-gray: #fff; /* White background for container */
-    --border-color: #ddd; /* Light border */
-    --background-color: #fff; /* Body background */
-    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    --success-color: #4caf50; /* Green for success states */
-    --pending-color: #ff9800; /* Orange for pending states */
-    --cancelled-color: #f44336; /* Red for cancelled states */
+    --primary-color: #ff9800;
+    /* Orange for links and highlights */
+    --secondary-color: #fff;
+    /* White section background */
+    --accent-color: #ff9800;
+    /* Orange for buttons and badges */
+    --text-color: #333;
+    /* Dark text for light theme */
+    --light-gray: #fff;
+    /* White background for container */
+    --border-color: #ddd;
+    /* Light border */
+    --background-color: #fff;
+    /* Body background */
+    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    --success-color: #4caf50;
+    /* Green for success states */
+    --pending-color: #ff9800;
+    /* Orange for pending states */
+    --cancelled-color: #f44336;
+    /* Red for cancelled states */
 }
 
 /* General Reset */
@@ -21,7 +32,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-a{
+a {
     color: var(--text-color);
     text-decoration: none;
 }
@@ -560,34 +571,33 @@ body {
     .content {
         flex-direction: column;
     }
-    
+
     .sidebar {
         width: 100%;
         margin-bottom: 30px;
     }
-    
+
     .order-item {
         flex-direction: column;
     }
-    
+
     .order-image {
         width: 100%;
         margin-right: 0;
         margin-bottom: 15px;
     }
-    
+
     .product-section {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .filter-section {
         flex-direction: column;
         align-items: flex-end;
     }
-    
+
     .search-bar input {
         width: 100%;
     }
 }
-

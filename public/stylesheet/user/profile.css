@@ -1,11 +1,11 @@
 /* Define root variables for light theme */
 :root {
-    --primary-color: #ff9800; 
-    --secondary-color: #fff; 
-    --accent-color: #ff9800; 
-    --text-color: #333; 
-    --light-gray: #fff; 
-    --border-color: #ddd; 
+    --primary-color: #ff9800;
+    --secondary-color: #fff;
+    --accent-color: #ff9800;
+    --text-color: #333;
+    --light-gray: #fff;
+    --border-color: #ddd;
     --background-color: #fff;
     --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -24,7 +24,7 @@ body {
     background-color: var(--light-gray);
 }
 
-a{
+a {
     text-decoration: none;
     color: var(--text-color);
 }
@@ -308,7 +308,8 @@ a{
     background-color: var(--border-color);
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -338,7 +339,8 @@ a{
     flex-wrap: wrap;
 }
 
-.btn-edit, .btn-save {
+.btn-edit,
+.btn-save {
     background-color: var(--accent-color);
     color: #fff;
     border: none;
@@ -352,7 +354,8 @@ a{
     min-width: 140px;
 }
 
-.btn-edit:hover, .btn-save:hover {
+.btn-edit:hover,
+.btn-save:hover {
     background-color: #e68900;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -415,12 +418,12 @@ a{
         gap: 20px;
         min-height: auto;
     }
-    
+
     .sidebar {
         width: 100%;
         margin-bottom: 20px;
     }
-    
+
     .profile-form {
         padding: 20px;
     }
@@ -428,19 +431,19 @@ a{
     .profile-form h2 {
         font-size: 20px;
     }
-    
+
     .form-layout {
         flex-direction: column;
         gap: 20px;
     }
-    
+
     .profile-picture-section {
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
     }
-    
+
     .profile-picture-container {
         width: 200px;
         height: 200px;
@@ -459,7 +462,8 @@ a{
         align-items: stretch;
     }
 
-    .btn-edit, .btn-save {
+    .btn-edit,
+    .btn-save {
         width: 100%;
         margin: 5px 0;
     }
@@ -468,7 +472,8 @@ a{
         padding: 15px 0;
     }
 
-    .breadcrumb a, .breadcrumb .current {
+    .breadcrumb a,
+    .breadcrumb .current {
         font-size: 13px;
     }
 
@@ -516,7 +521,8 @@ a{
 
     .form-group input {
         padding: 10px 12px;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
+        /* Prevent zoom on iOS */
     }
 
     .profile-picture-container {
@@ -534,7 +540,8 @@ a{
         right: 15px;
     }
 
-    .btn-edit, .btn-save {
+    .btn-edit,
+    .btn-save {
         padding: 10px 20px;
         font-size: 14px;
     }
@@ -543,7 +550,8 @@ a{
         padding: 10px 0;
     }
 
-    .breadcrumb a, .breadcrumb .current {
+    .breadcrumb a,
+    .breadcrumb .current {
         font-size: 12px;
     }
 
@@ -554,7 +562,8 @@ a{
     /* Password Modal Mobile */
     #passwordModal .form-group input {
         padding: 10px 12px;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
+        /* Prevent zoom on iOS */
     }
 
     #passwordModal .form-group label {
@@ -595,6 +604,7 @@ a{
 
 /* Print styles */
 @media print {
+
     .btn-cancel,
     .form-actions,
     .sidebar {

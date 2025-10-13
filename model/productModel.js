@@ -1,75 +1,75 @@
 const mongoose = require('mongoose')
-const {Schema} = mongoose
+const { Schema } = mongoose
 
-const productSchema = new Schema ({
-    productName : {
-        type : String,
-        required : true
+const productSchema = new Schema({
+    productName: {
+        type: String,
+        required: true
     },
-    description : {
-        type : String,
-        required : true
+    description: {
+        type: String,
+        required: true
     },
-    brand : {
-        type :  Schema.Types.ObjectId,
-        ref : 'Brand',
-        required : true
+    brand: {
+        type: Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: true
     },
-    category : {
-        type : Schema.Types.ObjectId,
-        ref : "Category",
-        required : true
+    category: {
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+        required: true
     },
-    regularPrice : {
-        type : Number,
-        required : true
+    regularPrice: {
+        type: Number,
+        required: true
     },
-    salePrice : {
-        type : Number,  
-        required : true
+    salePrice: {
+        type: Number,
+        required: true
     },
-    productOffer : {
-        type : Number,
-        required : true,
-        default : 0
+    productOffer: {
+        type: Number,
+        required: true,
+        default: 0
     },
-    quantity : {
-        type : Number,
-        required : true,
-        default : 0
+    quantity: {
+        type: Number,
+        required: true,
+        default: 0
     },
-    productImage : {
-        type : [String], 
-        required : true
+    productImage: {
+        type: [String],
+        required: true
     },
-    isBlocked : {
-        type : Boolean,
-        default : false
+    isBlocked: {
+        type: Boolean,
+        default: false
     },
-    status : {
-        type : String,
-        enum : ["Available", "Out of Stock", "Discontinued"],
-        required : true,
-        default : "Available"
+    status: {
+        type: String,
+        enum: ["Available", "Out of Stock", "Discontinued"],
+        required: true,
+        default: "Available"
     },
-    createdAt : {
-        type : Date,
-        default : Date.now
+    createdAt: {
+        type: Date,
+        default: Date.now
     },
-    isDeleted : {
-        type : Boolean,
-        default : false
+    isDeleted: {
+        type: Boolean,
+        default: false
     },
-    gst : {
-        type : Number,
-        required : false
+    gst: {
+        type: Number,
+        required: false
     },
-    totalOffer : {
-        type : Number,
-        default : 0
+    totalOffer: {
+        type: Number,
+        default: 0
     }
-},{Timestamp : true})
+}, { Timestamp: true })
 
-const Product = mongoose.model("Product",productSchema)
+const Product = mongoose.model("Product", productSchema)
 
 module.exports = Product

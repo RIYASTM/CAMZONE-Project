@@ -38,8 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-
     const reportTypeSelect = document.getElementById('reportType');
     const customDateRange = document.getElementById('customDateRange');
     const reportGenerateBtn = document.querySelector('.generate-report-btn');
@@ -75,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     }
-
 
     statusFilter.addEventListener('change', applyFilters);
     paymentFilter.addEventListener('change', applyFilters);
@@ -167,8 +164,8 @@ async function generateReport(orders) {
                     endDate.setHours(23, 59, 59, 999)
 
                     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                        console.error('Invalid dates provided')
-                        showNotification('Invalid Dates', 'error')
+                        console.error('Invalid dates provided');
+                        showNotification('Invalid Dates', 'error');
                         return;
                     }
 
@@ -208,9 +205,9 @@ async function generateReport(orders) {
         return true
 
     } catch (error) {
-        console.error('Error in generate Report : ', error)
-        showNotification('Something went while Generating Report', 'error')
-        return false
+        console.error('Error in generate Report : ', error);
+        showNotification('Something went while Generating Report', 'error');
+        return false;
     } finally {
         generatingReport = false
     }
@@ -218,7 +215,6 @@ async function generateReport(orders) {
 }
 
 function applyFilters() {
-console.log('jdjfkjkfj')
     const statusFilter = document.getElementById('statusFilter');
     const paymentFilter = document.getElementById('paymentFilter');
     const couponFilter = document.getElementById('couponFilter');

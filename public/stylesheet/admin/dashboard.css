@@ -160,7 +160,7 @@ body {
     font-weight: bold;
 }
 
-.salesTrendChart{
+.salesTrendChart {
     display: block;
     box-sizing: border-box;
     height: 250px;
@@ -329,7 +329,8 @@ thead {
     color: #a0a0a0;
 }
 
-th, td {
+th,
+td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #333;
@@ -504,7 +505,10 @@ th, td {
     .charts-section {
         grid-template-columns: 1fr;
     }
-    .sales-summary, .payment-stats, .insights-grid {
+
+    .sales-summary,
+    .payment-stats,
+    .insights-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 }
@@ -513,14 +517,20 @@ th, td {
     .container {
         flex-direction: column;
     }
-    .sales-summary, .payment-stats, .insights-grid {
+
+    .sales-summary,
+    .payment-stats,
+    .insights-grid {
         grid-template-columns: 1fr;
     }
+
     .report-filters {
         flex-direction: column;
         align-items: stretch;
     }
-    .filter-select, .filter-input {
+
+    .filter-select,
+    .filter-input {
         min-width: auto;
         width: 100%;
     }
@@ -530,14 +540,23 @@ th, td {
     .main-content {
         padding: 10px;
     }
-    .summary-card, .chart-container, .payment-method-card, .insight-card {
+
+    .summary-card,
+    .chart-container,
+    .payment-method-card,
+    .insight-card {
         padding: 10px;
     }
-    .metric-value, .insight-value {
+
+    .metric-value,
+    .insight-value {
         font-size: 20px;
     }
-    .sales-report-table th, .sales-report-table td,
-    .orders-table th, .orders-table td {
+
+    .sales-report-table th,
+    .sales-report-table td,
+    .orders-table th,
+    .orders-table td {
         padding: 10px 8px;
         font-size: 12px;
     }
@@ -549,31 +568,53 @@ th, td {
         background: white !important;
         color: black !important;
     }
-    .sidebar, .header {
+
+    .sidebar,
+    .header {
         display: none !important;
     }
+
     .main-content {
         padding: 0 !important;
     }
-    .report-filters, .generate-report-btn {
+
+    .report-filters,
+    .generate-report-btn {
         display: none !important;
     }
-    .summary-card, .chart-container, .payment-method-card, .insight-card, .table-container {
+
+    .summary-card,
+    .chart-container,
+    .payment-method-card,
+    .insight-card,
+    .table-container {
         border: 1px solid #000 !important;
         background: white !important;
     }
-    .card-icon, .progress-bar {
+
+    .card-icon,
+    .progress-bar {
         background: #ccc !important;
     }
-    .metric-value, .insight-value, .payment-percentage, .sales-report-table td, .sales-report-table th, .orders-table td, .orders-table th {
+
+    .metric-value,
+    .insight-value,
+    .payment-percentage,
+    .sales-report-table td,
+    .sales-report-table th,
+    .orders-table td,
+    .orders-table th {
         color: #000 !important;
     }
+
     .status {
         background: #ccc !important;
         color: #000 !important;
     }
-    .chart-y-labels, .chart-actions, .dropdown {
+
+    .chart-y-labels,
+    .chart-actions,
+    .dropdown {
         display: none !important;
     }
 }
-
