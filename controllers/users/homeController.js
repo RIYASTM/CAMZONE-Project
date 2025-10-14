@@ -14,7 +14,8 @@ const loadHomePage = async (req, res) => {
     try {
 
         const search = req.query.search || ''
-        const userId = req.session.user
+        const userId = req.session.user;
+        console.log("jj : ",userId )
 
         const [user, brands, categories] = await Promise.all([
             User.findById(userId),
