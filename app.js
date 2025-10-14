@@ -68,28 +68,28 @@ connectDB().then(() => {
     app.use('/user', nocache());
 
     app.use(
-        session({
-            secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
-            resave: false,
-            saveUninitialized: false,
-            store: MongoStore.create({
-                mongoUrl: process.env.MONGODB_URI,
-                collectionName: 'sessions',
-                touchAfter: 24 * 3600,
-                autoRemove: 'interval',
-                autoRemoveInterval: 10,
-                crypto: {
-                    secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
-                }
-            }),
-cookie: {
-    secure: false, // allow cookies over HTTP
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24
-}
+    session({
+        secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGODB_URI,
+            collectionName: 'sessions',
+            touchAfter: 24 * 3600,
+            autoRemove: 'interval',
+            autoRemoveInterval: 10,
+            crypto: {
+                secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
+            }
+        }),
+        cookie: {
+            secure: true, // must be true for HTTPS
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24
+        }
+    })
+);
 
-        })
-    );
 
     app.use(passport.initialize())
     app.use(passport.session())
