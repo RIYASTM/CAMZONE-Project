@@ -62,13 +62,16 @@ const signin = async (req, res) => {
             return handleStatus(res, 400, 'Password didn`t Match', { errors: { password: "Password didn`t Match" } })
         }
 
-
+        console.log("=========================================");
+        console.log(email, password)
+        console.log("=========================================");
 
         req.session.usermail = isUser.email;
         req.session.user = isUser._id;
-                console.log("=========================================");
-        console.log(req.session.usermail,  req.session.user)
-        console.log("=========================================");
+
+        console.log('session email : ', req.session.usermail);
+        console.log('session user ID : ', req.session.user);
+
 
         return handleStatus(res, 200, null, { redirectUrl: '/' })
 
