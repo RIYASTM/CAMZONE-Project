@@ -144,7 +144,7 @@ const loadOrderDetails = async (req, res) => {
 
         const totalOrderAmount = order.orderedItems.reduce((total, item) => total + item.price, 0)
 
-        let finalAmount = order.shipping ? order.shipping + finalAmount : finalAmount
+        let finalAmount = order.shipping ? order.shipping + totalOrderAmount : totalOrderAmount
 
         if (!isUser) {
             return handleStatus(res, 401, 'Wrong order detailes!!');
