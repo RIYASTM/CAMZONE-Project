@@ -82,11 +82,12 @@ connectDB().then(() => {
                     secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
                 }
             }),
-            cookie: {
-                secure: process.env.NODE_ENV === 'production',
-                httpOnly: true,
-                maxAge: 1000 * 60 * 60 * 24
-            }
+cookie: {
+    secure: false, // allow cookies over HTTP
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24
+}
+
         })
     );
 
