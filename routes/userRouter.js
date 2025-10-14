@@ -26,20 +26,23 @@ const walletController = require('../controllers/users/walletController')
 const wishListController = require('../controllers/users/wishListController')
 const invoiceController = require('../controllers/users/invoiceController')
 const contactUsController = require('../controllers/users/contactUsController')
+const shopController = require('../controllers/users/shopController')
+const homeController = require('../controllers/users/homeController')
+const signinController = require('../controllers/users/signinController')
+const signupController = require('../controllers/users/signupController')
 
 
 //Routers
 
+router.get('/', homeController.loadHomePage);
 
-router.get('/', userController.loadHomePage);
-
-router.get('/shop', userController.loadShop)
+router.get('/shop', shopController.loadShop);
 
 router.get('/product', userController.loadProduct);
 
-router.get('/signin', userController.loadSignin);
+router.get('/signin', signinController.loadSignin)
 
-router.post('/signin', userController.signin);
+router.post('/signin', signinController.signin);
 
 router.get('/signup', userController.loadSignup);
 

@@ -15,7 +15,7 @@ const mongoose = require('mongoose');
 
 const userRouter = require('./routes/userRouter');
 const adminRouter = require('./routes/adminRouter');
-const {userSession , adminSession} = require('./helpers/sessions')
+const { userSession, adminSession } = require('./helpers/sessions')
 
 process.on("uncaughtException", (err) => {
     if (err.message.includes("Unable to find the session to touch") ||
@@ -43,22 +43,72 @@ app.set('views', [
 ]);
 app.set("trust proxy", 1);
 
+// connectDB().then(() => {
+
+//     app.use(express.json());
+//     app.use(express.urlencoded({ extended: true }));
+
+//     app.use('/admin', nocache(), adminSession, passport.initialize(), passport.session(), adminRouter);
+
+//     app.use('/', nocache(), userSession, passport.initialize(), passport.session(), userRouter);
+
+//     app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d', etag: true }));
+//     app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+//     app.listen(port, () => {
+//         console.log(`Server running on http://localhost:${port}`);
+//     });
+// });
+
 connectDB().then(() => {
 
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+    // app.use(morgan('dev')) 
 
-    app.use('/admin', nocache(), adminSession, passport.initialize(), passport.session(), adminRouter);
+    app.use('/admin', nocache());
+    app.use('/user', nocache());
 
-    app.use('/', nocache(), userSession, passport.initialize(), passport.session(), userRouter);
+    app.use(
+        session({
+            secret: process.env.SESSION_SECRET || 'supersecretkey1234567890',
+            resave: false,
+            saveUninitialized: false,
+            store: MongoStore.create({
+                mongoUrl: process.env.MONGODB_URI,
+                collectionName: 'sessions',
+                touchAfter: 24 * 3600,
+                autoRemove: 'interval',
+                autoRemoveInterval: 10,
+                crypto: {
+                    secret: process.env.SESSION_SECRET || 'supersecretkey1234567890'
+                }
+            }),
+            cookie: {
+                secure: process.env.NODE_ENV === 'production',
+                httpOnly: true,
+                maxAge: 1000 * 60 * 60 * 24
+            }
+        })
+    );
 
-    app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d', etag: true }));
+    app.use(passport.initialize())
+    app.use(passport.session())
+
+    app.use(express.static(path.join(__dirname, 'public')))
     app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+    app.use(express.json())
+    app.use(express.urlencoded({ extended: true }))
+
+    app.use('/admin', adminRouter)
+    app.use('/', userRouter)
 
     app.listen(port, () => {
         console.log(`Server running on http://localhost:${port}`);
     });
+
 });
+
+
 
 process.on('SIGINT', async () => {
     console.log("Shutting down gracefully...");

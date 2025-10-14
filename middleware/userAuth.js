@@ -1,4 +1,7 @@
+const { handleStatus } = require('../helpers/status');
 const User = require('../model/userModel')
+
+
 
 const userAuth = (req, res, next) => {
     if (req.session.user) {
@@ -7,15 +10,22 @@ const userAuth = (req, res, next) => {
                 if (data && !data.isBlocked) {
                     return next();
                 } else {
-                    req.session.destroy(() => {
-                        if (req.xhr || req.headers.accept.includes('application/json')) {
-                            return res.status(403).json({
-                                success: false,
-                                message: 'Your account is blocked. Please contact support.'
-                            });
-                        }
-                        return res.redirect('/');
-                    });
+                    
+                    // req.session.destroy(() => {
+                    //     if (req.xhr || req.headers.accept.includes('application/json')) {
+                    //         return res.status(403).json({
+                    //             success: false,
+                    //             message: 'Your account is blocked. Please contact support.'
+                    //         });
+                    //     }
+                    //     return res.redirect('/');
+                    // });
+
+                    req.session.user = null
+                    if(req.xhr || req.headers.accept.includes('application/json')){
+                        return handleStatus(res, 403, 'Your account is blocked. Please contact support.', {redirect : '/'})
+                    }
+                    return res.redirect('/')
                 }
             })
             .catch(error => {
