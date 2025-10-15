@@ -143,18 +143,21 @@ async function generateReport(orders) {
 
                     endDate = new Date(startDate);
                     endDate.setDate(startDate.getDate() + 6);
+                    endDate.setHours(23, 59, 59, 999); // FIX HERE
                 }
                 break;
             case 'monthly':
                 {
                     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    endDate.setHours(23, 59, 59, 999); // FIX HERE
                 }
                 break;
             case 'yearly':
                 {
                     startDate = new Date(today.getFullYear(), 0, 1);
                     endDate = new Date(today.getFullYear(), 11, 31);
+                    endDate.setHours(23, 59, 59, 999); // FIX HERE
                 }
                 break;
             case 'custom':
@@ -269,7 +272,22 @@ function updateSummery(orders) {
 
 }
 
+function getOrderProductSummary(orderedItems) {
+    if (!Array.isArray(orderedItems) || orderedItems.length === 0) {
+        return "No Products";
+    }
+
+    if (orderedItems.length === 1) {
+        return orderedItems[0]?.product?.productName || "Unnamed Product";
+    }
+
+    const firstProduct = orderedItems[0]?.product?.productName || "Unnamed";
+    return `${firstProduct.slice(0, 17)} & ${orderedItems.length - 1} more...`;
+}
+
+
 function updateTable(orders) {
+
     if (!orders || !Array.isArray(orders)) return;
 
     const sorted = [...orders]
@@ -277,6 +295,7 @@ function updateTable(orders) {
         .sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn))
         .slice(0, 20)
 
+        console.log('orders : ', sorted)
 
     const tableBody = document.getElementById('salesTableBody')
 
@@ -295,6 +314,7 @@ function updateTable(orders) {
         const products = order.orderedItems?.length > 1
             ? `${order.orderedItems[0]?.product?.productName.slice(0, 17)} & ${order.orderedItems.length - 1} more...`
             : order.orderedItems?.[0]?.product?.productName || "No Products";
+
         const couponApplied = order.couponApplied ? '₹ ' + order.couponDiscount.toLocaleString('en-IN') : 'No'
         const totalDiscount = order.discount ? order.discount : 0
         const paymentMethod = order.paymentMethod || 'Unknown';

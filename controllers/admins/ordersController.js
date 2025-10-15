@@ -78,6 +78,11 @@ const loadOrders = async (req, res) => {
 
         const totalPages = Math.ceil(totalOrders / limit)
 
+        const order = await Order.find({
+            status: { $nin: ['Pending', 'Cancelled', 'Returned', 'Return Requested'] }
+        });
+
+
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
             return handleStatus(res, 200, null, {
                 orders,
@@ -85,7 +90,8 @@ const loadOrders = async (req, res) => {
                 totalPages,
                 search,
                 sort,
-                filter
+                filter,
+                order
             });
         }
 
@@ -98,7 +104,8 @@ const loadOrders = async (req, res) => {
             totalPages,
             iconClass: 'fa-shopping-cart',
             sort,
-            filter
+            filter,
+            order,
         })
     } catch (error) {
 
