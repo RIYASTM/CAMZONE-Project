@@ -18,7 +18,7 @@ const loadOrderSuccess = async (req, res) => {
         const orderId = req.session.orderId
 
         if (!req.session.orderSuccess || req.session.orderSuccess === false) {
-            return handleStatus(res, 402, 'There is not orders!');
+            return handleStatus(res, 400, 'There is not orders!');
         }
 
         const [user, userOrder] = await Promise.all([
@@ -44,7 +44,7 @@ const loadOrderSuccess = async (req, res) => {
             return req.session.orderSuccess = false
         }
 
-        return handleStatus(res, 402, 'Order not success');
+        return handleStatus(res, 400, 'Order not success');
     } catch (error) {
         console.log('Failed to render success : ', error)
         return handleStatus(res, 500);
@@ -257,10 +257,10 @@ const returnRequest = async (req, res) => {
         }
 
         if (['Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
-            return handleStatus(res, 402, `This order already ${order.status}`)
+            return handleStatus(res, 400, `This order already ${order.status}`)
         }
         if (order.status !== 'Delivered') {
-            return handleStatus(res, 402, `Only delivered orders can be returned. Current status: ${order.status}`)
+            return handleStatus(res, 400, `Only delivered orders can be returned. Current status: ${order.status}`)
         }
 
         if (order.deliveredDate) {
@@ -269,7 +269,7 @@ const returnRequest = async (req, res) => {
             const now = Date.now();
 
             if (now > sevenDaysLater) {
-                return handleStatus(res, 402, 'This order is past 7 days after delivery');
+                return handleStatus(res, 400, 'This order is past 7 days after delivery');
             }
         }
 

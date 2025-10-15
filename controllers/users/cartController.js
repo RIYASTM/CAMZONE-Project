@@ -78,7 +78,7 @@ const addToCart = async (req, res) => {
         }
 
         if (product.status !== 'Available') {
-            return handleStatus(res, 402, 'This item is not available!!', { productId })
+            return handleStatus(res, 400, 'This item is not available!!', { productId })
         }
 
         const stock = product.quantity;
@@ -169,14 +169,14 @@ const cartUpdate = async (req, res) => {
             isBlocked: false
         }).populate('category').populate('brand');
         if (!product) {
-            return handleStatus(res, 402, 'Product not found!!');
+            return handleStatus(res, 400, 'Product not found!!');
         }
 
         const stock = product.quantity;
         if (parsedQuantity > stock) {
-            return handleStatus(res, 402, `Quantity exeeded over available stock of ${product.productName}!!`)
+            return handleStatus(res, 400, `Quantity exeeded over available stock of ${product.productName}!!`)
         } else if (parsedQuantity > 15) {
-            return handleStatus(res, 402, 'Maximum quantity is 15!!')
+            return handleStatus(res, 400, 'Maximum quantity is 15!!')
         }
 
         let cartDoc = await Cart.findOne({ userId }).populate('items.productId');
@@ -378,7 +378,7 @@ const toCheckout = async (req, res) => {
 
         const cartItems = cart.items
         if (cartItems.length < 1) {
-            return handleStatus(res, 402, 'Your cart is empty!!')
+            return handleStatus(res, 400, 'Your cart is empty!!')
         }
 
         for (let item of cartItems) {

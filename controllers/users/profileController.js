@@ -99,7 +99,7 @@ const editProfile = async (req, res) => {
         const updateUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
 
         if (!updateUser) {
-            return handleStatus(res, 402, 'Failed to updated user')
+            return handleStatus(res, 400, 'Failed to updated user')
         }
 
         if (req.session.otp) delete req.session.otp;

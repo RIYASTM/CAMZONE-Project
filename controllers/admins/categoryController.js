@@ -60,7 +60,7 @@ const addCategory = async (req, res) => {
         const findCategory = categories.find(cat => cat.name.toLowerCase() === normalizedName)
 
         if (findCategory) {
-            return handleStatus(res, 402, 'Category already exist!!', { errors: { categoryName: 'Category alredy exists!!' } })
+            return handleStatus(res, 400, 'Category already exist!!', { errors: { categoryName: 'Category alredy exists!!' } })
         }
 
         const categoryData = {

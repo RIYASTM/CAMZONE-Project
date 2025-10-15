@@ -99,7 +99,7 @@ const addtoWishlist = async (req, res) => {
         );
 
         if (existInCart) {
-            return handleStatus(res, 402, 'Item already in your cart!!');
+            return handleStatus(res, 400, 'Item already in your cart!!');
         }
 
         let wishlist = await Wishlist.findOne({ userId });

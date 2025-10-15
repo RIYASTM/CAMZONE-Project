@@ -58,7 +58,7 @@ const loadCheckout = async (req, res) => {
         }
 
         if (cartItems.length === 0) {
-            return handleStatus(res, 402, 'Cart is empty!!');
+            return handleStatus(res, 401, 'Cart is empty!!');
         }
 
         const addresses = addressDoc ? addressDoc.address.filter(add => !add.isDeleted) : [];
@@ -164,9 +164,9 @@ const checkout = async (req, res) => {
         }
 
         if (paymentMethod === 'COD' && finalAmount > 50000) {
-            return handleStatus(res, 402, 'COD is not available for the amount 50000 & above!!')
+            return handleStatus(res, 401, 'COD is not available for the amount 50000 & above!!')
         } else if (paymentMethod === 'Razorpay' && finalAmount > 500000) {
-            return handleStatus(res, 402, 'Razorpay is not available for the amount 500000 & above')
+            return handleStatus(res, 401, 'Razorpay is not available for the amount 500000 & above')
         }
 
         const order = new Order({
@@ -269,7 +269,7 @@ const checkout = async (req, res) => {
             return handleStatus(res, 200, 'Order Placed!!');
         }
         order.paymentStatus = 'Failed'
-        return handleStatus(res, 402, 'Your order failed to complete!!');
+        return handleStatus(res, 401, 'Your order failed to complete!!');
     } catch (error) {
         console.log('Failed to confirm the order: ', error);
         return handleStatus(res, 500);

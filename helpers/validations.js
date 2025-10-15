@@ -206,7 +206,7 @@ function validateProfile(data) {
     const namepattern = /^[A-Za-z\s]+$/;
     const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})+$/;
     const digit = /\d/;
-    const phonePattern = /^\[6-9]\d{9}$/;
+    const phonePattern = /^[6-9]\d{9}$/;
 
     let error = {}
 
@@ -238,7 +238,7 @@ function validateAddress(data) {
     console.log("altPhone : ", data.altPhone)
     const phonePattern = {
         'USA': /^\+1[2-9]\d{2}[2-9]\d{6}$/,
-        'India': /^\+91[6-9]\d{9}$/,
+        'India': /^(?:\+91|91)?[6-9]\d{9}$/,
         'UK': /^\+44\d{10}$/,
         'UAE': /^\+971\d{8,9}$/,
         'KSA': /^\+966\d{8,9}$/

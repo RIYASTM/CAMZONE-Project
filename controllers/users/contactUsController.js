@@ -48,7 +48,7 @@ const contactUs = async (req, res) => {
         const isSaved = await message.save()
 
         if (!isSaved) {
-            return handleStatus(res, 402, 'Your message is not saved. Please try again later!!');
+            return handleStatus(res, 400, 'Your message is not saved. Please try again later!!');
         }
 
         const messageSend = await sendMessage(data)

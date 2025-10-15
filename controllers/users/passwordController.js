@@ -59,7 +59,7 @@ const confirmOTP = async (req, res) => {
             return handleStatus(res, 200, 'OTP verified!!');
         }
 
-        return handleStatus(res, 402, 'Invalid OTP');
+        return handleStatus(res, 400, 'Invalid OTP');
 
 
     } catch (error) {
@@ -78,7 +78,7 @@ const changePassword = async (req, res) => {
 
         const user = await User.findById(userId)
         if (!user) {
-            return handleStatus(res, 402, 'User not found!!');
+            return handleStatus(res, 400, 'User not found!!');
         }
 
         const data = req.body
@@ -88,7 +88,7 @@ const changePassword = async (req, res) => {
         const isMatch = await bcrypt.compare(currentPassword, user.password)
 
         if (!isMatch) {
-            return handleStatus(res, 402, 'Passwords didn`t match!!', {
+            return handleStatus(res, 400, 'Passwords didn`t match!!', {
                 errors: { currentPassword: "Password didn`t match with old Password" }
             });
         }

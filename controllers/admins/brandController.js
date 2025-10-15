@@ -55,14 +55,14 @@ const addBrand = async (req, res) => {
 
         const existBrand = await Brand.findOne({ brandName: { $regex: new RegExp(`^${brandName}$`, 'i') } })
         if (existBrand) {
-            return handleStatus(res, 402, 'Brand is exist with this name!!')
+            return handleStatus(res, 400, 'Brand is exist with this name!!')
         }
 
         const brandData = { brandName, description, brandOffer }
         const errors = ValidateBrand(brandData)
 
         if (errors) {
-            return handleStatus(res, 401, 'Validation error!!', { errors });
+            return handleStatus(res, 400, 'Validation error!!', { errors });
         }
 
         const newBrand = new Brand({

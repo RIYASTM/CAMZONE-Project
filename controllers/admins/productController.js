@@ -47,7 +47,7 @@ const loadProducts = async (req, res) => {
         const totalPages = Math.ceil((totalProducts >= 2 ? totalProducts : 1) / limit)
 
         if (!brand || !category) {
-            return handleStatus(res, 402, `Category or Brand is not exist!!`)
+            return handleStatus(res, 400, `Category or Brand is not exist!!`)
         }
 
         const products = await Products.find(query).populate(['brand', 'category']).sort({ createdAt: -1 })
@@ -108,12 +108,12 @@ const addProduct = async (req, res) => {
 
         const errors = validateProductForm(data);
         if (errors) {
-            return handleStatus(res, 402, 'Validation error!', { errors });
+            return handleStatus(res, 400, 'Validation error!', { errors });
         }
 
         const productImages = req.files ? req.files.map(file => file.path) : [];
         if (productImages.length === 0) {
-            return handleStatus(res, 402, 'There is no images added!!')
+            return handleStatus(res, 400, 'There is no images added!!')
         }
 
         if (productImages.length < 3) {
@@ -174,11 +174,10 @@ const editProduct = async (req, res) => {
 
         const product = await Products.findById(productId).populate('brand').populate('category')
 
-        const isBlocked = product.isBlocked
         const isDeleted = product.isDeleted
 
-        if (isBlocked || isDeleted) {
-            return handleStatus(res, 401, `This product is ${isBlocked ? 'Blocked' : 'Deleted'}!!`);
+        if ( isDeleted) {
+            return handleStatus(res, 401, `This product is Deleted!!`);
         }
 
         const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } }).populate('category').populate('brand');
@@ -188,12 +187,12 @@ const editProduct = async (req, res) => {
 
         const errors = validateProductForm(data);
         if (errors) {
-            return handleStatus(res, 402, 'Validation Error!!', { errors });
+            return handleStatus(res, 400, 'Validation Error!!', { errors });
         }
 
         const currentProduct = await Products.findById(productId);
         if (!currentProduct) {
-            return handleStatus(res, 402, 'Product not found!!');
+            return handleStatus(res, 400, 'Product not found!!');
         }
 
         let finalImages = [];
@@ -252,7 +251,7 @@ const editProduct = async (req, res) => {
         const updatedProduct = await Products.findByIdAndUpdate(productId, updateData, { new: true });
 
         if (!updatedProduct) {
-            return handleStatus(res, 402, 'Product not found')
+            return handleStatus(res, 400, 'Product not found')
         }
 
         const products = await Products.find();
@@ -281,10 +280,9 @@ const deleteProduct = async (req, res) => {
         const productId = req.body.productId
 
         const product = await Products.findById(productId)
-        const isBlocked = product.isBlocked
         const isDeleted = product.isDeleted
-        if (isBlocked || isDeleted) {
-            return handleStatus(res, 401, `This product already ${isBlocked ? 'Blocked' : 'Deleted'}`);
+        if ( isDeleted) {
+            return handleStatus(res, 401, `This product already Deleted`);
         }
 
         const deletedProduct = await Products.findByIdAndUpdate(

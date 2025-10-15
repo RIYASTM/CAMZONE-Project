@@ -76,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!data.success) {
-                console.log('errot')
                 const errorMessage = typeof data.message === 'object' ? Object.values(data.message).join(', ') : data.message;
                 showNotification(errorMessage || 'Brand adding failed', 'error')
                 return false;
@@ -85,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification( errorMessage || 'Brand added successfully', 'success')
             window.location.replace(data.redirectUrl);
         } catch (error) {
-            console.error('Something went wrong : ',error.message);
+            console.error('Something went wrong : ', error);
             return showNotification('Something went wrong. Try again later', 'error');
         }
     })

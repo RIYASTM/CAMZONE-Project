@@ -123,7 +123,7 @@ const updateStatus = async (req, res) => {
             return handleStatus(res, 404, 'Order not found!!');
         }
 
-        if (['Cancelled', 'Returned'].includes(order.status)) {
+        if (['Cancelled', 'Returned', 'Delivered'].includes(order.status)) {
             return handleStatus(res, 409, `This order already ${order.status}`);
         }
 

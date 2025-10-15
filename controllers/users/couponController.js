@@ -67,7 +67,7 @@ const applyCoupon = async (req, res) => {
         }
 
         if (req.session.appliedCoupon) {
-            return handleStatus(res, 402, 'You have already applied coupon. Remove it first!!')
+            return handleStatus(res, 400, 'You have already applied coupon. Remove it first!!')
         }
 
         const timeNow = new Date()
@@ -128,10 +128,10 @@ const removeCoupon = async (req, res) => {
         ])
 
         if (!user) {
-            return handleStatus(res, 402, 'User not found!!');
+            return handleStatus(res, 400, 'User not found!!');
         }
         if (!cart) {
-            return handleStatus(res, 402, 'Cart is not found!!');
+            return handleStatus(res, 400, 'Cart is not found!!');
         }
 
         req.session.appliedCoupon = null;
