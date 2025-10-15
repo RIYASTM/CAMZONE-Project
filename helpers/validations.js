@@ -125,6 +125,8 @@ function validateProductForm(data) {
 
     if (!data.description) {
         errors.description = 'Description is required!';
+    }else if (data.description,length > 50){
+        errors.description = 'Description is too long!!'
     }
 
     if (!data.category) {

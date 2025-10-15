@@ -100,7 +100,7 @@ const addProduct = async (req, res) => {
     try {
         const data = req.body;
 
-        const existProduct = await Products.findOne({ productName: data.productName }).populate(['category', 'brand']);
+        const existProduct = await Products.findOne({ productName:  { $regex: new RegExp(`^${data.productName}$`, 'i') } })
 
         if (existProduct) {
             return handleStatus(res, 401, 'Product already exists wth this name!');
@@ -180,7 +180,7 @@ const editProduct = async (req, res) => {
             return handleStatus(res, 401, `This product is Deleted!!`);
         }
 
-        const existProduct = await Products.findOne({ productName: data.productName, _id: { $ne: productId } }).populate('category').populate('brand');
+        const existProduct = await Products.findOne({ productName:  { $regex: new RegExp(`^${data.productName}$`, 'i') } }).populate('category').populate('brand');
         if (existProduct) {
             return handleStatus(res, 401, 'Product already exista with this name!!');
         }

@@ -295,8 +295,6 @@ function updateTable(orders) {
         .sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn))
         .slice(0, 20)
 
-        console.log('orders : ', sorted)
-
     const tableBody = document.getElementById('salesTableBody')
 
     tableBody.innerHTML = sorted.map(order => {
@@ -311,9 +309,7 @@ function updateTable(orders) {
 
         const orderId = order.orderId || 'N/A';
         const customerName = order.address?.name || 'N/A';
-        const products = order.orderedItems?.length > 1
-            ? `${order.orderedItems[0]?.product?.productName.slice(0, 17)} & ${order.orderedItems.length - 1} more...`
-            : order.orderedItems?.[0]?.product?.productName || "No Products";
+        const products = order.orderedItems?.length
 
         const couponApplied = order.couponApplied ? '₹ ' + order.couponDiscount.toLocaleString('en-IN') : 'No'
         const totalDiscount = order.discount ? order.discount : 0
