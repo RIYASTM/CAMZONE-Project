@@ -327,6 +327,7 @@ const verifyPayment = async (req, res) => {
         await dbOrder.save();
 
         req.session.orderId = dbOrder.orderId
+        req.session.orderSuccess = true
 
         return handleStatus(res, 200, 'Payment verified and order is placed successfully!!');
 
