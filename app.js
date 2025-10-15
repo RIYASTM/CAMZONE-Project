@@ -176,7 +176,8 @@ connectDB().then(() => {
                 }
             }),
             cookie: {
-                secure: true,      // HTTPS only
+                // secure: true,      // HTTPS only
+                secure : process.env.NODE_ENV === 'production',
                 httpOnly: true,    // prevent JS access
                 maxAge: 1000 * 60 * 60 * 24
             }

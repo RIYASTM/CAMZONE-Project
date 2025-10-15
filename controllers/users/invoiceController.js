@@ -13,9 +13,9 @@ const invoice = async (req, res) => {
       return handleStatus(res, 404, 'Order not found!!');
     }
 
-    generateInvoice(order, res);
+    await generateInvoice(order, res);
 
-    return handleStatus(res, 200);
+    // return handleStatus(res, 200);
 
   } catch (error) {
     console.error('Invoice error:', error);

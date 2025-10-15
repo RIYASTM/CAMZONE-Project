@@ -144,7 +144,7 @@ const loadOrderDetails = async (req, res) => {
 
         const totalOrderAmount = order.orderedItems.reduce((total, item) => total + item.price, 0)
 
-        let finalAmount = order.shipping ? order.shipping + totalOrderAmount : totalOrderAmount
+        let finalAmount = (totalOrderAmount + (order.shipping || 0)) - (order.couponDiscount || 0);
 
         if (!isUser) {
             return handleStatus(res, 401, 'Wrong order detailes!!');
@@ -182,42 +182,47 @@ const cancelOrder = async (req, res) => {
         const orderedProductIds = order.orderedItems.map(item => String(item.product));
 
         const cancelItems = order.orderedItems.filter(item =>
-            !['Cancelled', 'Return Request', 'Returned'].includes(item.itemStatus) &&
+            !['Cancelled', 'Return Request', 'Returned'].includes(item.itemStatus) && 
             cancelItemIds.includes(String(item.product))
         );
         if (!cancelItems.length) {
             return handleStatus(res, 400, 'No cancellable items found!!');
         }
 
+        let refundResult = cancelItem(cancelItems, reason);
+        let refundAmount = refundResult.refundAmount;
+        let refundReason = refundResult.refundReason;
+     
         const isFullCancellation =
             orderedProductIds.length === cancelItemIds.length &&
             cancelItemIds.every(id => orderedProductIds.includes(id));
 
-        let refundAmount = 0
-        let refundReason = ''
-
-        const allCancelled = order.orderedItems.every(item => item.itemStatus === 'Cancelled');
+        const allCancelled = order.orderedItems.every(item =>
+            ['Cancelled', 'Returned'].includes(item.itemStatus)
+        );
 
         if (isFullCancellation || allCancelled) {
-            ({ refundAmount, refundReason } = orderCancel(order, reason))
-        } else {
-            ({ refundAmount, refundReason } = cancelItem(cancelItems, reason))
+            refundResult = orderCancel(order, reason);
+            refundReason = refundResult.refundReason;
         }
-
-        let finalPrice = order.finalAmount - refundAmount
-        order.finalAmount -= refundAmount
-
+        
+        let finalPrice = Math.max(0, order.finalAmount - refundAmount);
+        order.finalAmount -= refundAmount;
+      
         if (order.couponApplied && order.finalAmount > 0) {
-            const couponCode = order.couponCode || ''
-            const coupon = couponCode ? await Coupon.findOne({ couponCode }) : ''
-            finalPrice += order.couponDiscount
-            if (finalPrice < coupon.minOrder) {
-                refundAmount -= coupon.discount
-                order.finalAmount += coupon.discount
-                order.couponApplied = false
+            const couponCode = order.couponCode || '';
+            const coupon = couponCode ? await Coupon.findOne({ couponCode }) : null;
+            
+            if (coupon) {
+                finalPrice += order.couponDiscount;
+                if (finalPrice < coupon.minOrder) {
+                    refundAmount = Math.max(0, refundAmount - order.couponDiscount);
+                    order.finalAmount += coupon.discount;
+                    order.couponApplied = false;
+                }
             }
         }
-
+        
         await order.save();
 
         if (['Razorpay', 'Wallet'].includes(order.paymentMethod) && (order.status === 'Confirmed' || order.paymentStatus === 'Paid')) {

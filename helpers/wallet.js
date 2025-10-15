@@ -13,7 +13,7 @@ async function addToWallet(userId, amount, reason) {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
         const count = await Wallet.countDocuments({
-            createdOn: { $gte: today, $lt: tomorrow }
+            createdAt: { $gte: today, $lt: tomorrow }
         });
 
         const seq = (count % 100).toString().padStart(2, '0');

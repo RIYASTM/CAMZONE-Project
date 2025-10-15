@@ -49,12 +49,17 @@
                         <%= user.name %>
                     </a>
                     <div class="dropdown">
-                        <a href="/profile"><img src="/images/icons/user.png" alt="Profile" class="icon"><span class="name">Profile</span> </a>
-                        <a href="/myOrders"><img src="/images/icons/clipboard.png" alt="Orders" class="icon"><span class="name">My Orders</span> </a>
-                        <a href="/wallet"><img src="/images/icons/wallet.png" alt="Wallet" class="icon"><span class="name">My Wallet</span> </a>
-                        <a href="/wishList"><img src="/images/icons/heart.png" alt="WishList" class="icon"><span class="name">Wish List</span></a>
-                        <a href="#"><img src="/images/icons/rate.png" alt="Ratings" class="icon"><span class="name">My Ratings</span> </a>
-                        <a href="/signout"><img src="/images/icons/signout.png" alt="signout" class="icon"><span class="name">Sign Out</span> </a>
+                        <a href="/profile"><img src="/images/icons/user.png" alt="Profile" class="icon"><span class="name profile">Profile</span> </a>
+                        <a href="/myOrders"><img src="/images/icons/clipboard.png" alt="Orders" class="icon"><span class="name myOrders">My Orders</span> </a>
+                        <a href="/wallet"><img src="/images/icons/wallet.png" alt="Wallet" class="icon"><span class="name wallet">My Wallet</span> </a>
+                        <a href="/wishList"><img src="/images/icons/heart.png" alt="WishList" class="icon"><span class="name wishList">Wish List</span></a>
+                        <!-- <a href="/signout"><img src="/images/icons/signout.png" alt="signout" class="icon"><span class="name signout">Sign Out</span> </a> -->
+                         <form id="logout-form" action="/signout" method="POST" style="display: inline;">
+                            <button type="submit">
+                                <img src="/images/icons/signout.png" alt="signout" class="icon">
+                                <span class="name">Sign Out</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             <% } else { %>

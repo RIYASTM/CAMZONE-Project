@@ -69,10 +69,6 @@ const signin = async (req, res) => {
         req.session.usermail = isUser.email;
         req.session.user = isUser._id;
 
-        console.log('session email : ', req.session.usermail);
-        console.log('session user ID : ', req.session.user);
-
-
         return handleStatus(res, 200, null, { redirectUrl: '/' })
 
     } catch (error) {

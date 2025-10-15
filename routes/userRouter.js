@@ -34,15 +34,17 @@ const signupController = require('../controllers/users/signupController')
 
 //Routers
 
+// Home
+
 router.get('/', homeController.loadHomePage);
+
+// Shop
 
 router.get('/shop', shopController.loadShop);
 
+// Users 
+
 router.get('/product', userController.loadProduct);
-
-router.get('/signin', signinController.loadSignin)
-
-router.post('/signin', signinController.signin);
 
 router.get('/signup', userController.loadSignup);
 
@@ -56,8 +58,15 @@ router.post('/resend-otp', userController.resendOtp);
 
 router.get('/pageNotFound', userController.pageNotFound);
 
-router.get('/signout', userController.signout);
+router.get('/signout', userController.pageNotFound);
 
+router.post('/signout', userController.signout);
+
+// Signin
+
+router.get('/signin', signinController.loadSignin);
+
+router.post('/signin', signinController.signin);
 
 //Password Resetting
 

@@ -55,6 +55,11 @@ const couponSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    status : {
+        type : String,
+        enum : ['Expired', 'Unavailable','Available'],
+        default : 'Available'
     }
 })
 

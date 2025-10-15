@@ -74,15 +74,19 @@ async function calculateAmounts(couponCode, totalAmount, cartItems) {
 
     let couponDiscount = 0;
 
+    let message = null
+
     if (coupon) {
-        if (coupon.discountType === 'percentage') {
-            couponDiscount = Math.floor((totalAmount * coupon.discount) / 100);
+        if (coupon.couponLimit <= 0) {
+            return message = { success: false, message: 'Coupon has exeede the limit.' }
         } else {
-            couponDiscount = coupon.discount;
+            if (coupon.discountType === 'percentage') {
+                couponDiscount = Math.floor((totalAmount * coupon.discount) / 100);
+            } else {
+                couponDiscount = coupon.discount;
+            }
         }
     }
-
-    let message = null
 
     if (totalAmount < couponDiscount) {
         return message = { success: false, message: 'Your order total is below coupon Discount' };
@@ -93,11 +97,7 @@ async function calculateAmounts(couponCode, totalAmount, cartItems) {
     const totalGST = Math.floor((finalAmount * 18) / 118);
     const priceWithoutGST = Math.floor(finalAmount - totalGST);
 
-
-
     const subtotal = cartItems.reduce((total, item) => total + item.totalPrice, 0);
-    console.log('totalAmount : ', totalAmount)
-    console.log('subTotal : ', subtotal);
 
     const totalOfferPrice = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
 

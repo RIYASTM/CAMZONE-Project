@@ -139,6 +139,7 @@ function downloadInvoice(orderId) {
       return response.blob();
     })
     .then((blob) => {
+      swal.close()
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

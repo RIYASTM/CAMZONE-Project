@@ -18,6 +18,7 @@ const { validateAddress } = require('../../helpers/validations');
 const { calculateAmounts } = require('../../helpers/productOffer');
 const { updateInventory } = require('../../helpers/updateInventory');
 const { generateRazorpayCheckout } = require('../../helpers/razorpay');
+const { couponUpdate } = require('../../helpers/couponUpdate');
 
 
 const loadCheckout = async (req, res) => {
@@ -34,7 +35,27 @@ const loadCheckout = async (req, res) => {
             Cart.findOne({ userId }).populate('items.productId')
         ]);
 
-        let cartItems = cart.items.filter(item => !item.isDeleted && item.productId !== null);
+        await Promise.all(coupons.map(async coupon => {
+            const now = new Date();
+            if (coupon.couponLimit === 0) {
+                coupon.status = 'Unavailable';
+            } else {
+                const expiryDate = new Date(coupon.validUpto);
+                if (isNaN(expiryDate)) {
+                    coupon.status = 'Unavailable';
+                } else if (expiryDate < now) {
+                    coupon.status = 'Expired';
+                }
+            }
+            await coupon.save();
+        }));
+
+        const filteredCoupon = coupons.filter(coupon => coupon.status === 'Available');
+
+        let cartItems = [];
+        if (cart && Array.isArray(cart.items)) {
+            cartItems = cart.items.filter(item => !item.isDeleted && item.productId !== null);
+        }
 
         if (cartItems.length === 0) {
             return handleStatus(res, 402, 'Cart is empty!!');
@@ -42,11 +63,11 @@ const loadCheckout = async (req, res) => {
 
         const addresses = addressDoc ? addressDoc.address.filter(add => !add.isDeleted) : [];
 
-        const finalTotal = Math.floor(cartItems.reduce((total, item) => total + item.totalPrice, 0))
+        const finalTotal = Math.floor(cartItems.reduce((total, item) => total + item.totalPrice, 0));
         const withoutOffer = cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0);
         const totalOffer = withoutOffer - finalTotal || 0;
         const gst = Math.floor(cart.GST || 0);
-        const withoutGst = withoutOffer - gst
+        const withoutGst = withoutOffer - gst;
 
         return res.render('checkout', {
             user,
@@ -58,14 +79,15 @@ const loadCheckout = async (req, res) => {
             withoutGst,
             gst,
             finalTotal,
-            coupons
+            coupons: filteredCoupon
         });
 
     } catch (error) {
         console.error('Checkout Load Error:', error.message, error.stack);
-        return handleStatus(res, 500)
+        return handleStatus(res, 500);
     }
 };
+
 
 const checkout = async (req, res) => {
     try {
@@ -207,8 +229,7 @@ const checkout = async (req, res) => {
             }
 
             if (coupon && order.couponApplied) {
-                coupon.couponLimit--
-                await coupon.save()
+                await couponUpdate(coupon)
             }
 
             await updateInventory(userId)
@@ -234,8 +255,7 @@ const checkout = async (req, res) => {
 
         if (saveResult && paymentMethod !== 'Razorpay') {
             if (coupon && order.couponApplied) {
-                coupon.couponLimit--
-                await coupon.save()
+                await couponUpdate(coupon)
             }
 
             await updateInventory(userId)
@@ -300,8 +320,7 @@ const verifyPayment = async (req, res) => {
         if (dbOrder.coupon && dbOrder.couponApplied) {
             const couponDoc = await Coupon.findOne({ couponCode: dbOrder.couponCode });
             if (couponDoc) {
-                couponDoc.couponLimit = Math.max(0, couponDoc.couponLimit - 1);
-                await couponDoc.save();
+                await couponUpdate(couponDoc);
             }
         }
 
