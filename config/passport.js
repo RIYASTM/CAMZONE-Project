@@ -1,4 +1,5 @@
 const passport = require('passport')
+require('dotenv').config();
 const bcrypt = require('bcrypt')
 const GoogleStrategy = require('passport-google-oauth20').Strategy
 
@@ -10,11 +11,13 @@ if (env.error) throw new Error("Failed to load .env file: ", env.error.message)
 console.log('=======================================================================')
 console.log("Environment variables loaded... ")
 
+const url = process.env.NODE_ENV === 'production' ? 'https://thecamzone.shop/auth/google/callback' : '/auth/google/callback'
+
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL : 'http://thecamzone.shop/auth/google/callback',
+    callbackURL : url,
     // callbackURL: '/auth/google/callback'
 
 },
