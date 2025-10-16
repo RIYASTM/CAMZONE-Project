@@ -58,7 +58,7 @@ const loadCheckout = async (req, res) => {
         }
 
         if (cartItems.length === 0) {
-            return handleStatus(res, 401, 'Cart is empty!!');
+            return handleStatus(res, 401, 'Cart is empty!!', {redirectUrl : '/'});
         }
 
         const addresses = addressDoc ? addressDoc.address.filter(add => !add.isDeleted) : [];

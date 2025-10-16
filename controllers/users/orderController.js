@@ -18,7 +18,7 @@ const loadOrderSuccess = async (req, res) => {
         const orderId = req.session.orderId
 
         if (!req.session.orderSuccess || req.session.orderSuccess === false) {
-            return handleStatus(res, 400, 'There is not orders!');
+            return handleStatus(res, 400, 'There is not orders!', {redirectUrl : '/'});
         }
 
         const [user, userOrder] = await Promise.all([
